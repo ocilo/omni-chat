@@ -20,7 +20,7 @@
     "chai": "^3.4.1",
     "gulp": "^3.9.0",
     "typescript": "^1.8.0-dev.20160125",
-    "via-build-tools": "^0.6.0"
+    "via-build-tools": "^0.6.3"
   },
   "jspm": {
     "configFile": "systemjs.config.js",
