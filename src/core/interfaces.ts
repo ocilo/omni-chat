@@ -93,7 +93,7 @@ export interface Proxy{
   //    et les retourne sous forme de tableau de contacts.
   //
 
-  sendMessage(target: Contact, discussion: Discussion);
+  sendMessage(msg: Message, discussion: Discussion, target: Contact): any;
 }
 //  interface Proxy{}   //  Cette interface est commentee : cela signifie que son fonctionnement
 //  n'est pas encore clair, ou qu'elle sera supprimee.
@@ -330,10 +330,12 @@ export interface Message{
  * La classe Account reste encore partiellement a definir.
  * Quelle methodes pourront etre appelees sur un compte ?
  ***************************************************************/
-export class Account{
+export interface Account{
   protocols: string;    //  Une representation du protocole de communication
                         //  utilise par ce compte.
                         //  Protocol sera peut-etre encapsule dans une enum ou une struct
                         //  par la suite.
   data: any;            //  Les donnees du comptes. A definir
+
+  createDiscussion(name: string): Promise<Discussion>;
 }
