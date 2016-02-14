@@ -6,7 +6,10 @@ import {oChatApp} from "../core/OChat";
 import {Discussion} from "../core/interfaces";
 
 
-let accountIRC = new AccountIRC("euroserv.fr.quakenet.org", "testUser");
+let accountIRC = new AccountIRC({
+  server: "euroserv.fr.quakenet.org",
+  username: "testUser"
+});
 
 // create app and bind drivers
 let app = new oChatApp();
