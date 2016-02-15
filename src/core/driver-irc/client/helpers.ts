@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import {MessageType, MessageInfo, getMessageInfo} from "./message-info";
 
 export interface Message{

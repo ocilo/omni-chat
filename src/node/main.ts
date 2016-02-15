@@ -7,7 +7,7 @@ import {Discussion} from "../core/interfaces";
 
 
 let accountIRC = new AccountIRC({
-  server: "euroserv.fr.quakenet.org",
+  server: "localhost",
   username: "testUser"
 });
 
@@ -22,13 +22,24 @@ testUser.addAccount(accountIRC);
 
 // use app
 let accounts = testUser.getAccounts();
-let ircAccount = accounts[0];
+let ircAccount: AccountIRC = <AccountIRC>accounts[0];
 
+ircAccount
+  .connect()
+  .then(() => {
+    console.log("connected");
+  })
+  .catch((err: Error) => {
+    console.error(err);
+  });
+
+
+/*
 ircAccount
   .createDiscussion('ochat-test')
   .then((discussion: Discussion) => {
     // discussion.sendMessage();
   });
-
+*/
 
 export = OChat;

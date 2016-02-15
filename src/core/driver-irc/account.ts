@@ -15,7 +15,7 @@ export interface AccountIRCData{
 }
 
 export class AccountIRC implements Account{
-  private static clients: {[id: string]: ClientIRC};
+  private static clients: {[id: string]: ClientIRC} = {};
 
   private static getOrCreateClient(account: AccountIRC): ClientIRC {
     let id = `${account.data.nick}@${account.data.server}`;
@@ -40,9 +40,8 @@ export class AccountIRC implements Account{
   }
 
   connect(): Promise<any>{
-    let clientIRC = this.getOrCreateClient();
-
-    return Promise.resolve(true);
+    return this.getOrCreateClient()
+      .connect();
   }
 
   createDiscussion(name:string):Promise<Discussion> {

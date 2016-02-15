@@ -177,6 +177,7 @@ export interface WhoisData{
 }
 
 export interface ClientState{
+  connecting: boolean,
   connected: boolean,
   requestedDisconnect: boolean,
   nick: string,
@@ -185,6 +186,7 @@ export interface ClientState{
 }
 
 let defaultClientState: ClientState = {
+  connecting: false,
   connected: false,
   requestedDisconnect: false,
   nick: null,
@@ -246,57 +248,124 @@ export class ClientIRC extends events.EventEmitter{
 
     let line = `${parts.join(" ")}\r\n`;
 
+    console.log(">> "+line.substring(0, line.length-2));
     this.connection.write(line);
   }
 
-  connect (retryCount: number = 0) {
+  private resetState(): void{
+    // TODO: disconnect
+    this.state.connecting = false;
     this.state.connected = false;
     this.state.requestedDisconnect = false;
     this.state.nick = this.options.nick;
     this.state.motd = "";
     this.inputBuffer = new Buffer("");
     this.chans = {};
+  }
 
-    let connectionOpts: createConnectionOptions = {
-      host: this.options.server,
-      port: this.options.port
-    };
-    if (this.options.localAddress){
-      connectionOpts.localAddress = this.options.localAddress;
+  private promisifyEvents = function(successEvents: string[], failureEvents: string[]): Promise<any>{
+    return new Promise((resolve, reject) => {
+      let listeners:{onSuccess?: () => any, onFailure?: (err: Error) => any} = {};
+      let removeListeners = () => {
+        for(let i = 0, l = successEvents.length; i < l; i++){
+          this.removeListener(successEvents[i], listeners.onSuccess);
+        }
+        for(let i = 0, l = failureEvents.length; i < l; i++){
+          this.removeListener(failureEvents[i], listeners.onFailure);
+          let eventName = failureEvents[i];
+        }
+      };
+      listeners.onSuccess = () => {
+        removeListeners();
+        resolve();
+      };
+      listeners.onFailure = (err: Error) => {
+        removeListeners();
+        reject(err);
+      };
+      for(let i = 0, l = successEvents.length; i < l; i++){
+        this.on(successEvents[i], listeners.onSuccess);
+      }
+      for(let i = 0, l = failureEvents.length; i < l; i++){
+        this.on(failureEvents[i], listeners.onFailure);
+      }
+    });
+  };
+
+  connect (retryCount: number = 0): Promise<any> {
+    if(this.state.connected) {
+      return Promise.resolve();
     }
 
-    // TODO(Charles): close previous connection
-    this.connection = net.createConnection(connectionOpts, () => {
-      this.send("NICK", [this.options.nick]);
-      this.send("USER", [this.options.userName, "8", '*', this.options.realName]);
-      this.state.connected = true;
-      // this.nick = this.options.nick;
-      // this._updateMaxLineLength();
-      // this.emit('connect');
-    });
+    if(this.state.connecting){
+      return this.promisifyEvents(["registered"], ["error"]);
+    }
 
-    this.connection.setEncoding(this.options.encoding);
+    this.state.connecting = true;
 
-    this.connection.on("data", (chunk: Buffer) => {
-      this.inputBuffer = Buffer.concat([this.inputBuffer, chunk]);
-      this.processBuffer();
-    });
+    return Promise.try(() => {
+      this.resetState();
 
-    this.connection.on("end", () => {
-      // TODO(Charles): handle end
-    });
-
-    this.connection.on("close", () => {
-      if(this.state.requestedDisconnect){
-        return;
+      let connectionOpts: createConnectionOptions = {
+        host: this.options.server,
+        port: this.options.port
+      };
+      if (this.options.localAddress){
+        connectionOpts.localAddress = this.options.localAddress;
       }
-      setTimeout(() => {
-        this.connect(retryCount + 1);
-      }, this.options.retryDelay);
-    });
 
-    this.connection.on("error", (error: Error) => {
-      this.emit("netError", error);
+      // TODO(Charles): close previous connection
+      this.connection = net.createConnection(connectionOpts, () => {
+        this.send("NICK", [this.options.nick]);
+        this.send("USER", [this.options.userName, "8", '*', this.options.realName]);
+        this.once("registered", () => {
+          this.state.connecting = false;
+          this.state.connected = true;
+          // update maxLength()
+        });
+      });
+
+      this.connection.setEncoding(this.options.encoding);
+
+      this.connection.on("data", (chunk: Buffer) => {
+        if(!(chunk instanceof Buffer)) {
+          chunk = new Buffer(chunk);
+        }
+        this.inputBuffer = Buffer.concat([this.inputBuffer, chunk]);
+        this.processBuffer();
+      });
+
+      this.connection.on("end", () => {
+        if(this.state.connecting) {
+          let err = new Error("Unexpected socket end");
+          this.emit("error", err);
+          this.emit("error.net", err);
+        }
+      });
+
+      this.connection.on("close", () => {
+        if(this.state.connected) {
+          if(this.state.requestedDisconnect){
+            return;
+          } else {
+            // auto-reconnect
+          }
+        } else if(this.state.connecting) {
+          // retry connection
+        } else {
+          // UNDEFINED BEHAVIOUR
+        }
+        //setTimeout(() => {
+        //  this.connect(retryCount + 1);
+        //}, this.options.retryDelay);
+      });
+
+      this.connection.on("error", (error: Error) => {
+        this.emit("error", error);
+        this.emit("error.net", error);
+      });
+
+      return this.promisifyEvents(["registered"], ["error"]);
     });
   };
 
@@ -328,6 +397,8 @@ export class ClientIRC extends events.EventEmitter{
 
   handle(message: Message): void{
     this.emit("message", message);
+    console.log("<< "+message.raw);
+
     switch(message.name){
       case "RPL_WELCOME":
         this.state.nick = message.args[0];

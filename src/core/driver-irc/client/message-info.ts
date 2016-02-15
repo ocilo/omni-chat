@@ -75,7 +75,6 @@ add(MessageType.RESPONSE, 2, "RPL_YOURHOST", "Your host is <servername>, running
 add(MessageType.RESPONSE, 3, "RPL_CREATED", "This server was created <date>");
 add(MessageType.RESPONSE, 4, "RPL_MYINFO", "<servername> <version> <availableusermodes> <availablechannelmodes>");
 add(MessageType.RESPONSE, 5, "RPL_BOUNCE", "Try server <servername>, port <port number>");
-// add(MessageType.RESPONSE, 5, "RPL_ISUPPORT", "");
 
 // command responses  (200-399)
 add(MessageType.RESPONSE, 302, "RPL_USERHOST", "");
@@ -240,16 +239,11 @@ add(MessageType.RESERVED, 247, "RPL_STATSBLINE", "");
 add(MessageType.RESERVED, 250, "RPL_STATSDLINE", "");
 add(MessageType.RESERVED, 492, "ERR_NOSERVICEHOST", "");
 
-
-
-
-
-
-
-
-
-
-
-
+// non-standard
+add(MessageType.RESPONSE, 5, "RPL_ISUPPORT", ""); // !!! OVERIDES STANDARD 005 !!!
+add(MessageType.RESPONSE, 396, "RPL_HOSTHIDDEN", "");
+add(MessageType.RESPONSE, 42, "RPL_YOURID", "");
+add(MessageType.RESPONSE, 265, "RPL_LOCALUSERS", "");
+add(MessageType.RESPONSE, 266, "RPL_GLOBALUSERS", "");
 
 
