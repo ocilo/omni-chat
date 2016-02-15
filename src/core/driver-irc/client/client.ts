@@ -9,7 +9,7 @@ import * as Promise from "bluebird";
 import {parseMessage} from "./helpers";
 import {Message} from "./helpers";
 
-interface PartialClientOptions{
+export interface PartialClientOptions{
   server: string,
   nick: string,
   password?: string,
@@ -41,7 +41,7 @@ interface PartialClientOptions{
   }
 }
 
-interface ClientOptions extends PartialClientOptions{
+export interface ClientOptions extends PartialClientOptions{
   server: string,
   nick: string,
   password: string,
@@ -105,7 +105,7 @@ let defaultOptions: ClientOptions = {
   }
 };
 
-interface ServerSupport{
+export interface ServerSupport{
   channel: {
     idlength: {[chanPrefix: string]: number}, // ex: {"&": 15, "#": 10},
     length: number,
@@ -139,7 +139,7 @@ let defaultServerSupport: ServerSupport = {
   usermodes: ''
 };
 
-interface ChanData{
+export interface ChanData{
   name: string,
   key: string,
   serverName: string,
@@ -151,7 +151,7 @@ interface ChanData{
   created?: string
 }
 
-interface createConnectionOptions{
+export interface createConnectionOptions{
   port: number,
   host?: string,
   localAddress? : string,
@@ -160,27 +160,28 @@ interface createConnectionOptions{
   allowHalfOpen?: boolean,
 }
 
-interface WhoisData{
-  nick: string;
-  away?: string;
-  user?: string;
-  host?: string;
-  realname?: string;
-  idle?: string;
-  channels?: string;
-  server?: string;
-  serverInfo?: string;
-  operator?: string;
-  account?: string;
-  accountInfo?: string;
+export interface WhoisData{
+  [key: string]: string
+  nick: string,
+  away?: string,
+  user?: string,
+  host?: string,
+  realname?: string,
+  idle?: string,
+  channels?: string,
+  server?: string,
+  serverInfo?: string,
+  operator?: string,
+  account?: string,
+  accountInfo?: string
 }
 
-interface ClientState{
-  connected: boolean;
-  requestedDisconnect: boolean;
-  nick: string;
-  motd: string; // message of the day
-  whoisData: {[nick: string]: WhoisData};
+export interface ClientState{
+  connected: boolean,
+  requestedDisconnect: boolean,
+  nick: string,
+  motd: string, // message of the day
+  whoisData: {[nick: string]: WhoisData}
 }
 
 let defaultClientState: ClientState = {
@@ -191,7 +192,7 @@ let defaultClientState: ClientState = {
   whoisData: {}
 };
 
-class Client extends events.EventEmitter{
+export class ClientIRC extends events.EventEmitter{
   options: ClientOptions;
   serverSupport: ServerSupport;
   state: ClientState;
@@ -499,7 +500,7 @@ class Client extends events.EventEmitter{
   private handleRPL_ISUPPORT(command: Message): void{
     for(let i = 0, l = command.args.length; i < l; i++){
       let arg = command.args[i];
-      let match: string[] = arg.match(/([A-Z]+)=(.*)/);
+      let match: string[] = <string[]>arg.match(/([A-Z]+)=(.*)/);
       if(!match){
         continue;
       }
@@ -545,7 +546,7 @@ class Client extends events.EventEmitter{
           this.serverSupport.nicklength = parseInt(value, 10);
           break;
         case "PREFIX":
-          match = value.match(/\((.*?)\)(.*)/);
+          match = <string[]>value.match(/\((.*?)\)(.*)/);
           if (match) {
             /*match[1] = match[1].split('');
             match[2] = match[2].split('');
