@@ -1,3 +1,4 @@
+import * as Promise from "bluebird";
 import * as _ from "lodash";
 import {MessageType, MessageInfo, getMessageInfo} from "./message-info";
 
@@ -84,4 +85,25 @@ export function parseMessage(line: string): Message{
   }
 
   return command;
+}
+
+export interface DeferredPromise<T>{
+  promise: Promise<T>,
+  resolve: (result: T) => any,
+  reject: (err: Error) => any
+}
+
+export function getDeferredPromise<T>(): DeferredPromise<T>{
+  let deferred: DeferredPromise<T> = {
+    promise: null,
+    resolve: null,
+    reject: null
+  };
+
+  deferred.promise = new Promise((resolve: (result: T) => any, reject: (error: Error) => any) => {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  return deferred;
 }

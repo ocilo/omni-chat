@@ -239,7 +239,7 @@ export interface Discussion{
   name: String;         // Nom de la conversation
   isPrivate: boolean;
 
-  getMessages(): Message[];
+  getMessages(): Promise<Message[]>;
   //    Retourne une liste des messages echanges pendant la discussion.
   //    Equivalent a un espece de getHistory {dateMax, dateMin, nbMessages}.
   //    Un filtre pourra certainement etre applique par la suite,

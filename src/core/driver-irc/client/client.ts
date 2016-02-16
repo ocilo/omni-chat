@@ -8,6 +8,8 @@ import * as _ from "lodash";
 import * as Promise from "bluebird";
 import {parseMessage} from "./helpers";
 import {Message} from "./helpers";
+import {getDeferredPromise} from "./helpers";
+import {DeferredPromise} from "./helpers";
 
 export interface PartialClientOptions{
   server: string,
@@ -233,8 +235,8 @@ export class ClientIRC extends events.EventEmitter{
     return data;
   }
 
-  send (command: string, args: string[]) {
-    let parts = [command];
+  send (command: string, args: string[] = []) {
+    let parts = [command.toUpperCase()];
     for(let i = 0; i<args.length; i++){
       parts.push(args[i]);
     }
@@ -261,6 +263,18 @@ export class ClientIRC extends events.EventEmitter{
     this.state.motd = "";
     this.inputBuffer = new Buffer("");
     this.chans = {};
+  }
+
+  private addListenersGroup(group: {[eventName: string]: Function}){
+    for(let eventName in group){
+      this.on(eventName, group[eventName]);
+    }
+  }
+
+  private removeListenersGroup(group: {[eventName: string]: Function}){
+    for(let eventName in group){
+      this.removeListener(eventName, group[eventName]);
+    }
   }
 
   private promisifyEvents = function(successEvents: string[], failureEvents: string[]): Promise<any>{
@@ -369,6 +383,64 @@ export class ClientIRC extends events.EventEmitter{
     });
   };
 
+  join(chanName: string): Promise<any> {
+    return this
+      .connect()
+      .then(() => {
+        this.send('JOIN', [chanName]);
+
+        let deferred: DeferredPromise<any> = getDeferredPromise<any>();
+        let listenersGroup: {[eventName: string]: Function} = {};
+
+        listenersGroup["message.JOIN"] = (event: any) => {
+          if(event.chan === chanName && event.nick === this.state.nick) {
+            deferred.resolve(true); // TODO: return something useful
+          }
+        };
+
+        listenersGroup["error"] = deferred.reject;
+
+        this.addListenersGroup(listenersGroup);
+
+        return deferred.promise.finally(() => {
+          this.removeListenersGroup(listenersGroup);
+        });
+      });
+  }
+
+  private splitText(text: string, maxLength: number): string[]{
+    let parts: string[] = [];
+
+    let lines = text.split(/\r\n|\n|\r/);
+    for(let i = 0, l = lines.length; i < l; i++) {
+      let line = lines[i];
+      while(line.length > maxLength){
+        parts.push(line.substring(0, maxLength));
+        line = line.substring(maxLength);
+      }
+      if(line.length > 0){
+        parts.push(line);
+      }
+    }
+
+    return parts;
+  }
+
+  say(target: string, text: string): Promise<any> {
+    return this
+      .connect()
+      .then(() => {
+        let maxLength = 300; // TODO: calculate precisely
+        let parts = this.splitText(text, maxLength);
+
+        for(let i = 0, l = parts.length; i < l; i++){
+          this.send("NOTICE", [target, parts[i]]);
+        }
+
+        return true;
+      });
+  }
+
   private processBuffer(){
     let content: string = this.inputBuffer.toString();
     let lines: string[] = content.split(/\r\n|\r|\n/);
@@ -381,7 +453,7 @@ export class ClientIRC extends events.EventEmitter{
     }
 
     this.inputBuffer = new Buffer(lines[lines.length-1]);
-  }
+  };
 
   private removeUserFromChan(nick: string, chan: string) {
     if (nick == this.state.nick) {
@@ -528,10 +600,10 @@ export class ClientIRC extends events.EventEmitter{
             channel.users[message.nick] = '';
           }
         }
-        //self.emit('join', command.args[0], command.nick, command);
-        //self.emit('join' + command.args[0], command.nick, command);
+        this.emit('message.JOIN', {chan: message.args[0], nick: message.nick, message: message});
+        //this.emit('join' + command.args[0], command.nick, command);
         //if (command.args[0] != command.args[0].toLowerCase()) {
-        //  self.emit('join' + command.args[0].toLowerCase(), command.nick, command);
+        //  this.emit('join' + command.args[0].toLowerCase(), command.nick, command);
         //}
         break;
       case 'PART':
@@ -762,7 +834,7 @@ export class ClientIRC extends events.EventEmitter{
      }
      }*/
     if (to.toUpperCase() === this.state.nick.toUpperCase()){
-      this.emit('pm', from, text, message);
+      this.emit('message.PRIVMSG', {nick: from, text: text, message: message});
     }
   }
 

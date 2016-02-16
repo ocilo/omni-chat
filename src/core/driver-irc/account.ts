@@ -4,7 +4,6 @@ import {Account} from "../interfaces";
 import {Discussion} from "../interfaces";
 import {Message} from "../interfaces";
 import {DiscussionIRC} from "./discussion";
-import {ClientConnection} from "./client-connection";
 import {ClientIRC} from "./client/client";
 
 export interface AccountIRCData{
@@ -44,16 +43,20 @@ export class AccountIRC implements Account{
       .connect();
   }
 
-  createDiscussion(name:string):Promise<Discussion> {
-    let clientConnection = ClientConnection.getConnection(this.data.server, this.data.nick);
-
-    return clientConnection
+  getDiscussions(): Promise<Discussion[]> {
+    let client = this.getOrCreateClient();
+    return client
       .connect()
       .then(() => {
-        console.log('connected');
-        let discussion = new DiscussionIRC(this.data.server, name);
-        clientConnection.join(discussion);
-        return discussion;
+        client.send("JOIN", ["#test"]);
+        client.send("LIST");
+        return [];
       });
+  }
+
+  createDiscussion(name:string):Promise<DiscussionIRC> {
+    let discussion: DiscussionIRC = new DiscussionIRC(this, name);
+    return discussion
+      .connect();
   }
 }
