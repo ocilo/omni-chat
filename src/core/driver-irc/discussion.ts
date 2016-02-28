@@ -1,54 +1,66 @@
+import {EventEmitter} from "events";
+
 import {Proxy} from '../interfaces';
 import {Contact} from "../interfaces";
-import {Account} from "../interfaces";
+import {Account} from "./account";
 import {Discussion} from "../interfaces";
 import {Message} from "../interfaces";
-import {ClientConnection} from "./client-connection";
 
 interface IRCoptions{
   login: string;
-
 }
 
-export class DiscussionIRC implements Discussion{
-  creationDate:Date;
+export class DiscussionIRC extends EventEmitter implements Discussion {
+
+  creationDate: Date;
   server: string;
   name: string;
-  isPrivate:boolean;
+  isGroupDiscussion: boolean;
+  isPrivate: boolean;
 
-  constructor(server: string, name: string){
+  constructor (server: string, name: string) {
+    super();
     this.server = server;
     this.name = name;
     this.isPrivate = false;
     this.creationDate = new Date();
   };
 
-  getMessages():Message[] {
+  getMessages(): Message[] {
     return undefined;
   };
 
-  sendMessage(msg:Message) {
-  };
-
-  addParticipants(p:Contact[]) {
-  };
-
-  getParticipants():Contact[] {
+  sendText(author: Account, text:string): Promise<Message> {
     return undefined;
+  }
+
+  sendMessage(authorAccount: Account, msg:Message): Promise<Message> {
+    authorAccount
+      .getClient();
+    return null;
   };
 
-  onMessage(callback:(msg:Message)=>any) {
+  addParticipants(p:Contact[]): Promise<any> {
+    return null;
   };
 
-  getName():string {
-    return undefined;
+  getParticipants(): Contact[] {
+    return null;
   };
 
-  getDescription():string {
-    return undefined;
+  onMessage(callback:(msg:Message)=>any): Discussion {
+    return this;
   };
 
-  getSettings():any {
-    return undefined;
+  getName(): string {
+    return null;
+  };
+
+  getDescription(): string {
+    return null;
+  };
+
+  getSettings(): any {
+    return null;
   };
 }

@@ -146,9 +146,9 @@ export interface Contact{
   // Le contact fournit devient une référence vers ce contact ci
 
   // TODO: Be able to undo the merge
-  addAccount(account: Account);
+  addAccount(account: Account): Promise<any>;
 
-  removeAccount(accout: Account);
+  removeAccount(accout: Account): Promise<any>;
 
   getOwner(): Contact;
 }
@@ -173,7 +173,7 @@ export interface User{
   //    C'est le seul moyen de communiquer avec quelqu'un.
   // Garanti que l'iniateur de la conversation est présent
 
-  leaveDiscussion(discussion: Discussion);
+  leaveDiscussion(discussion: Discussion): Promise<any>;
 
   getAccounts(): Account[];
   //    Retourne la liste des comptes de l'utilisateurs.
@@ -186,13 +186,13 @@ export interface User{
   //    Fera appel a StaticProxy.getContacts(a: Accounts) pour
   //    chaque compte de lie a l'utiliateur.
 
-  addContact(contact: Contact);
+  addContact(contact: Contact): Promise<any>;
 
-  removeContact(contact: Contact);
+  removeContact(contact: Contact): Promise<any>;
 
-  onDiscussionRequest(callback: (disc:Discussion) => any);
+  onDiscussionRequest(callback: (disc:Discussion) => any): User;
 
-  onContactRequest(callback: (contact: Contact) => any);
+  onContactRequest(callback: (contact: Contact) => any): User;
 }
 
 /***************************************************************
@@ -251,13 +251,14 @@ export interface Discussion{
   //  protocols: string | string[]
   //  accounts: Account | Account[]
   //}
-  sendMessage(msg: Message);
+  sendMessage(author: Account, msg: Message): Promise<Message>;
   //    Envoie le message à tous les participants de la discussion.
   //    Devra sans doute faire appel a StaticProxy.sendMessage().
   //    Mais un probleme se pose : sur quel compte du contact envoyer
   //    le message ?
+  sendText(author: Account, text: string): Promise<Message>;
 
-  addParticipants(p: Contact[]);
+  addParticipants(p: Contact[]): Promise<any>;
   //    Ajoute des participants a la conversation.
   //    Peut etre n'ajouter qu'un seul compte des contacts,
   //    et transformer la discussion en tant qu'agregation
@@ -266,7 +267,7 @@ export interface Discussion{
   getParticipants(): Contact[];
   //    Retourne une liste des participants a la conversation.
 
-  onMessage(callback: (msg: Message) => any);
+  onMessage(callback: (msg: Message) => any): Discussion;
   //    Appelle la methode a executer lors de la reception du message.
   //    Le detection d'un message se fera sans doute via un ecouteur
   //    qui ecoutera... quoi ?
@@ -313,7 +314,7 @@ export interface Message{
   //    ce qui conduira peut-etre a supprimer cette methode
   //    de l'interface globale.
 
-  getAuthor(): Contact;
+  getAuthor(): Account;
   //    Retourne l'auteur du message.
 
   getContent(): any;

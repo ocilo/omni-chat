@@ -29,11 +29,13 @@ export class oChatUser implements User{
     return undefined;
   }
 
-  leaveDiscussion(discussion:Discussion) {
+  leaveDiscussion(discussion:Discussion): Promise<any> {
+    return null;
   }
 
-  addAccount(account: Account){
+  addAccount(account: Account): Promise<any> {
     this.accounts.push(account);
+    return null;
   }
 
   getAccounts(options?: getAccountOptions): Account[] {
@@ -66,16 +68,20 @@ export class oChatUser implements User{
     return undefined;
   }
 
-  addContact(contact:Contact) {
+  addContact(contact:Contact): Promise<any> {
+    return null;
   }
 
-  removeContact(contact:Contact) {
+  removeContact(contact:Contact): Promise<any> {
+    return null;
   }
 
-  onDiscussionRequest(callback:(disc:Discussion)=>any) {
+  onDiscussionRequest(callback:(disc:Discussion)=>any): User {
+    return this;
   }
 
-  onContactRequest(callback:(contact:Contact)=>any) {
+  onContactRequest(callback:(contact:Contact)=>any): User {
+    return this;
   }
 }
 

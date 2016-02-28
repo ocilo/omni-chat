@@ -8,8 +8,16 @@ import * as _ from "lodash";
 import * as Promise from "bluebird";
 import {parseMessage} from "./helpers";
 import {Message} from "./helpers";
+import {getDeferredPromise} from "./helpers";
+import {DeferredPromise} from "./helpers";
+import {Transform} from "stream";
+import {Duplex} from "stream";
+import {Chan} from "./chan";
+import {Socket} from "net";
+import {ircWriter} from "./irc-stream";
+import {ircReader} from "./irc-stream";
 
-interface PartialClientOptions{
+export interface PartialClientOptions{
   server: string,
   nick: string,
   password?: string,
@@ -41,7 +49,7 @@ interface PartialClientOptions{
   }
 }
 
-interface ClientOptions extends PartialClientOptions{
+export interface ClientOptions extends PartialClientOptions{
   server: string,
   nick: string,
   password: string,
@@ -105,7 +113,7 @@ let defaultOptions: ClientOptions = {
   }
 };
 
-interface ServerSupport{
+export interface ServerSupport{
   channel: {
     idlength: {[chanPrefix: string]: number}, // ex: {"&": 15, "#": 10},
     length: number,
@@ -125,9 +133,9 @@ interface ServerSupport{
 let defaultServerSupport: ServerSupport = {
   channel: {
     idlength: {},
-      length: 200,
-      limit: {},
-      modes: { a: '', b: '', c: '', d: ''},
+    length: 200,
+    limit: {},
+    modes: { a: '', b: '', c: '', d: ''},
     types: "&#"
   },
   kicklength: 0,
@@ -139,7 +147,7 @@ let defaultServerSupport: ServerSupport = {
   usermodes: ''
 };
 
-interface ChanData{
+export interface ChanData{
   name: string,
   key: string,
   serverName: string,
@@ -151,7 +159,7 @@ interface ChanData{
   created?: string
 }
 
-interface createConnectionOptions{
+export interface createConnectionOptions{
   port: number,
   host?: string,
   localAddress? : string,
@@ -160,30 +168,33 @@ interface createConnectionOptions{
   allowHalfOpen?: boolean,
 }
 
-interface WhoisData{
-  nick: string;
-  away?: string;
-  user?: string;
-  host?: string;
-  realname?: string;
-  idle?: string;
-  channels?: string;
-  server?: string;
-  serverInfo?: string;
-  operator?: string;
-  account?: string;
-  accountInfo?: string;
+export interface WhoisData{
+  [key: string]: string
+  nick: string,
+  away?: string,
+  user?: string,
+  host?: string,
+  realname?: string,
+  idle?: string,
+  channels?: string,
+  server?: string,
+  serverInfo?: string,
+  operator?: string,
+  account?: string,
+  accountInfo?: string
 }
 
-interface ClientState{
-  connected: boolean;
-  requestedDisconnect: boolean;
-  nick: string;
-  motd: string; // message of the day
-  whoisData: {[nick: string]: WhoisData};
+export interface ClientState{
+  connecting: boolean,
+  connected: boolean,
+  requestedDisconnect: boolean,
+  nick: string,
+  motd: string, // message of the day
+  whoisData: {[nick: string]: WhoisData}
 }
 
 let defaultClientState: ClientState = {
+  connecting: false,
   connected: false,
   requestedDisconnect: false,
   nick: null,
@@ -191,12 +202,14 @@ let defaultClientState: ClientState = {
   whoisData: {}
 };
 
-class Client extends events.EventEmitter{
+export class Client extends events.EventEmitter{
   options: ClientOptions;
   serverSupport: ServerSupport;
   state: ClientState;
-  chans: {[name: string]: ChanData} = {};
-  connection: net.Socket;
+  chans: {[name: string]: Chan} = {};
+  stream: NodeJS.ReadWriteStream;
+  ircReader: NodeJS.ReadWriteStream;
+  ircWriter: NodeJS.ReadWriteStream;
   inputBuffer: Buffer;
 
   constructor(options: PartialClientOptions){
@@ -212,15 +225,23 @@ class Client extends events.EventEmitter{
     this.state = _.clone(defaultClientState);
   }
 
-  getChanData(chan: string, createIfMissing: boolean = true): ChanData{
-    return this.chans[chan];
+  getChan(chanName: string, createIfMissing: boolean = true): ChanData {
+    if(!(chanName in this.chans)) {
+      if (createIfMissing) {
+        this.chans[chanName] = new Chan();
+      } else {
+        return null;
+      }
+    }
+    return this.chans[chanName];
   }
 
   setWhoisData(nick: string, key: "nick"|"away"|"user"|"host"|"realname"|"idle"|"channels"|"server"|"serverinfo"|"operator", value: any): void {
     if(!(nick in this.state.whoisData)){
       this.state.whoisData[nick] = {nick: nick};
     }
-    this.state.whoisData[nick][key] = value;
+    let data:WhoisData = this.state.whoisData[nick];
+    data[key] = value;
   }
 
   deleteWhoisData(nick: string): WhoisData{
@@ -230,95 +251,250 @@ class Client extends events.EventEmitter{
     return data;
   }
 
-  send (command: string, args: string[]) {
+  send (command: string, args: string[]): Promise<any> {
     let parts = [command];
     for(let i = 0; i<args.length; i++){
       parts.push(args[i]);
     }
 
-    // escape last part
-    let lastIdx = parts.length - 1;
-    let lastPart = parts[lastIdx];
-    if(/\s/.test(lastPart) || /^:/.test(lastPart) || lastPart === "") {
-      parts[lastIdx] = `:${lastPart}`;
-    }
-
-    let line = `${parts.join(" ")}\r\n`;
-
-    this.connection.write(line);
+    return Promise.fromCallback(resolver => {
+      this.ircWriter.write(parts, resolver);
+    });
   }
 
-  connect (retryCount: number = 0) {
+  private resetState(): void{
+    // TODO: disconnect
+    this.state.connecting = false;
     this.state.connected = false;
     this.state.requestedDisconnect = false;
     this.state.nick = this.options.nick;
     this.state.motd = "";
     this.inputBuffer = new Buffer("");
     this.chans = {};
+  }
 
-    let connectionOpts: createConnectionOptions = {
-      host: this.options.server,
-      port: this.options.port
-    };
-    if (this.options.localAddress){
-      connectionOpts.localAddress = this.options.localAddress;
+  private addListenersGroup(group: {[eventName: string]: Function}){
+    for(let eventName in group){
+      this.on(eventName, group[eventName]);
     }
+  }
 
-    // TODO(Charles): close previous connection
-    this.connection = net.createConnection(connectionOpts, () => {
-      this.send("NICK", [this.options.nick]);
-      this.send("USER", [this.options.userName, "8", '*', this.options.realName]);
-      this.state.connected = true;
-      // this.nick = this.options.nick;
-      // this._updateMaxLineLength();
-      // this.emit('connect');
-    });
+  private removeListenersGroup(group: {[eventName: string]: Function}){
+    for(let eventName in group){
+      this.removeListener(eventName, group[eventName]);
+    }
+  }
 
-    this.connection.setEncoding(this.options.encoding);
-
-    this.connection.on("data", (chunk: Buffer) => {
-      this.inputBuffer = Buffer.concat([this.inputBuffer, chunk]);
-      this.processBuffer();
-    });
-
-    this.connection.on("end", () => {
-      // TODO(Charles): handle end
-    });
-
-    this.connection.on("close", () => {
-      if(this.state.requestedDisconnect){
-        return;
+  private promisifyEvents = function(successEvents: string[], failureEvents: string[]): Promise<any>{
+    return new Promise((resolve, reject) => {
+      let listeners:{onSuccess?: () => any, onFailure?: (err: Error) => any} = {};
+      let removeListeners = () => {
+        for(let i = 0, l = successEvents.length; i < l; i++){
+          this.removeListener(successEvents[i], listeners.onSuccess);
+        }
+        for(let i = 0, l = failureEvents.length; i < l; i++){
+          this.removeListener(failureEvents[i], listeners.onFailure);
+          let eventName = failureEvents[i];
+        }
+      };
+      listeners.onSuccess = () => {
+        removeListeners();
+        resolve();
+      };
+      listeners.onFailure = (err: Error) => {
+        removeListeners();
+        reject(err);
+      };
+      for(let i = 0, l = successEvents.length; i < l; i++){
+        this.on(successEvents[i], listeners.onSuccess);
       }
-      setTimeout(() => {
-        this.connect(retryCount + 1);
-      }, this.options.retryDelay);
-    });
-
-    this.connection.on("error", (error: Error) => {
-      this.emit("netError", error);
+      for(let i = 0, l = failureEvents.length; i < l; i++){
+        this.on(failureEvents[i], listeners.onFailure);
+      }
     });
   };
 
-  private processBuffer(){
-    let content: string = this.inputBuffer.toString();
-    let lines: string[] = content.split(/\r\n|\r|\n/);
+  private createSocket(): Socket {
+    let socket = new Socket();
 
-    // We ignore the last line because it is either "" or an incomplete line
-    for(let i = 0, l = lines.length - 1; i < l; i++){
-      let line = lines[i];
-      let command = parseMessage(line);
-      this.handle(command);
+    if (this.options.localAddress){
+      socket.localAddress = this.options.localAddress;
     }
 
-    this.inputBuffer = new Buffer(lines[lines.length-1]);
+    socket.setEncoding(this.options.encoding);
+
+    return socket;
+  }
+
+  connect (retryCount: number = 0): Promise<any> {
+
+    if(this.state.connected) {
+      return Promise.resolve();
+    }
+
+    if(this.state.connecting){
+      return this.promisifyEvents(["registered"], ["error"]);
+    }
+
+    this.state.connecting = true;
+
+    return Promise.try(() => {
+      this.resetState();
+
+      let connectionOpts: createConnectionOptions = {
+        host: this.options.server,
+        port: this.options.port
+      };
+
+      this.stream = this.createSocket();
+      this.ircWriter = ircWriter();
+      this.ircReader = ircReader();
+
+      this.ircWriter.pipe(this.stream);
+      this.stream.pipe(this.ircReader);
+
+      // TODO(Charles): close previous connection
+      (<Socket>this.stream).connect(connectionOpts.port, connectionOpts.host, () => {
+        this.send("NICK", [this.options.nick]);
+        this.send("USER", [this.options.userName, "8", '*', this.options.realName]);
+        this.state.connected = true;
+        // this.nick = this.options.nick;
+        // this._updateMaxLineLength();
+        // this.emit('connect');
+      });
+
+      this.ircReader.on("data", (message: Message) => {
+        this.handle(message);
+      });
+
+      this.ircReader.on("end", () => {
+        // TODO(Charles): handle end
+        if(this.state.connecting || this.state.connected) {
+          let err = new Error("Unexpected socket end");
+          this.emit("error", err);
+          this.emit("error.net", err);
+        }
+      });
+
+      this.ircReader.on("close", () => {
+        if(this.state.connected) {
+          if(this.state.requestedDisconnect){
+            return;
+          } else {
+            // auto-reconnect
+          }
+        } else if(this.state.connecting) {
+          // retry connection
+        } else {
+          // UNDEFINED BEHAVIOUR
+        }
+        //setTimeout(() => {
+        //  this.connect(retryCount + 1);
+        //}, this.options.retryDelay);
+      });
+
+      this.ircWriter.on("error", (error: Error) => {
+        this.emit("error", error);
+        this.emit("error.net", error);
+      });
+      this.ircReader.on("error", (error: Error) => {
+        this.emit("error", error);
+        this.emit("error.net", error);
+      });
+
+      return this.promisifyEvents(["registered"], ["error"]);
+    });
+  };
+
+  disconnect(message: string, callback: Function): Promise<any> {
+    return null;
+    //if (typeof (message) === 'function') {
+    //  callback = message;
+    //  message = undefined;
+    //}
+    //message = message || 'node-irc says goodbye';
+    //var self = this;
+    //if (self.conn.readyState == 'open') {
+    //  var sendFunction;
+    //  if (self.opt.floodProtection) {
+    //    sendFunction = self._sendImmediate;
+    //    self._clearCmdQueue();
+    //  } else {
+    //    sendFunction = self.send;
+    //  }
+    //  sendFunction.call(self, 'QUIT', message);
+    //}
+    //self.conn.requestedDisconnect = true;
+    //if (typeof (callback) === 'function') {
+    //  self.conn.once('end', callback);
+    //}
+    //self.conn.end();
+  };
+
+  join(chanName: string): Promise<any> {
+    return this
+      .connect()
+      .then(() => {
+        this.send('JOIN', [chanName]);
+
+        let deferred: DeferredPromise<any> = getDeferredPromise<any>();
+        let listenersGroup: {[eventName: string]: Function} = {};
+
+        listenersGroup["message.JOIN"] = (event: any) => {
+          if(event.chan === chanName && event.nick === this.state.nick) {
+            deferred.resolve(true); // TODO: return something useful
+          }
+        };
+
+        listenersGroup["error"] = deferred.reject;
+
+        this.addListenersGroup(listenersGroup);
+
+        return deferred.promise.finally(() => {
+          this.removeListenersGroup(listenersGroup);
+        });
+      });
+  }
+
+  private splitText(text: string, maxLength: number): string[]{
+    let parts: string[] = [];
+
+    let lines = text.split(/\r\n|\n|\r/);
+    for(let i = 0, l = lines.length; i < l; i++) {
+      let line = lines[i];
+      while(line.length > maxLength){
+        parts.push(line.substring(0, maxLength));
+        line = line.substring(maxLength);
+      }
+      if(line.length > 0){
+        parts.push(line);
+      }
+    }
+
+    return parts;
+  }
+
+  say(target: string, text: string): Promise<any> {
+    return this
+      .connect()
+      .then(() => {
+        let maxLength = 300; // TODO: calculate precisely
+        let parts = this.splitText(text, maxLength);
+
+        for(let i = 0, l = parts.length; i < l; i++){
+          this.send("NOTICE", [target, parts[i]]);
+        }
+
+        return true;
+      });
   }
 
   private removeUserFromChan(nick: string, chan: string) {
     if (nick == this.state.nick) {
-      let channel = this.getChanData(chan);
+      let channel = this.getChan(chan);
       delete this.chans[channel.key]; // TODO(Charles): normalize to name ?
     } else {
-      let channel = this.getChanData(chan);
+      let channel = this.getChan(chan);
       if (channel && channel.users) {
         delete channel.users[nick];
       }
@@ -327,6 +503,8 @@ class Client extends events.EventEmitter{
 
   handle(message: Message): void{
     this.emit("message", message);
+    console.log("<< "+message.raw);
+
     switch(message.name){
       case "RPL_WELCOME":
         this.state.nick = message.args[0];
@@ -449,17 +627,17 @@ class Client extends events.EventEmitter{
       case 'JOIN':
         // channel, who
         if (this.state.nick === message.nick) {
-          this.getChanData(message.args[0], true);
+          this.getChan(message.args[0], true);
         } else {
-          let channel: ChanData = this.getChanData(message.args[0]);
+          let channel: ChanData = this.getChan(message.args[0]);
           if (channel && channel.users) {
             channel.users[message.nick] = '';
           }
         }
-        //self.emit('join', command.args[0], command.nick, command);
-        //self.emit('join' + command.args[0], command.nick, command);
+        this.emit('message.JOIN', {chan: message.args[0], nick: message.nick, message: message});
+        //this.emit('join' + command.args[0], command.nick, command);
         //if (command.args[0] != command.args[0].toLowerCase()) {
-        //  self.emit('join' + command.args[0].toLowerCase(), command.nick, command);
+        //  this.emit('join' + command.args[0].toLowerCase(), command.nick, command);
         //}
         break;
       case 'PART':
@@ -499,7 +677,7 @@ class Client extends events.EventEmitter{
   private handleRPL_ISUPPORT(command: Message): void{
     for(let i = 0, l = command.args.length; i < l; i++){
       let arg = command.args[i];
-      let match: string[] = arg.match(/([A-Z]+)=(.*)/);
+      let match: string[] = <string[]>arg.match(/([A-Z]+)=(.*)/);
       if(!match){
         continue;
       }
@@ -545,7 +723,7 @@ class Client extends events.EventEmitter{
           this.serverSupport.nicklength = parseInt(value, 10);
           break;
         case "PREFIX":
-          match = value.match(/\((.*?)\)(.*)/);
+          match = <string[]>value.match(/\((.*?)\)(.*)/);
           if (match) {
             /*match[1] = match[1].split('');
             match[2] = match[2].split('');
@@ -587,7 +765,7 @@ class Client extends events.EventEmitter{
   }
 
   private handleRPL_NAMEREPLY(message: Message): void{
-    let channel = this.getChanData(message.args[2]);
+    let channel = this.getChan(message.args[2]);
     var users = message.args[3].trim().split(/ +/);
     if (channel) {
       users.forEach(function(user) {
@@ -606,7 +784,7 @@ class Client extends events.EventEmitter{
 
   private handleRPL_ENDOFNAMES(message: Message): void {
     let chanName = message.args[1];
-    let channel = this.getChanData(chanName);
+    let channel = this.getChan(chanName);
     if (channel) {
       //this.emit('names', chanName, channel.users);
       //self.send('MODE', chanName);
@@ -614,7 +792,7 @@ class Client extends events.EventEmitter{
   }
 
   private handleRPL_TOPIC(message: Message): void {
-    let channel = this.getChanData(message.args[1]);
+    let channel = this.getChan(message.args[1]);
     if (channel) {
       channel.topic = message.args[2];
     }
@@ -631,7 +809,7 @@ class Client extends events.EventEmitter{
   }
 
   private handleRPL_TOPICWHOTIME(message: Message): void {
-    let channel: ChanData = this.getChanData(message.args[1]);
+    let channel: ChanData = this.getChan(message.args[1]);
     //if (channel) {
     //  channel.topicBy = command.args[2];
     //  // channel, topic, nick
@@ -642,7 +820,7 @@ class Client extends events.EventEmitter{
   private handleTOPIC(message: Message): void {
     // channel, topic, nick
     // self.emit('topic', command.args[0], command.args[1], command.nick, command);
-    let channel:ChanData = this.getChanData(message.args[0]);
+    let channel:ChanData = this.getChan(message.args[0]);
     if (channel) {
       channel.topic = message.args[1];
       channel.topicBy = message.nick;
@@ -650,14 +828,14 @@ class Client extends events.EventEmitter{
   }
 
   private handleRPL_CHANNELMODEIS(message: Message): void {
-    let channel: ChanData = this.getChanData(message.args[1]);
+    let channel: ChanData = this.getChan(message.args[1]);
     if (channel) {
       channel.mode = message.args[2];
     }
   }
 
   private handleRPL_CREATIONTIME(message: Message): void {
-    let channel: ChanData = this.getChanData(message.args[1]);
+    let channel: ChanData = this.getChan(message.args[1]);
     if (channel) {
       channel.created = message.args[2];
     }
@@ -690,7 +868,7 @@ class Client extends events.EventEmitter{
      }
      }*/
     if (to.toUpperCase() === this.state.nick.toUpperCase()){
-      this.emit('pm', from, text, message);
+      this.emit('message.PRIVMSG', {nick: from, text: text, message: message});
     }
   }
 
@@ -721,35 +899,3 @@ class Client extends events.EventEmitter{
     // self.emit('quit', command.nick, command.args[0], channels, command);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

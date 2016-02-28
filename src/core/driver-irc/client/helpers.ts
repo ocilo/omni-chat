@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import {MessageType, MessageInfo, getMessageInfo} from "./message-info";
 
 export interface Message{
@@ -13,7 +14,19 @@ export interface Message{
   stringValue: string
 }
 
-let defaultCommand: Message = {
+
+// Return the lower cased version of the nickname as described in the IRC spec
+// https://tools.ietf.org/html/rfc2812#section-2.2
+export function getLowerCaseNick(nick: string): string {
+  return nick
+    .toLowerCase()
+    .replace("[", "{")
+    .replace("]", "}")
+    .replace("|", "\\")
+    .replace("^", "~");
+}
+
+let defaultMessage: Message = {
   raw: "",
   name: null,
   type: null,
@@ -27,17 +40,20 @@ let defaultCommand: Message = {
 };
 
 export function parseMessage(line: string): Message{
-  let command:Message = _.clone(defaultCommand);
+  let command:Message = _.clone(defaultMessage);
   command.raw = line;
+
+  console.log(line);
+  console.log(typeof line);
 
   let match: string[];
 
   // Parse prefix
-  match = line.match(/^:([^ ]+) +/);
+  match = <string[]>line.match(/^:([^ ]+) +/);
   if (match) {
     command.prefix = match[1];
     line = line.substring(match[0].length);
-    match = command.prefix.match(/^([_a-zA-Z0-9\~\[\]\\`^{}|-]*)(?:!([^@]+)@(.*))?$/);
+    match = <string[]>command.prefix.match(/^([_a-zA-Z0-9\~\[\]\\`^{}|-]*)(?:!([^@]+)@(.*))?$/);
     if (match) {
       command.nick = match[1];
       command.user = match[2];
@@ -48,7 +64,7 @@ export function parseMessage(line: string): Message{
   }
 
   // Parse command
-  match = line.match(/^([^ ]+) */);
+  match = <string[]>line.match(/^([^ ]+) */);
 
   let commandPart: string = match[1];
   let commandDescriptor: MessageInfo = getMessageInfo(commandPart);
@@ -62,7 +78,7 @@ export function parseMessage(line: string): Message{
 
   // Parse parameters
   if (line.search(/^:|\s+:/) != -1) {
-    match = line.match(/(.*?)(?:^:|\s+:)(.*)/);
+    match = <string[]>line.match(/(.*?)(?:^:|\s+:)(.*)/);
     middle = match[1].trim();
     trailing = match[2];
   }
@@ -83,4 +99,25 @@ export function parseMessage(line: string): Message{
   }
 
   return command;
+}
+
+export interface DeferredPromise<T>{
+  promise: Promise<T>,
+  resolve: (result: T) => any,
+  reject: (err: Error) => any
+}
+
+export function getDeferredPromise<T>(): DeferredPromise<T>{
+  let deferred: DeferredPromise<T> = {
+    promise: null,
+    resolve: null,
+    reject: null
+  };
+
+  deferred.promise = new Promise((resolve: (result: T) => any, reject: (error: Error) => any) => {
+    deferred.resolve = resolve;
+    deferred.reject = reject;
+  });
+
+  return deferred;
 }

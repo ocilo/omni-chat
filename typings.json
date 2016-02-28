@@ -4,7 +4,6 @@
   "ambientDependencies": {
     "bluebird": "github:DefinitelyTyped/DefinitelyTyped/bluebird/bluebird.d.ts#8d852210cf8378ac5fe11380b5d1d17f2e5b0968",
     "chai": "github:DefinitelyTyped/DefinitelyTyped/chai/chai.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
-    "irc": "github:DefinitelyTyped/DefinitelyTyped/irc/irc.d.ts#38571cb9dd66f6979bbf02b102bddc8a1dbc7472",
     "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
     "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
     "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4"
