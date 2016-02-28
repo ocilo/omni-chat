@@ -20,10 +20,11 @@ export function ircDuplex(stream: Duplex): Duplex {
 
 class ircWriterTransform extends Transform {
   constructor() {
-    super({readableObjectMode: true, writableObjectMode: true});
+    super({writableObjectMode: true});
   }
 
   _transform(chunk: string[], encoding: string, callback: (err: Error) => any): any {
+    console.log(chunk);
     if (!chunk.length) {
       return callback(null);
     }
@@ -49,7 +50,7 @@ class ircWriterTransform extends Transform {
 
 class ircReaderTransform extends Transform {
   constructor() {
-    super({readableObjectMode: true});
+    super({objectMode: true});
   }
 
   _transform(line: string, encoding: any, callback: (err: Error) => any): any {

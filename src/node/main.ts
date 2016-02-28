@@ -1,9 +1,34 @@
+//import {Writable} from "stream";
+//import {Readable} from "stream";
+//import {Duplex} from "stream";
+//import {Transform} from "stream";
+//import {lineReader} from "../core/driver-irc/client/line-reader";
+//
+////let transform = new Transform({
+////  readableObjectMode: true,
+////  transform: function (chunk: any, encoding: string, cb: Function) {
+////    this.push("hoy");
+////    cb(null);
+////  }
+////});
+//
+//let transform = lineReader();
+//
+//process.stdin.pipe(transform);
+//
+//transform.on("data", (data: any) => {
+//  console.log(data);
+//  console.log(typeof data);
+//});
+
+
 import {OChat} from "../core/OChat";
 import {Account as IrcAccount} from "../core/driver-irc/account";
 import {oChatUser} from "../core/OChat";
 import {oChatApp} from "../core/OChat";
 import {Discussion} from "../core/interfaces";
 import {lineReader} from "../core/driver-irc/client/line-reader";
+
 
 
 let ircAccount = new IrcAccount({

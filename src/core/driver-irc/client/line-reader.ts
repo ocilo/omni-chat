@@ -7,32 +7,28 @@ export interface LineReaderOptions {
   useObjectMode?: boolean;
 }
 
-export function lineReader(options?: LineReaderOptions): NodeJS.ReadWriteStream {
+export function lineReader(options?: LineReaderOptions): Transform {
   return new LineReaderTransform(options);
 }
 
-class LineReaderTransform extends Duplex {
+class LineReaderTransform extends Transform {
   _lineBuffer: string;
   _removeLineEndings: boolean;
   _ignoreEmpty: boolean;
-  _lines: string[];
 
   constructor(options?: LineReaderOptions) {
-    super({readableObjectMode: true});
+    if (options && options.useObjectMode === false) {
+      super({readableObjectMode: false});
+    } else {
+      super({readableObjectMode: true});
+    }
 
     this._lineBuffer = "";
-    this._lines = [];
     this._ignoreEmpty = !options || !!options.ignoreEmpty;
     this._removeLineEndings = !options || !!options.removeLineEndings;
   }
 
-  _read (size: number) {
-    size = Math.min(size, this._lines.length);
-    let res = this._lines.splice(0, size);
-    return console.log(res);
-  }
-
-  _write(chunk: string | Buffer, encoding: string, callback: (err: Error) => any): any {
+  _transform(chunk: string | Buffer, encoding: string, callback: (err: Error) => any): any {
     let data: string;
     if (encoding === "buffer") {
       data = this._lineBuffer + (<Buffer>chunk).toString();
@@ -56,18 +52,17 @@ class LineReaderTransform extends Duplex {
     callback(null);
   }
 
-  //_flush (callback: (err: Error) => any) {
-  //  if (this._lineBuffer.length) {
-  //    this._emitLine(this._lineBuffer);
-  //    this._lineBuffer = "";
-  //  }
-  //  callback(null);
-  //};
+  _flush (callback: (err: Error) => any) {
+    if (this._lineBuffer.length) {
+      this._emitLine(this._lineBuffer);
+      this._lineBuffer = "";
+    }
+    callback(null);
+  };
 
   _emitLine (line: string) {
     if(!this._ignoreEmpty || line.length) {
-      this.push("a");
-      this._lines.push(line);
+      this.push(line);
     }
   }
 }
