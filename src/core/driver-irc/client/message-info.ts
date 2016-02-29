@@ -75,7 +75,6 @@ add(MessageType.RESPONSE, 2, "RPL_YOURHOST", "Your host is <servername>, running
 add(MessageType.RESPONSE, 3, "RPL_CREATED", "This server was created <date>");
 add(MessageType.RESPONSE, 4, "RPL_MYINFO", "<servername> <version> <availableusermodes> <availablechannelmodes>");
 add(MessageType.RESPONSE, 5, "RPL_BOUNCE", "Try server <servername>, port <port number>");
-// add(MessageType.RESPONSE, 5, "RPL_ISUPPORT", "");
 
 // command responses  (200-399)
 add(MessageType.RESPONSE, 302, "RPL_USERHOST", "");
@@ -127,7 +126,6 @@ add(MessageType.RESPONSE, 392, "RPL_USERSSTART", ":UserID   Terminal  Host");
 add(MessageType.RESPONSE, 393, "RPL_USERS", ":<username> <ttyline> <hostname>");
 add(MessageType.RESPONSE, 394, "RPL_ENDOFUSERS", ":End of users");
 add(MessageType.RESPONSE, 395, "RPL_NOUSERS", ":Nobody logged in");
-add(MessageType.RESPONSE, 396, "RPL_HOSTHIDDEN", "<Clk-B80D26DC>| is now your displayed host"); // non-standard
 add(MessageType.RESPONSE, 200, "RPL_TRACELINK", "Link <versiondebuglevel> <destination> <nextserver> V<protocolversion> <linkuptimeinseconds> <backstreamsendq> <upstreamsendq>");
 add(MessageType.RESPONSE, 201, "RPL_TRACECONNECTING", "Try. <class> <server>");
 add(MessageType.RESPONSE, 202, "RPL_TRACEHANDSHAKE", "H.S. <class> <server>");
@@ -159,8 +157,6 @@ add(MessageType.RESPONSE, 257, "RPL_ADMINLOC1", ":<admin info>");
 add(MessageType.RESPONSE, 258, "RPL_ADMINLOC2", ":<admin info>");
 add(MessageType.RESPONSE, 259, "RPL_ADMINEMAIL", ":<admin info>");
 add(MessageType.RESPONSE, 263, "RPL_TRYAGAIN", "<command> :Please wait a while and try again.");
-add(MessageType.RESPONSE, 265, "RPL_LOCALUSERS", "<local> | <max> | Current local users <local>, max <max>"); // Non standard
-add(MessageType.RESPONSE, 266, "RPL_GLOBALUSERS", "<global> | <max> | Current global users <global>, max <max>"); // Non standard
 
 // command responses  (400-599)
 add(MessageType.ERROR, 401, "ERR_NOSUCHNICK", "<nickname> :No such nick/channel");
@@ -243,16 +239,9 @@ add(MessageType.RESERVED, 247, "RPL_STATSBLINE", "");
 add(MessageType.RESERVED, 250, "RPL_STATSDLINE", "");
 add(MessageType.RESERVED, 492, "ERR_NOSERVICEHOST", "");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+// non-standard
+add(MessageType.RESPONSE, 5, "RPL_ISUPPORT", ""); // !!! OVERIDES STANDARD 005 !!!
+add(MessageType.RESPONSE, 396, "RPL_HOSTHIDDEN", "<disphost>| is now your displayed host");
+add(MessageType.RESPONSE, 42, "RPL_YOURID", "");
+add(MessageType.RESPONSE, 265, "RPL_LOCALUSERS", "<local> | <max> | Current local users <local>, max <max>");
+add(MessageType.RESPONSE, 266, "RPL_GLOBALUSERS", "<global> | <max> | Current global users <global>, max <max>");
