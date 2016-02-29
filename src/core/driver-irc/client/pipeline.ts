@@ -3,8 +3,7 @@ import {Duplex} from "stream";
 import * as pump from "pump";
 import * as duplexify from "duplexify";
 
-// Create a new duplex stream
-
+// Create a new duplex stream by piping an array of streams
 export function pipeline(transforms: NodeJS.ReadWriteStream[]): NodeJS.ReadWriteStream {
   if (transforms.length < 2) {
     throw new Error("At least two streams are required");
@@ -17,11 +16,5 @@ export function pipeline(transforms: NodeJS.ReadWriteStream[]): NodeJS.ReadWrite
   let writableObjectMode: boolean = first._writableState.objectMode;
   let readableObjectMode: boolean = last._readableState.objectMode;
 
-  // console.log({writableObjectMode: writableObjectMode, readableObjectMode: readableObjectMode});
-
-  let res:NodeJS.ReadWriteStream =  duplexify(first, last, {writableObjectMode: writableObjectMode, readableObjectMode: readableObjectMode});
-
-  // console.log(res);
-
-  return res;
+  return duplexify(first, last, {writableObjectMode: writableObjectMode, readableObjectMode: readableObjectMode});
 }

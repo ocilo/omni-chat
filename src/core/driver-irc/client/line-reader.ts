@@ -1,10 +1,9 @@
 import {Transform} from "stream";
-import {Duplex} from "stream";
 
 export interface LineReaderOptions {
   removeLineEndings?: boolean;
   ignoreEmpty?: boolean;
-  useObjectMode?: boolean;
+  maxLength?: number;
 }
 
 export function lineReader(options?: LineReaderOptions): Transform {
@@ -17,11 +16,7 @@ class LineReaderTransform extends Transform {
   _ignoreEmpty: boolean;
 
   constructor(options?: LineReaderOptions) {
-    if (options && options.useObjectMode === false) {
-      super({readableObjectMode: false});
-    } else {
-      super({readableObjectMode: true});
-    }
+    super({readableObjectMode: true});
 
     this._lineBuffer = "";
     this._ignoreEmpty = !options || !!options.ignoreEmpty;
@@ -30,7 +25,7 @@ class LineReaderTransform extends Transform {
 
   _transform(chunk: string | Buffer, encoding: string, callback: (err: Error) => any): any {
     let data: string;
-    if (encoding === "buffer") {
+    if (encoding === "buffer" || chunk instanceof Buffer) {
       data = this._lineBuffer + (<Buffer>chunk).toString();
     } else {
       data = this._lineBuffer + new Buffer(<string>chunk, encoding).toString();

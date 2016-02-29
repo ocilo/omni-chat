@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import * as Promise from "bluebird";
 import {MessageType, MessageInfo, getMessageInfo} from "./message-info";
 
 export interface Message{
@@ -42,9 +43,6 @@ let defaultMessage: Message = {
 export function parseMessage(line: string): Message{
   let command:Message = _.clone(defaultMessage);
   command.raw = line;
-
-  console.log(line);
-  console.log(typeof line);
 
   let match: string[];
 

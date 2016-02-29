@@ -30,8 +30,11 @@ export class DiscussionIRC extends EventEmitter implements Discussion {
     return undefined;
   };
 
-  sendText(author: Account, text:string): Promise<Message> {
-    return undefined;
+  sendText(authorAccount: Account, text:string): Promise<Message> {
+    return authorAccount
+      .getClient()
+      .say(this.name, text);
+    // return undefined;
   }
 
   sendMessage(authorAccount: Account, msg:Message): Promise<Message> {

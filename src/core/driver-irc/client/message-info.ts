@@ -51,7 +51,7 @@ function add(type: MessageType, number: number, name: string, replyString: strin
   nameToCmdInfo[name] = descriptor;
 }
 
-// normal commands
+// normal commands https://www.alien.net.au/irc/irc2numerics.html
 add(MessageType.NORMAL, null, "NICK", "<newnick>");
 add(MessageType.NORMAL, null, "QUIT", "<quitmessage>");
 add(MessageType.NORMAL, null, "SQUIT", "<serverquitmessage>");
@@ -127,6 +127,7 @@ add(MessageType.RESPONSE, 392, "RPL_USERSSTART", ":UserID   Terminal  Host");
 add(MessageType.RESPONSE, 393, "RPL_USERS", ":<username> <ttyline> <hostname>");
 add(MessageType.RESPONSE, 394, "RPL_ENDOFUSERS", ":End of users");
 add(MessageType.RESPONSE, 395, "RPL_NOUSERS", ":Nobody logged in");
+add(MessageType.RESPONSE, 396, "RPL_HOSTHIDDEN", "<Clk-B80D26DC>| is now your displayed host"); // non-standard
 add(MessageType.RESPONSE, 200, "RPL_TRACELINK", "Link <versiondebuglevel> <destination> <nextserver> V<protocolversion> <linkuptimeinseconds> <backstreamsendq> <upstreamsendq>");
 add(MessageType.RESPONSE, 201, "RPL_TRACECONNECTING", "Try. <class> <server>");
 add(MessageType.RESPONSE, 202, "RPL_TRACEHANDSHAKE", "H.S. <class> <server>");
@@ -158,6 +159,8 @@ add(MessageType.RESPONSE, 257, "RPL_ADMINLOC1", ":<admin info>");
 add(MessageType.RESPONSE, 258, "RPL_ADMINLOC2", ":<admin info>");
 add(MessageType.RESPONSE, 259, "RPL_ADMINEMAIL", ":<admin info>");
 add(MessageType.RESPONSE, 263, "RPL_TRYAGAIN", "<command> :Please wait a while and try again.");
+add(MessageType.RESPONSE, 265, "RPL_LOCALUSERS", "<local> | <max> | Current local users <local>, max <max>"); // Non standard
+add(MessageType.RESPONSE, 266, "RPL_GLOBALUSERS", "<global> | <max> | Current global users <global>, max <max>"); // Non standard
 
 // command responses  (400-599)
 add(MessageType.ERROR, 401, "ERR_NOSUCHNICK", "<nickname> :No such nick/channel");

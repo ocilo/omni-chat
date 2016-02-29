@@ -236,7 +236,8 @@ export class Client extends events.EventEmitter{
     return this.chans[chanName];
   }
 
-  setWhoisData(nick: string, key: "nick"|"away"|"user"|"host"|"realname"|"idle"|"channels"|"server"|"serverinfo"|"operator", value: any): void {
+  // "nick"|"away"|"user"|"host"|"realname"|"idle"|"channels"|"server"|"serverinfo"|"operator"
+  setWhoisData(nick: string, key: string, value: any): void {
     if(!(nick in this.state.whoisData)){
       this.state.whoisData[nick] = {nick: nick};
     }
@@ -256,6 +257,8 @@ export class Client extends events.EventEmitter{
     for(let i = 0; i<args.length; i++){
       parts.push(args[i]);
     }
+
+    console.log(">> " + parts.join(" "));
 
     return Promise.fromCallback(resolver => {
       this.ircWriter.write(parts, resolver);
