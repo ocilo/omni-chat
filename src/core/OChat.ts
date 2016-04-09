@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as Promise from "bluebird";
 import {Proxy} from "./interfaces";
 import {User} from "./interfaces";
 import {Contact} from "./interfaces";

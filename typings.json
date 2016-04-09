@@ -1,11 +1,12 @@
 {
-  "dependencies": {},
-  "devDependencies": {},
+  "name": "omni-chat",
+  "dependencies": {
+    "bluebird": "registry:npm/bluebird#3.3.4+20160406213700",
+    "lodash": "registry:npm/lodash#4.0.0+20160305082308"
+  },
   "ambientDependencies": {
-    "bluebird": "github:DefinitelyTyped/DefinitelyTyped/bluebird/bluebird.d.ts#8d852210cf8378ac5fe11380b5d1d17f2e5b0968",
-    "chai": "github:DefinitelyTyped/DefinitelyTyped/chai/chai.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
-    "lodash": "github:DefinitelyTyped/DefinitelyTyped/lodash/lodash.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
-    "mocha": "github:DefinitelyTyped/DefinitelyTyped/mocha/mocha.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4",
-    "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#ef1741f3d614a6da73e3a46d4dc191def7e645a4"
+    "chai": "registry:dt/chai#3.4.0+20160216071402",
+    "mocha": "registry:dt/mocha#2.2.5+20151023103246",
+    "node": "registry:dt/node#4.0.0+20160311162451"
   }
 }

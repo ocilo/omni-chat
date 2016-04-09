@@ -1,3 +1,4 @@
+import * as Promise from "bluebird";
 import {Proxy} from '../interfaces';
 import {Contact} from "../interfaces";
 import {Account as IAccount} from "../interfaces";

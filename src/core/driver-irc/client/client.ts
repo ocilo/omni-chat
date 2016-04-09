@@ -261,7 +261,7 @@ export class Client extends events.EventEmitter{
     console.log(">> " + parts.join(" "));
 
     return Promise.fromCallback(resolver => {
-      this.ircWriter.write(parts, resolver);
+      this.ircWriter.write(<any>parts, resolver);
     });
   }
 
@@ -302,7 +302,7 @@ export class Client extends events.EventEmitter{
       };
       listeners.onSuccess = () => {
         removeListeners();
-        resolve();
+        resolve(null);
       };
       listeners.onFailure = (err: Error) => {
         removeListeners();

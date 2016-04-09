@@ -1,3 +1,4 @@
+import * as Promise from "bluebird";
 import {Message as IMessage} from "../interfaces";
 import {Account} from "./account";
 

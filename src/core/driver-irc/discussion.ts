@@ -1,3 +1,5 @@
+import * as Promise from "bluebird";
+
 import {EventEmitter} from "events";
 
 import {Proxy} from '../interfaces';
