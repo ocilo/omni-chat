@@ -1,3 +1,1 @@
-import {OChat} from "../core/OChat";
-
-export = OChat;
+export {OChat} from "../core/OChat";

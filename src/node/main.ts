@@ -1,4 +1,4 @@
-import {OChat} from "../core/OChat";
+export {OChat} from "../core/OChat";
 import {Account as IrcAccount} from "../core/driver-irc/account";
 import {oChatUser} from "../core/OChat";
 import {oChatApp} from "../core/OChat";
@@ -37,5 +37,3 @@ function enableCliClient(discussion: Discussion): void {
     console.log(`>> ${line}`);
   });
 }
-
-export = OChat;
