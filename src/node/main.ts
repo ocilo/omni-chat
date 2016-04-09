@@ -31,20 +31,6 @@ ircAccount
     // discussion.sendMessage();
   });
 
-interface splitLinesResult {
-  lines: string[],
-  remainder: string
-}
-
-function splitLines(text: string) {
-  let lines: string[] = text.split(/\r\n|\r|\n/);
-  let remainder = lines.pop();
-  return {
-    lines: lines,
-    remainder: remainder
-  }
-}
-
 function enableCliClient(discussion: Discussion): void {
   process.stdin.pipe(lineReader()).on("data", (line:string) => {
     discussion.sendText(ircAccount, line);
