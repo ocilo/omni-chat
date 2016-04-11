@@ -114,7 +114,9 @@ export interface Contact{
 	// Supprime un compte du contact courant
 
   getOwner(): Contact;
-	// TODO : C'est quoi ça ? Je pense que c'est plutot dans Account
+	// TODO : C'est quoi ça ? Je pense que ca a pour vocation de trouver le Contact associe
+	//        a un certain Account. Si c'est le cas, ca doit dependre de l'utilisateur,
+	//        et du coup sa place est dans User.
 }
 
 /***************************************************************
@@ -277,16 +279,17 @@ export interface Message {
  * Examples of classes which can inherit from Account are :
  * IRCAccount, FacebookAccount... and OmniChatAccount.
  ***************************************************************/
-/***************************************************************
- * La classe Account reste encore partiellement a definir.
- * Quelle methodes pourront etre appelees sur un compte ?
- ***************************************************************/
-export interface Account{
-  protocols: string;  //  Une representation du protocole de communication
-            //  utilise par ce compte.
-            //  Protocol sera peut-etre encapsule dans une enum ou une struct
-            //  par la suite.
-  data: any;      //  Les donnees du comptes. A definir
+export interface Account {
+	protocols: string;      //  Une representation du protocole de communication
+		                      //  utilise par ce compte.
+							            //  Protocol sera peut-etre encapsule dans une enum ou une struct
+							            //  par la suite.
 
-  createDiscussion(name: string): Promise<Discussion>;
+  data: Map<string, any>; //  Les donnees du compte.
+													// TODO : ma map est-elle bonne ?
+
+	nickName: string;       //  Le nom sous lequel le proprietaire du compte se fait connaitre.
+
+	// NB : Account n'apparait presque plus que comme une couche d'abstraction pratique.
+	//      TODO : Tu vois des methodes qui lui sont specifiques ? onReceptionMessage peut-être ?
 }
