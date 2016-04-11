@@ -19,7 +19,9 @@ import * as Promise from 'bluebird';
  * Maintains the list of available proxies and connected users.
  * TODO : is last point still right ? If not, remove it
  ***************************************************************/
-export class Client{
+export class Client {
+	// TODO(Ruben) : passer ca en interface et faire l'implementation
+	//               dans la base de la lib.
   proxies: Proxy[];   // Les proxys disponibles pour ce client
   users: User[];    // Les utilisateurs connectes a ce client
 
@@ -293,3 +295,11 @@ export interface Account {
 	// NB : Account n'apparait presque plus que comme une couche d'abstraction pratique.
 	//      TODO : Tu vois des methodes qui lui sont specifiques ? onReceptionMessage peut-être ?
 }
+
+/* GLOBAL COMMENT
+ * Le plus gros soucis reste celui de la reception de messages.
+ * Je pense que ca doit se faire pour chaque account sous forme d'un ecouteur...
+ * Mais ca signifierai ENORMEMENT d'ecouteurs qui tournent en même temps, non ?
+ * En revanche je pense que ca serait pratique : on lui passe juste un callback qui
+ * s'occupe d'update la bonne discussion ou d'en créer une et voila.
+ */
