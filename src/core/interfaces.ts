@@ -17,27 +17,13 @@ import * as Promise from "bluebird";
 /***************************************************************
  * Client is the entry point for the library.
  * Maintains the list of available proxies and connected users.
- ***************************************************************/
-/***************************************************************
- * Le tableau proxies est en fait un tableau de constructeurs
- * de proxy : un pour chaque classe XXXProxy implementant
- * l'interface de StaticProxy et que le client est capable
- * de gerer.
- * Plus de details sur les proxys dans l'interface en question.
+ * TODO : is last point still right ?
  ***************************************************************/
 export class Client{
   proxies: Proxy[];   // Les proxys disponibles pour ce client
-  users: User[];            // Les utilisateurs connectes a ce client
+  users: User[];      // Les utilisateurs connectes a ce client
 
-  //    useProxy(p: Proxy);
-  //    Cette methode est commentee : cela signifie que son fonctionnement
-  //    n'est pas encore clair, ou qu'elle sera supprimee.
-
-  getProxyFor(protocol: string): Proxy{
-    //    Retourne le premier constructeur de de proxy dont la classe
-    //    sera compatible avec le protocole de communication protocol.
-    //    Protocol sera peut-etre encapsule dans une enum ou une struct
-    //    par la suite.
+  getProxyFor(protocol: string): Proxy {
     for(let i=0; i<this.proxies.length; i++){
       if(this.proxies[i].isCompatibleWith(protocol)){
         return this.proxies[i];
