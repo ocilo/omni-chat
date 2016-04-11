@@ -12,7 +12,7 @@
  ***************************************************************
  ***************************************************************/
 
-import * as Promise from "bluebird";
+import * as Promise from 'bluebird';
 
 /***************************************************************
  * Client is the entry point for the library.
@@ -23,10 +23,12 @@ export class Client{
   proxies: Proxy[];   // Les proxys disponibles pour ce client
   users: User[];      // Les utilisateurs connectes a ce client
 
-  getProxyFor(protocol: string): Proxy {
+	// Retourne le premier proxy permettant d'utiliser
+	// le protocole "protocol"
+  getProxyFor(protocol: string): Promise<Proxy> {
     for(let i=0; i<this.proxies.length; i++){
       if(this.proxies[i].isCompatibleWith(protocol)){
-        return this.proxies[i];
+        return Promise.resolve(this.proxies[i]);
       }
     }
   }
@@ -34,47 +36,26 @@ export class Client{
 
 /***************************************************************
  * Proxies are specific ways to connect to an account.
- * For example, send a message to someone using IRC won't be
- * done than for someone using facebook.
+ * For example, sending a message to someone using IRC won't be
+ * done the same way than to someone using facebook.
  * This imply that creating a new module (i.e to allow OmniChat
  * to communicate with other accounts) devs must create a new
  * proxy too.
- * In the way we thought about it, a proxy must not be
- * instanciate to do some actions. It just exists.
- * So the implemented classes will probably define these methods
- * as static (impossible to do in an interface).
- ***************************************************************/
-/***************************************************************
- * Cette interface est probablement incomplete.
- * A en croire le corps desormais vide de la seconde interface
- * de proxy, Proxy, toutes les methodes des proxys seront
- * statiques. C'est pour cela que le tableau de proxys de Client
- * est un tableau de constructeurs : on pourra appeler les
- * methodes de classe dessus.
- * En revanche, cela ne facilite pas la comprehension du code (et
- * en particulier pour les eventuels devs qui voudront rajouter
- * un module : que se passera-t-il s'ils ne creent pas une classe
- * proxy en declarant les methodes statiques ? Car pour le
- * moment, rien ne les empeche de le faire).
- * Separer les interfaces en deux parties - statique etc
- * d'instance - est toutefois une pratique tres courante.
+ * TODO : use proxies as static methods ?
  ***************************************************************/
 export interface Proxy{
   isCompatibleWith(protocol: string): boolean;
-  //    Retourne vrai si le protocole protocol est compatible avec ce proxy.
-  //    Protocol sera peut-etre encapsule dans une enum ou une struct
-  //    par la suite.
+  //  Retourne vrai si le protocole protocol est compatible avec ce proxy.
+  //  Protocol sera peut-etre encapsule dans une enum ou une struct
+  //  par la suite.
 
-  getContacts(account: Account): Contact[];
-  //    Accede a la liste des contacts du compte Account,
-  //    et les retourne sous forme de tableau de contacts.
-  //
+  getContacts(account: Account): Promise<Contact[]>;
+  //  Accede a la liste des contacts du compte Account,
+  //  et les retourne sous forme de tableau de contacts.
 
-  sendMessage(msg: Message, discussion: Discussion, target: Contact): any;
+  sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error, succes: any) => any): void;
+	//  Envoie le message "msg" dans la discussion "discussion"
 }
-//  interface Proxy{}   //  Cette interface est commentee : cela signifie que son fonctionnement
-//  n'est pas encore clair, ou qu'elle sera supprimee.
-
 
 // A NOTER :    On pourrait implementer uniquement certaines methodes en faisant
 //              une implementation implicite : on ne declare pas la classe comme
@@ -98,36 +79,41 @@ export interface Proxy{
  * La seule maniere de discuter avec un contact et de commencer
  * une discussion avec lui : creer un objet Discussion.
  * Des participants a la discussion pourront etre ajoutes via
- * l'interface de Discussion. On pourrait eventuellement definir
- * une methode addToDiscussion(d : Discussion); ici.
- * En revanche, le fait de pouvoir creer une discussion ici
- * commence a faire penser au pattern factory. Il serait peut
- * etre interessant de creuser cette branche et d'eventuellement
- * se reposer completement sur ce pattern.
+ * l'interface de Discussion.
  ***************************************************************/
 export interface Contact{
   accounts: Account[];  //  La liste des comptes connus de l'utilisateur
                         //  pour lesquels ce contact est le meme.
-  // A NOTER :    ce sont les comptes du contact qui sont connus
-  //              de l'utiliateurs, ou les comptes de l'utilisateur
-  //              qui connaissent ce contact sous differents pseudos ?
 
-  name: string;         //  Le nom du contact
-  _id: any;             //  Un eventuel identifiant
+  fullname: string;     //  Le nom complet du contact
 
-  getAccounts(): Account[];
+	nicknames: string[];  //  Les noms sous lesquels le contact est connu
+
+	localID: number;      //  Permet de distinguer deux Contacts qui portent
+												//  le meme nom
+												//  N'est valide que pour une session donnée
+												//  Pourra servir a fusionner des comptes
+												//  et à identifier clairement un contact
+
+  getAccounts(): Promise<Account[]>;
   //    Retourne la liste des comptes connus de l'utilisateur
   //    pour lesquels ce contact est le meme.
 
-  // Fusionne les comptes du contact courant avec les ceux du contact fourni
+	mergeContacts(contact: Contact, callback?: (err: Error, succes: any) => any): void;
+  // Fusionne les comptes du contact courant avec ceux du contact fourni
   // Le contact fournit devient une référence vers ce contact ci
 
-  // TODO: Be able to undo the merge
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: any) => any): void;
+	// Defusionne les comptes du contact courant avec ceux du contact fourni
+
   addAccount(account: Account): Promise<any>;
+	// Ajoute un compte au contact courant
 
   removeAccount(accout: Account): Promise<any>;
+	// Supprime un compte du contact courant
 
   getOwner(): Contact;
+	// TODO : C'est quoi ça ?
 }
 
 /***************************************************************
