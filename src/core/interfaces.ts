@@ -2,26 +2,17 @@
  ***************************************************************
  *                    OMNICHAT - Interfaces
  *
- *  Disclaimer :    This document is NOT part of the OmniChat
- *                  sources files. This is just a brainstorming
- *                  about how to construct OmniChat and an help
- *                  to specifie wich interfaces OmniChat library
- *                  provides to users.
- *
- *  This document were created to help developpers to specify
- *  most of the interfaces that OmniChat library will provides
- *  to users. However, somes interfaces will be shown as classes
- *  and some methods will show a small body. This is just in
- *  order to help us to have a bigger understanding of the way
- *  that the library will work.
- *
  *  Some parts of this documents will probably become a more
  *  official wiki later on. That's why it's written mostly in
  *  english. The french parts are for developpers only.
  *
+ *  This file is migrating to an other status : official
+ *  interfaces of omni-chat library.
+ *
  ***************************************************************
  ***************************************************************/
 
+import * as Promise from "bluebird";
 
 /***************************************************************
  * Client is the entry point for the library.
@@ -93,7 +84,7 @@ export interface Proxy{
   //    et les retourne sous forme de tableau de contacts.
   //
 
-  sendMessage(target: Contact, discussion: Discussion);
+  sendMessage(msg: Message, discussion: Discussion, target: Contact): any;
 }
 //  interface Proxy{}   //  Cette interface est commentee : cela signifie que son fonctionnement
 //  n'est pas encore clair, ou qu'elle sera supprimee.
@@ -146,9 +137,9 @@ export interface Contact{
   // Le contact fournit devient une référence vers ce contact ci
 
   // TODO: Be able to undo the merge
-  addAccount(account: Account);
+  addAccount(account: Account): Promise<any>;
 
-  removeAccount(accout: Account);
+  removeAccount(accout: Account): Promise<any>;
 
   getOwner(): Contact;
 }
@@ -173,7 +164,7 @@ export interface User{
   //    C'est le seul moyen de communiquer avec quelqu'un.
   // Garanti que l'iniateur de la conversation est présent
 
-  leaveDiscussion(discussion: Discussion);
+  leaveDiscussion(discussion: Discussion): Promise<any>;
 
   getAccounts(): Account[];
   //    Retourne la liste des comptes de l'utilisateurs.
@@ -186,13 +177,13 @@ export interface User{
   //    Fera appel a StaticProxy.getContacts(a: Accounts) pour
   //    chaque compte de lie a l'utiliateur.
 
-  addContact(contact: Contact);
+  addContact(contact: Contact): Promise<any>;
 
-  removeContact(contact: Contact);
+  removeContact(contact: Contact): Promise<any>;
 
-  onDiscussionRequest(callback: (disc:Discussion) => any);
+  onDiscussionRequest(callback: (disc:Discussion) => any): User;
 
-  onContactRequest(callback: (contact: Contact) => any);
+  onContactRequest(callback: (contact: Contact) => any): User;
 }
 
 /***************************************************************
@@ -251,13 +242,14 @@ export interface Discussion{
   //  protocols: string | string[]
   //  accounts: Account | Account[]
   //}
-  sendMessage(msg: Message);
+  sendMessage(author: Account, msg: Message): Promise<Message>;
   //    Envoie le message à tous les participants de la discussion.
   //    Devra sans doute faire appel a StaticProxy.sendMessage().
   //    Mais un probleme se pose : sur quel compte du contact envoyer
   //    le message ?
+  sendText(author: Account, text: string): Promise<Message>;
 
-  addParticipants(p: Contact[]);
+  addParticipants(p: Contact[]): Promise<any>;
   //    Ajoute des participants a la conversation.
   //    Peut etre n'ajouter qu'un seul compte des contacts,
   //    et transformer la discussion en tant qu'agregation
@@ -266,7 +258,7 @@ export interface Discussion{
   getParticipants(): Contact[];
   //    Retourne une liste des participants a la conversation.
 
-  onMessage(callback: (msg: Message) => any);
+  onMessage(callback: (msg: Message) => any): Discussion;
   //    Appelle la methode a executer lors de la reception du message.
   //    Le detection d'un message se fera sans doute via un ecouteur
   //    qui ecoutera... quoi ?
@@ -313,7 +305,7 @@ export interface Message{
   //    ce qui conduira peut-etre a supprimer cette methode
   //    de l'interface globale.
 
-  getAuthor(): Contact;
+  getAuthor(): Account;
   //    Retourne l'auteur du message.
 
   getContent(): any;
@@ -330,10 +322,12 @@ export interface Message{
  * La classe Account reste encore partiellement a definir.
  * Quelle methodes pourront etre appelees sur un compte ?
  ***************************************************************/
-export class Account{
+export interface Account{
   protocols: string;    //  Une representation du protocole de communication
                         //  utilise par ce compte.
                         //  Protocol sera peut-etre encapsule dans une enum ou une struct
                         //  par la suite.
   data: any;            //  Les donnees du comptes. A definir
+
+  createDiscussion(name: string): Promise<Discussion>;
 }
