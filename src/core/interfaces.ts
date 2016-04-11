@@ -53,7 +53,7 @@ export interface Proxy{
   //  Accede a la liste des contacts du compte Account,
   //  et les retourne sous forme de tableau de contacts.
 
-  sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error, succes: any) => any): void;
+  sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error, succesM: Message, succesD: Discussion) => any): void;
 	//  Envoie le message "msg" dans la discussion "discussion"
 }
 
@@ -96,12 +96,16 @@ export interface Contact{
   //  Retourne la liste des comptes connus de l'utilisateur
   //  pour lesquels ce contact est le meme.
 
-	mergeContacts(contact: Contact, callback?: (err: Error, succes: any) => any): void;
+	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): void;
   // Fusionne les comptes du contact courant avec ceux du contact fourni
   // Le contact fournit devient une référence vers ce contact ci
 
-	unmergeContacts(contact: Contact, callback?: (err: Error, succes: any) => any): void;
-	// Defusionne les comptes du contact courant avec ceux du contact fourni
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void;
+	// Defusionne les comptes du contact courant afin de former deux contacts :
+	// Le contact fourni.
+	// Le contact courant MINUS le contact fourni.
+	// Ne fait rien si l'operation unmerge est impossible
+	// (i.e. l'un des deux contacts ressultant est nul).
 
   addAccount(account: Account): Promise<any>;
 	// Ajoute un compte au contact courant
@@ -132,7 +136,7 @@ export interface User {
   //  En cas de création, garanti que l'initiateur de la
 	//  conversation est présent en tant que participant.
 
-  leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: any) => any): void;
+  leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion) => any): void;
 	//  Permet de quitter la discussion "discussion" et de ne plus
 	//  recevoir les notifications associées.
 
