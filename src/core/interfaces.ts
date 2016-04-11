@@ -166,48 +166,29 @@ export interface User {
 }
 
 /***************************************************************
+ * DiscussionAuthorization represent all the right you can have
+ * in a discussion.
+ ***************************************************************/
+export interface DiscussionAuthorization{
+  write: boolean;   // Right to write
+  talk: boolean;    // Right to use microphone
+  video: boolean;   // Right to use camera
+  invite: boolean;  // Right to invite other peoples
+  kick: boolean;    // Right to kick someone
+  ban: boolean;     // Right to kick + prevent someone from coming back
+}
+
+/***************************************************************
  * Discussion is the only thing you can use to chat with someone.
  * It provides you methods to send a message, do something when
  * you receive a message and so on.
  ***************************************************************/
-/***************************************************************
- * Petit probleme concernant le fonctionnement de Discusssion :
- * imaginons Bob et Boby utilisant chacun OmniChat et etant
- * chacun dans la liste des contacts de l'autre. Bob commence
- * une conversation avec Boby. Il possede donc un objet de type
- * Discussion. A quel moment l'objet Discussion de Boby est-il
- * cree ? Est-il partage avec celui de Bob ? Et si Bob etait sur
- * Facebook ?
- * Deuxieme petit probleme avec le fonctionnement de Discussion:
- * reprenons Bob et Boby tout deux sur Omnichat, avec le probleme
- * de la conversation regle en la partageant. La methode
- * onMessage(lambda) devient commune, et Boby ne peut plus faire
- * ce qu'il veut des messages de Bob, il doit faire comme Bob.
- * Reste donc a regler la question de comment une discussion est
- * creee depuis l'exterieur d'OmniChat, lorsque Bob n'a pas
- * l'initiative d'une Discussion avec un vilain utilisateur qui
- * n'utilise pas OmniChat.
- * Troisieme petit probleme avec le fonctionnement de Discussion:
- * lorsqu'on envoie un message aux membres de la discussion,
- * comment choisir le compte du contact sur lequel envoyer le
- * message ? Il ne faut pas spammer tout les comptes... Une
- * reponse se trouve peut-etre dans la description de
- * addParticipants(...).
- ***************************************************************/
-
-export interface DiscussionAuthorization{
-  write: boolean;
-  talk: boolean;
-  video: boolean;
-  invite: boolean;
-  kick: boolean;
-  ban: boolean; // kick + interdiction de revenir
-}
-
 export interface Discussion{
-  creationDate: Date;   // Date de creation de la conversatio
-  name: String;     // Nom de la conversation
-  isPrivate: boolean;
+  creationDate: Date;   // Date de creation de la conversation
+
+  name: string;         // Nom de la conversation
+
+  isPrivate: boolean;   //
 
   getMessages(): Message[];
   //  Retourne une liste des messages echanges pendant la discussion.
