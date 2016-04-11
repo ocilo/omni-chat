@@ -26,11 +26,11 @@ export class Client{
 	// Retourne le premier proxy permettant d'utiliser
 	// le protocole "protocol"
   getProxyFor(protocol: string): Promise<Proxy> {
-  for(let i=0; i<this.proxies.length; i++){
-    if(this.proxies[i].isCompatibleWith(protocol)){
-    return Promise.resolve(this.proxies[i]);
-    }
-  }
+	  for(let i=0; i<this.proxies.length; i++){
+	    if(this.proxies[i].isCompatibleWith(protocol)){
+	    return Promise.resolve(this.proxies[i]);
+	    }
+	  }
   }
 }
 
@@ -110,7 +110,7 @@ export interface Contact{
 	// Supprime un compte du contact courant
 
   getOwner(): Contact;
-	// TODO : C'est quoi ça ?
+	// TODO : C'est quoi ça ? Je pense que c'est plutot dans Account
 }
 
 /***************************************************************
@@ -184,57 +184,48 @@ export interface DiscussionAuthorization{
  * you receive a message and so on.
  ***************************************************************/
 export interface Discussion{
-  creationDate: Date;   // Date de creation de la conversation
+  creationDate: Date;       // Date de creation de la conversation
 
-  name: string;         // Nom de la conversation
+  name: string;             // Nom de la conversation
 
-  isPrivate: boolean;   //
+  isPrivate: boolean;       // Privacite de la conversation
 
-  getMessages(): Message[];
-  //  Retourne une liste des messages echanges pendant la discussion.
-  //  Equivalent a un espece de getHistory {dateMax, dateMin, nbMessages}.
-  //  Un filtre pourra certainement etre applique par la suite,
-  //  via utilisation de lambdas ou/et de hasmaps.
+	participants: Account[];  // Liste des participants a la conversation
 
-  // TODO: add filter
-  // ex:
-  //{
-  //  protocols: string | string[]
-  //  accounts: Account | Account[]
-  //}
-  sendMessage(author: Account, msg: Message): Promise<Message>;
-  //  Envoie le message à tous les participants de la discussion.
-  //  Devra sans doute faire appel a StaticProxy.sendMessage().
-  //  Mais un probleme se pose : sur quel compte du contact envoyer
-  //  le message ?
-  sendText(author: Account, text: string): Promise<Message>;
+  getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]>;
+  //  Retourne une liste des maxMessages derniers messages echanges pendant la discussion,
+	//  au plus : s'il y en a moins, alors retourne le nombre de messages disponibles.
+	//  Si afterDate est precise, ne retourne que les messages posterieurs a afterDate.
+  //  Si filter est precise, ne retourne que les messages dont l'application de la fonction
+	//  filter ne retourne true.
 
-  addParticipants(p: Contact[]): Promise<any>;
-  //  Ajoute des participants a la conversation.
-  //  Peut etre n'ajouter qu'un seul compte des contacts,
-  //  et transformer la discussion en tant qu'agregation
-  //  de comptes et non plus de Contacts.
+  sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): void;
+  //  Envoie le message "msg" a tous les participants de la discussion.
+  //  Cette methode fait appel au proxy pour chaque Account de "participants".
+	//  TODO : le retour par Promise<Message> servait a quoi ?
 
-  getParticipants(): Contact[];
+  addParticipants(p: Account[], callback?: (err: Error, succes: Account[]) => any): void;
+  //  Ajoute des participants a la conversation
+
+  getParticipants(): Promise<Contact[]>;
   //  Retourne une liste des participants a la conversation.
 
-  onMessage(callback: (msg: Message) => any): Discussion;
+  onMessage(callback: (msg: Message) => any): Promise<Discussion>;
   //  Appelle la methode a executer lors de la reception du message.
-  //  Le detection d'un message se fera sans doute via un ecouteur
-  //  qui ecoutera... quoi ?
+  //  TODO : callback ET retour par promesse ?
 
-  getName(): string;
+  getName(): Promise<string>;
   //  Retourne le nom de la discussion.
 
-  getDescription(): string;
+  getDescription(): Promise<string>;
   //  Retourne une description de la discussion.
-  //  Reste a definir ce que doit etre cette description.
 
-  getSettings(): any;
+  getSettings(): Promise<Map<string, any>>;
   //  Retourne tout les paramètres de la discussion, même spécifiques (map).
   //  Bien evidemment, nous ne pourrons pas tout traiter.
   //  Nous essayerons cependant de faire du mieux possible sans pour autant
   //  y passer des heures entieres.
+	//  TODO : ma map est-elle bonne ?
 }
 
 /***************************************************************
