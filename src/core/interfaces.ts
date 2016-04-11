@@ -187,7 +187,7 @@ export interface DiscussionAuthorization{
  * It provides you methods to send a message, do something when
  * you receive a message and so on.
  ***************************************************************/
-export interface Discussion{
+export interface Discussion {
   creationDate: Date;       // Date de creation de la conversation
 
   name: string;             // Nom de la conversation
@@ -237,33 +237,37 @@ export interface Discussion{
  * Examples of classes which can inherit from Message are :
  * TextMessage, ImageMessage, VideoMessage...
  ***************************************************************/
-/***************************************************************
- * Un debat avait eu lieu concernant comment traiter les
- * messages. L'utilisation du polymorphisme reste la plus saine,
- * mais risque d'etre insuffisante pour certains cas.
- * L'utilisation de instanceof ou d'un equivalent deviendra
- * peut-etre necessaire. Il faudra definir ces cas.
- ***************************************************************/
-export interface Message{
-  getText(): string;
+export interface Message {
+	editable: boolean;    // Vrai si le message est editable
+
+	author: Account;      // L'auteur du message.
+                        // Ce ne peut pas etre un objet de type
+                        // Contact. L'association entre Account
+												// et Contact se fera plus tard, car peut
+												// dependre de l'utilisateur.
+
+	body: string;         // Une representation sous forme de string
+												// du message.
+
+  getText(): Promise<string>;
   //  Retourne une representation du message sous forme de String.
   //  Tout message (texte, image, autre fichier) doit avoir cette
   //  représentation pour toujours avoir quelque chose à afficher
   //  (erreur de chargement, etc).
 
-  getCreationDate(): Date;
+  getCreationDate(): Promise<Date>;
   //  Retourne la date de creation du message.
 
-  getLastUpdateDate(): Date;
+  getLastUpdateDate(): Promise<Date>;
   //  Retourne la date de derniere modification du message.
   //  Cela ne vaut bien sur que si les messages sont editables,
   //  ce qui conduira peut-etre a supprimer cette methode
   //  de l'interface globale.
 
-  getAuthor(): Account;
+  getAuthor(): Promise<Account>;
   //  Retourne l'auteur du message.
 
-  getContent(): any;
+  getContent(): Promise<any>;
   //  Renvoi un contenu plus pertinent.
   //  Chaque type de message devra implementer elle-meme cette methode.
 }
