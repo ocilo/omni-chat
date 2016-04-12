@@ -61,7 +61,7 @@ export interface Proxy {
   //  Accede a la liste des contacts du compte Account,
   //  et les retourne sous forme de tableau de contacts.
 
-	getDiscussions(account: Account, max: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
+	getDiscussions(account: Account, max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
 	//  Accede a la liste des discussions du compte "account"
 	//  et retourne jusqu'a "max" Discussions dans un tableau.
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
