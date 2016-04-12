@@ -9,6 +9,7 @@ import {Account} from "./interfaces";
 export class OChatApp {
 	drivers: Proxy[] = [];  // All drivers supported by the app
 
+	// Add a driver to the current app, if the app not already has one equivalent
 	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
 		let err: Error = null;
 		for(let prox: Proxy of this.drivers) {
@@ -22,17 +23,32 @@ export class OChatApp {
 		if(callback) {
 			callback(err, this.drivers);
 		}
+		return this;
+	}
 
+	// Remove all drivers using the protocol given in parameters
+	removeDriversFor(protocol: string, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
+		let err = new Error("This app does not support protocol " + protocol);
+		for(let index: number = 0; index<this.drivers.length; index++) {
+			let prox = this.drivers[index];
+			if(prox.isCompatibleWith(protocol)) {
+				err = null;
+				this.drivers.splice(index, 1);
+			}
+		}
+		if(callback) {
+			callback(err, this.drivers);
+		}
 		return this;
 	}
 }
 
 export interface getAccountOptions{
-	protocols?: string[]
+	protocols?: string[];
 }
 
-export class oChatUser implements User{
-	username:string;
+export class OChatUser implements User{
+	username: string;
 
 	getOrCreateDiscussion(contacts:Contact[]):Promise<Discussion> {
 		return undefined;
