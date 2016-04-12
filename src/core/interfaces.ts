@@ -45,7 +45,9 @@ export class Client {
  * proxy too.
  * TODO : use proxies as static methods ?
  ***************************************************************/
-export interface Proxy{
+export interface Proxy {
+	protocols: string[];  // La liste des protocoles supportes par le proxy
+
   isCompatibleWith(protocol: string): boolean;
   //  Retourne vrai si le protocole protocol est compatible avec ce proxy.
   //  Protocol sera peut-etre encapsule dans une enum ou une struct
