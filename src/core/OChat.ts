@@ -19,7 +19,9 @@ export class OChatApp {
 		if(!err) {
 			this.drivers.push(driver);
 		}
-		callback(err, this.drivers);
+		if(callback) {
+			callback(err, this.drivers);
+		}
 	}
 }
 
