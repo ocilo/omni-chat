@@ -6,11 +6,20 @@ import {Contact} from "./interfaces";
 import {Discussion} from "./interfaces";
 import {Account} from "./interfaces";
 
-export class oChatApp {
+export class OChatApp {
 	drivers: Proxy[] = [];
 
-	useDriver(driver: Proxy){
-		this.drivers.push(driver);
+	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): void {
+		let err: Error = null;
+		for(let prox: Proxy of this.drivers) {
+			if(prox.isCompatibleWith(driver.protocol)) {
+				err = new Error("This app already has a compatible protocol");
+			}
+		}
+		if(!err) {
+			this.drivers.push(driver);
+		}
+		callback(err, this.drivers);
 	}
 }
 
@@ -36,10 +45,10 @@ export class oChatUser implements User{
 	removeAccount(accout:Account):Promise<any> {
 		return undefined;
 	}
-	app: oChatApp;
+	app: OChatApp;
 	accounts: Account[] = [];
 
-	constructor(app: oChatApp){
+	constructor(app: OChatApp){
 		this.app = app;
 	}
 
