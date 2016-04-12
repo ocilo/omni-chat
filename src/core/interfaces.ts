@@ -295,7 +295,7 @@ export interface Message {
  * IRCAccount, FacebookAccount... and OmniChatAccount.
  ***************************************************************/
 export interface Account {
-	protocols: string;      //  Une representation du protocole de communication
+	protocol: string;       //  Une representation du protocole de communication
 		                      //  utilise par ce compte.
 							            //  Protocol sera peut-etre encapsule dans une enum ou une struct
 							            //  par la suite.
