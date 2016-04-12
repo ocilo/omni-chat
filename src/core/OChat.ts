@@ -43,89 +43,100 @@ export class OChatApp {
 	}
 }
 
-export interface getAccountOptions{
-	protocols?: string[];
-}
+export class OChatUser implements User {
 
-export class OChatUser implements User{
 	username: string;
-
-	getOrCreateDiscussion(contacts:Contact[]):Promise<Discussion> {
-		return undefined;
-	}
-
-	getAccounts():Promise<Account[]> {
-		return undefined;
-	}
-
-	getContacts():Promise<Contact[]> {
-		return undefined;
-	}
-
-	removeAccount(accout:Account):Promise<any> {
-		return undefined;
-	}
 	app: OChatApp;
 	accounts: Account[] = [];
 
-	constructor(app: OChatApp){
-		this.app = app;
-	}
+	getOrCreateDiscussion(accounts: Account[]): Promise<Discussion> {
+		let discussion: Discussion; // The discussion we are looking for
 
-	leaveDiscussion(discussion:Discussion): Promise<any> {
-		return null;
-	}
-
-	addAccount(account: Account): Promise<any> {
-		this.accounts.push(account);
-		return null;
-	}
-
-	getAccounts(options?: getAccountOptions): Account[] {
-		if(options && options.protocols){
-			let accounts: Account[] = [];
-
-			// TODO(Charles): add isCompatibleWith to accounts
-
-			//for(let i = 0, l = this.accounts.length; i < l; i++){
-			//  let isCompatible = false;
-			//  for(let j = 0, k = options.protocols.length; j < k; j++){
-			//    let curProtocol = options.protocols[j];
-			//    if(this.accounts[i].isCompatibleWith(curProtocol)){
-			//      isCompatible = true;
-			//      break;
-			//    }
-			//  }
-			//  if(isCompatible){
-			//    accounts.push(this.accounts[i]);
-			//  }
-			//}
-
-			return accounts;
-		}else{
-			return _.clone(this.accounts); // shallow copy
+		// For each account
+		for(let account: Account of this.accounts) {
+			let proxy: Proxy = null;
+			for(let driver: Proxy of this.app.drivers) {
+				if(driver.isCompatibleWith(account.protocol)) {
+					proxy = driver;
+					break;
+				}
+				if(proxy) {
+					proxy.getDiscussions(account).then(
+						() => {
+							// TODO : Oups, we have forgotten something.
+							//        There's three different cases :
+							//        * accounts contains only one account : easy as pie
+							//        * accounts contains several accounts but using the same protocol : easy
+							//        * accounts contains severas accounts using different protocols : the oups is here
+							//        What do we do here ? Trying to merge several discussions from differents protocols,
+							//        or using our own database to store these discussions ?
+						}
+					)
+				} else {
+					return Promise.reject(new Error("One of the accounts is not supported by the app."));
+				}
+			}
 		}
+
+		return Promise.resolve(discussion);
 	}
 
-	getContacts():Contact[] {
+	leaveDiscussion(discussion:Discussion, callback?:(err:Error, succes:Discussion)=>any): void {
+
+	}
+
+	getAccounts(): Promise<Account[]> {
 		return undefined;
 	}
 
-	addContact(contact:Contact): Promise<any> {
-		return null;
+	getContacts(): Promise<Contact[]> {
+		return undefined;
 	}
 
-	removeContact(contact:Contact): Promise<any> {
-		return null;
+	addAccount(account:Account, callback?:(err:Error, succes:Account[])=>any): void {
 	}
 
-	onDiscussionRequest(callback:(disc:Discussion)=>any): User {
-		return this;
+	removeAccount(accout:Account, callback?:(err:Error, succes:Account[])=>any): void {
 	}
 
-	onContactRequest(callback:(contact:Contact)=>any): User {
-		return this;
+	addContact(contact:Contact, callback?:(err:Error, succes:Account[])=>any): void {
 	}
+
+	removeContact(contact:Contact):Promise<any> {
+		return undefined;
+	}
+
+	onDiscussionRequest(callback:(disc:Discussion)=>any):User {
+		return undefined;
+	}
+
+	onContactRequest(callback:(contact:Contact)=>any):User {
+		return undefined;
+	}
+
+	getAccounts(): Promise<Account[]> {
+
+		let accounts: Account[] = [];
+
+		// TODO(Charles): add isCompatibleWith to accounts
+
+		//for(let i = 0, l = this.accounts.length; i < l; i++){
+		//  let isCompatible = false;
+		//  for(let j = 0, k = options.protocols.length; j < k; j++){
+		//    let curProtocol = options.protocols[j];
+		//    if(this.accounts[i].isCompatibleWith(curProtocol)){
+		//      isCompatible = true;
+		//      break;
+		//    }
+		//  }
+		//  if(isCompatible){
+		//    accounts.push(this.accounts[i]);
+		//  }
+		//}
+
+		return Promise.resolve(accounts);
+	}
+
 }
 
 export class OChat{
