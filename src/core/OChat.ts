@@ -7,9 +7,9 @@ import {Discussion} from "./interfaces";
 import {Account} from "./interfaces";
 
 export class OChatApp {
-	drivers: Proxy[] = [];
+	drivers: Proxy[] = [];  // All drivers supported by the app
 
-	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): void {
+	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
 		let err: Error = null;
 		for(let prox: Proxy of this.drivers) {
 			if(prox.isCompatibleWith(driver.protocol)) {
@@ -22,6 +22,8 @@ export class OChatApp {
 		if(callback) {
 			callback(err, this.drivers);
 		}
+
+		return this;
 	}
 }
 
