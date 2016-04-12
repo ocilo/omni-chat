@@ -23,7 +23,7 @@ export class Client {
 	// TODO(Ruben) : passer ca en interface et faire l'implementation
 	//               dans la base de la lib.
   proxies: Proxy[];   // Les proxys disponibles pour ce client
-  users: User[];    // Les utilisateurs connectes a ce client
+  users: User[];      // Les utilisateurs connectes a ce client
 
 	// Retourne le premier proxy permettant d'utiliser
 	// le protocole "protocol"
@@ -53,12 +53,23 @@ export interface Proxy {
   //  Protocol sera peut-etre encapsule dans une enum ou une struct
   //  par la suite.
 
+	getOrCreateConnection(account: Account): Promise<any>;
+	//  Cree une connexion au compte Account.
+	//  TODO :  definir un template (interface) pour une connexion
+
   getContacts(account: Account): Promise<Contact[]>;
   //  Accede a la liste des contacts du compte Account,
   //  et les retourne sous forme de tableau de contacts.
 
+	getDiscussions(account: Account, max: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
+	//  Accede a la liste des discussions du compte "account"
+	//  et retourne jusqu'a "max" Discussions dans un tableau.
+	//  Si filter est precise, ne retourne dans le tableau que les discussions
+	//  pour lesquelles la fonction "filter" retourne true.
+
   sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error, succesM: Message, succesD: Discussion) => any): void;
 	//  Envoie le message "msg" dans la discussion "discussion"
+
 }
 
 // A NOTER :  On pourrait implementer uniquement certaines methodes en faisant
@@ -135,7 +146,7 @@ export interface User {
 
 	username: string;     //  Le nom complet de l'utilisateur
 
-  getOrCreateDiscussion(contacts: Contact[]) : Promise<Discussion>;
+  getOrCreateDiscussion(accounts: Account[]) : Promise<Discussion>;
   //  Permet de commencer une discussion avec un contact,
 	//  ou de recuperer une discussion existante.
   //  C'est le seul moyen de communiquer avec quelqu'un.
@@ -156,13 +167,13 @@ export interface User {
   //  Retourne la liste des contacts de l'utilisateur courant.
   //  Pour chaque compte lie a l'utilisateur,
 
-	addAccount(account: Account): Promise<any>;
+	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Ajoute un compte a l'utilisateur courant
 
-	removeAccount(accout: Account): Promise<any>;
+	removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Supprime un compte de l'utilisateur courant
 
-  addContact(contact: Contact): Promise<any>;
+  addContact(contact: Contact, callback? : (err: Error, succes: Account[]) => any): void;
 	// Ajoute un contact a l'utilisateur courant
 
   removeContact(contact: Contact): Promise<any>;
