@@ -124,9 +124,11 @@ export interface Contact{
 
   addAccount(account: Account): Promise<any>;
 	// Ajoute un compte au contact courant
+	// TODO : quel difeference avec mergeContacts ?
 
   removeAccount(accout: Account): Promise<any>;
 	// Supprime un compte du contact courant
+	// TODO : quel difeference avec unmergeContacts ?
 
   getOwner(): Contact;
 	// TODO : C'est quoi ça ? Je pense que ca a pour vocation de trouver le Contact associe
