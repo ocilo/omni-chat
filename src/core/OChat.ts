@@ -95,8 +95,17 @@ export class OChatUser implements User {
 		//        represent the same personne, i.e. the same Contact.
 	}
 
-	addAccount(account: Account, callback?: (err:Error, succes:Account[])=>any): void {
-
+	addAccount(account: Account, callback?: (err: Error, succes: Account[]) => any): void {
+		let index: number = this.accounts.indexOf(account);
+		let err: Error = null;
+		if(index === -1) {
+			this.accounts.push(account);
+		} else {
+			err = new Error("This account already exists.");
+		}
+		if(callback) {
+			callback(err, this.accounts);
+		}
 	}
 
 	removeAccount(accout:Account, callback?:(err:Error, succes:Account[])=>any): void {
