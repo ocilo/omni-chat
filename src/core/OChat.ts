@@ -204,6 +204,23 @@ export class OChatContact implements Contact {
 	}
 
 	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): void {
+		let error: Error = null;
+		let numberOfErrors: number = 0;
+		for(let contactAccount: Account of contact.accounts) {
+			this.addAccount(contactAccount, (err, acc) => {
+				if(err) {
+					numberOfErrors++;
+				}
+			});
+		}
+		if(numberOfErrors === contact.accounts.length) {
+			error = new Error("Unable to merge contact. Maybe the second was part of the current.")
+		} else if(numberOfErrors !== 0) {
+			error = new Error(numberOfErrors + " account of the contact in parameters could not be added to the current contact.");
+		}
+		if(callback) {
+			callback(error, this);
+		}
 	}
 
 	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
