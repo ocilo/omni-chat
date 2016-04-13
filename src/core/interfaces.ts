@@ -20,14 +20,24 @@ import * as Promise from 'bluebird';
  * TODO : is last point still right ? If not, remove it
  ***************************************************************/
 export interface Client {
-  drivers: Proxy[];   // Les proxys disponibles pour ce client
+	drivers: Proxy[];   // Les proxys disponibles pour ce client
 
-  users: User[];      // Les utilisateurs connectes a ce client
+	users: User[];      // Les utilisateurs connectes a ce client
 
-	getProxyFor(protocol: string): Promise<Proxy>;
+	getProxyFor(protocol:string): Promise<Proxy>;
 	//  Retourne le premier proxy permettant d'utiliser
 	//  le protocole "protocol".
 
+	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): Client;
+	//  Ajoute le proxy "driver" a la liste des drivers supportes
+	//  par ce client, si le client ne possede pas deja un proxy
+	//  qui gere le meme protocole que "driver".
+
+	removeDriversFor(protocol: string, callback?: (err: Error, drivers: Proxy[]) => any): Client;
+	//  Supprime tout les drivers connus du client qui supportent
+	//  le protocole "protocol".
+	//  Ne fait rien si aucun des drivers connus ne supporte
+	//  le protocole "protocol". Dans ce cas, err sera non nul.
 }
 
 /***************************************************************
