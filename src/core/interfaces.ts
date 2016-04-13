@@ -151,7 +151,7 @@ export interface Contact{
 	// Cette operation necessite que l'utilisateur se serve d'un client qui
 	// supporte le protocole utilise par le compte "account".
 
-  removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void;
+  removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Supprime un compte du contact courant.
 	// Cette operation est differente de mergeContacts() dans le sens ou
 	// on supprime un compte d'un certain type a un contact, mais que ce
