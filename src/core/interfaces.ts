@@ -180,6 +180,7 @@ export interface User {
   //  C'est le seul moyen de communiquer avec quelqu'un.
   //  En cas de création, garanti que l'initiateur de la
 	//  conversation est présent en tant que participant.
+	//  TODO(Ruben) : this must be done by using proxy. So future me, go update Proxy !
 
   leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion) => any): void;
 	//  Permet de quitter la discussion "discussion" et de ne plus
@@ -240,6 +241,7 @@ export interface Discussion {
   isPrivate: boolean;       // Privacite de la conversation
 
 	participants: Account[];  // Liste des participants a la conversation
+	// TODO : is owner implicit ? Should he be in participants ?
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]>;
   //  Retourne une liste des maxMessages derniers messages echanges pendant la discussion,
