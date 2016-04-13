@@ -127,16 +127,19 @@ export interface Contact{
   //  Retourne la liste des comptes connus de l'utilisateur
   //  pour lesquels ce contact est le meme.
 
-	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): void;
-  // Fusionne les comptes du contact courant avec ceux du contact fourni
-  // Le contact fournit devient une référence vers ce contact ci
+	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact;
+  // Fusionne les comptes du contact courant avec ceux du contact fourni.
+  // La gestion du contact fourni apres cette methode est a la charge de l'appelant.
+	// Retourne le contact courrant apres eventuelles modifications.
 
-	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void;
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact;
 	// Defusionne les comptes du contact courant afin de former deux contacts :
 	// Le contact fourni.
 	// Le contact courant MINUS le contact fourni.
 	// Ne fait rien si l'operation unmerge est impossible
 	// (i.e. l'un des deux contacts ressultant est nul).
+	// La gestion du contact fourni apres cette methode est a la charge de l'appelant.
+	// Retourne le contact courrant apres eventuelles modifications.
 
   addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Ajoute un compte au contact courant.
