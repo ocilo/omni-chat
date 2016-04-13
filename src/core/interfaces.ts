@@ -114,15 +114,14 @@ export interface Contact{
   accounts: Account[];  //  La liste des comptes connus de l'utilisateur
                         //  pour lesquels ce contact est le meme.
 
-  fullname: string;     //  Le nom complet du contact
+  fullname: string;     //  Le nom complet du contact.
 
-	nicknames: string[];  //  Les noms sous lesquels le contact est connu
+	nicknames: string[];  //  Les noms sous lesquels le contact est connu.
 
 	localID: number;      //  Permet de distinguer deux Contacts qui portent
-												//  le meme nom
-												//  N'est valide que pour une session donnée
-												//  Pourra servir a fusionner des comptes
-												//  et à identifier clairement un contact
+												//  le meme nom.
+												//  N'est valide que pour une session donnée.
+												//  Pourra servir a identifier clairement un contact.
 
   getAccounts(): Promise<Account[]>;
   //  Retourne la liste des comptes connus de l'utilisateur
