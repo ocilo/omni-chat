@@ -19,21 +19,15 @@ import * as Promise from 'bluebird';
  * Maintains the list of available proxies and connected users.
  * TODO : is last point still right ? If not, remove it
  ***************************************************************/
-export class Client {
-	// TODO(Ruben) : passer ca en interface et faire l'implementation
-	//               dans la base de la lib.
-  proxies: Proxy[];   // Les proxys disponibles pour ce client
+export interface Client {
+  drivers: Proxy[];   // Les proxys disponibles pour ce client
+
   users: User[];      // Les utilisateurs connectes a ce client
 
-	// Retourne le premier proxy permettant d'utiliser
-	// le protocole "protocol"
-  getProxyFor(protocol: string): Promise<Proxy> {
-	  for(let i=0; i<this.proxies.length; i++){
-	    if(this.proxies[i].isCompatibleWith(protocol)){
-	    return Promise.resolve(this.proxies[i]);
-	    }
-	  }
-  }
+	getProxyFor(protocol: string): Promise<Proxy>;
+	//  Retourne le premier proxy permettant d'utiliser
+	//  le protocole "protocol".
+
 }
 
 /***************************************************************
