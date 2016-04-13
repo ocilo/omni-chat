@@ -1,13 +1,24 @@
 import * as _ from 'lodash';
 import * as Promise from "bluebird";
+import {Client} from "./interfaces";
 import {Proxy} from "./interfaces";
 import {User} from "./interfaces";
 import {Contact} from "./interfaces";
 import {Discussion} from "./interfaces";
 import {Account} from "./interfaces";
 
-export class OChatApp {
+export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
+
+	users: User[];          // All users connected to this client
+
+	getProxyFor(protocol: string): Promise<Proxy> {
+		for(let i=0; i<this.drivers.length; i++){
+			if(this.drivers[i].isCompatibleWith(protocol)){
+				return Promise.resolve(this.drivers[i]);
+			}
+		}
+	}
 
 	// Add a driver to the current app, if the app not already has one equivalent
 	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
