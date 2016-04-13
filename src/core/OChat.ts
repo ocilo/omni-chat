@@ -222,8 +222,17 @@ export class OChatContact implements Contact {
 		}
 	}
 
-	removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void {
-		return undefined;
+	removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
+		let index: number = this.accounts.indexOf(account);
+		let err: Error = null;
+		if(index === -1) {
+			this.accounts.splice(0, 1, account);
+		} else {
+			err = new Error("This account does not exist for this contact.");
+		}
+		if(callback) {
+			callback(err, this.accounts);
+		}
 	}
 
 	getOwner(): Contact {
