@@ -176,7 +176,7 @@ export interface User {
   addContact(contact: Contact, callback? : (err: Error, succes: Account[]) => any): void;
 	// Ajoute un contact a l'utilisateur courant
 
-  removeContact(contact: Contact): Promise<any>;
+  removeContact(contact: Contact, callback?: (err: Error, succes: Account[]) => any): void;
 	// Supprime un contact de l'utilisateur courant
 
   onDiscussionRequest(callback: (disc:Discussion) => any): User;
