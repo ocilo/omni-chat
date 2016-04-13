@@ -168,8 +168,6 @@ export interface Contact{
  * User is the representation of someone connected with OmniChat.
  * An user works quite like a Contact : you just have more
  * rights as an user (for example acceed to your own contacts).
- * So User will probably inherit from Contact later.
- * TODO: inherit or not ? If yes, what is the purpose of merge ?
  ***************************************************************/
 export interface User {
 	accounts: Account[];  //  La liste des comptes connus de l'utilisateur
