@@ -139,13 +139,24 @@ export interface Contact{
 	// Ne fait rien si l'operation unmerge est impossible
 	// (i.e. l'un des deux contacts ressultant est nul).
 
-  addAccount(account: Account): Promise<any>;
-	// Ajoute un compte au contact courant
-	// TODO : quel difeference avec mergeContacts ?
+  addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
+	// Ajoute un compte au contact courant.
+	// Cette operation est differente de mergeContacts() dans le sens ou
+	// on rajoute un compte d'un certain type a un contact, mais que ce
+	// compte n'etait pas connu a travers les comptes de l'tilisateur
+	// connecte. C'est une operation "manuelle".
+	// Lorsque cela est possible, ce contact va etre rajoute a la liste des
+	// contact sur un des comptes de l'utilisateur. L'utilisateur aura donc
+	// acces a ce contact par la suite meme sans passer par OmniChat.
+	// Cette operation necessite que l'utilisateur se serve d'un client qui
+	// supporte le protocole utilise par le compte "account".
 
-  removeAccount(accout: Account): Promise<any>;
-	// Supprime un compte du contact courant
-	// TODO : quel difeference avec unmergeContacts ?
+  removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void;
+	// Supprime un compte du contact courant.
+	// Cette operation est differente de mergeContacts() dans le sens ou
+	// on supprime un compte d'un certain type a un contact, mais que ce
+	// contact reste le meme.
+	// Exemple d'utilisation : un compte que le contact n'utilise plus.
 
   getOwner(): Contact;
 	// TODO : C'est quoi ça ? Je pense que ca a pour vocation de trouver le Contact associe
