@@ -81,13 +81,14 @@ export class OChatApp implements Client {
 export class OChatUser implements User {
 
 	username: string;
+
 	app: OChatApp;
+
 	accounts: Account[] = [];
 
 	getOrCreateDiscussion(accounts: Account[]): Promise<Discussion> {
 		let discussion: Discussion; // The discussion we are looking for
 
-		// For each account
 		for(let account: Account of this.accounts) {
 			let proxy: Proxy = null;
 			for(let driver: Proxy of this.app.drivers) {
@@ -188,6 +189,36 @@ export class OChatUser implements User {
 	onContactRequest(callback: (contact: Contact)=> any): User {
 		return undefined;
 	}
+}
+
+export class OChatContact implements Contact {
+	accounts:Account[];
+	fullname:string;
+	nicknames:string[];
+	localID:number;
+
+	getAccounts():Promise<Account[]> {
+		return undefined;
+	}
+
+	mergeContacts(contact:Contact, callback?:(err:Error, succes:Contact)=>any):void {
+	}
+
+	unmergeContacts(contact:Contact, callback?:(err:Error, succes:Contact[])=>any):void {
+	}
+
+	addAccount(account:Account):Promise<any> {
+		return undefined;
+	}
+
+	removeAccount(accout:Account):Promise<any> {
+		return undefined;
+	}
+
+	getOwner():Contact {
+		return undefined;
+	}
+
 }
 
 export class OChat{
