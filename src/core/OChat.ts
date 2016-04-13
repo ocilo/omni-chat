@@ -210,7 +210,16 @@ export class OChatContact implements Contact {
 	}
 
 	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
-		return undefined;
+		let index: number = this.accounts.indexOf(account);
+		let err: Error = null;
+		if(index === -1) {
+			this.accounts.push(account);
+		} else {
+			err = new Error("This account already exists for this contact.");
+		}
+		if(callback) {
+			callback(err, this.accounts);
+		}
 	}
 
 	removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void {
