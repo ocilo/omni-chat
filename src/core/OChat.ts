@@ -203,7 +203,7 @@ export class OChatContact implements Contact {
 		return Promise.resolve(this.accounts);
 	}
 
-	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): void {
+	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
 		let numberOfErrors: number = 0;
 		for(let contactAccount: Account of contact.accounts) {
@@ -221,9 +221,11 @@ export class OChatContact implements Contact {
 		if(callback) {
 			callback(error, this);
 		}
+		return this;
 	}
 
-	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Contact {
+		return this;
 	}
 
 	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
