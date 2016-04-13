@@ -153,30 +153,6 @@ export class OChatUser implements User {
 	onContactRequest(callback: (contact: Contact)=> any): User {
 		return undefined;
 	}
-
-	getAccounts(): Promise<Account[]> {
-
-		let accounts: Account[] = [];
-
-		// TODO(Charles): add isCompatibleWith to accounts
-
-		//for(let i = 0, l = this.accounts.length; i < l; i++){
-		//  let isCompatible = false;
-		//  for(let j = 0, k = options.protocols.length; j < k; j++){
-		//    let curProtocol = options.protocols[j];
-		//    if(this.accounts[i].isCompatibleWith(curProtocol)){
-		//      isCompatible = true;
-		//      break;
-		//    }
-		//  }
-		//  if(isCompatible){
-		//    accounts.push(this.accounts[i]);
-		//  }
-		//}
-
-		return Promise.resolve(accounts);
-	}
-
 }
 
 export class OChat{
