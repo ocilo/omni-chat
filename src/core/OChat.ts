@@ -91,9 +91,12 @@ export class OChatUser implements User {
 
 	getContacts(): Promise<Contact[]> {
 		return undefined;
+		// TODO : here goes the algotithm wich allow us to predict if two different accounts
+		//        represent the same personne, i.e. the same Contact.
 	}
 
-	addAccount(account:Account, callback?:(err:Error, succes:Account[])=>any): void {
+	addAccount(account: Account, callback?: (err:Error, succes:Account[])=>any): void {
+
 	}
 
 	removeAccount(accout:Account, callback?:(err:Error, succes:Account[])=>any): void {
