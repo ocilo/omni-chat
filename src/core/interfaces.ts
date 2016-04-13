@@ -24,7 +24,7 @@ export interface Client {
 
 	users: User[];      // Les utilisateurs connectes a ce client
 
-	getProxyFor(protocol:string): Promise<Proxy>;
+	getProxyFor(protocol: string): Promise<Proxy>;
 	//  Retourne le premier proxy permettant d'utiliser
 	//  le protocole "protocol".
 
@@ -32,12 +32,25 @@ export interface Client {
 	//  Ajoute le proxy "driver" a la liste des drivers supportes
 	//  par ce client, si le client ne possede pas deja un proxy
 	//  qui gere le meme protocole que "driver".
+	//  Sinon, err sera non nul.
 
 	removeDriversFor(protocol: string, callback?: (err: Error, drivers: Proxy[]) => any): Client;
 	//  Supprime tout les drivers connus du client qui supportent
 	//  le protocole "protocol".
 	//  Ne fait rien si aucun des drivers connus ne supporte
 	//  le protocole "protocol". Dans ce cas, err sera non nul.
+
+	addUser(user: User, callback?: (err: Error, users: User[]) => any): Client;
+	//  Ajoute l'utilisateur "user" a la liste des utilisateurs
+	//  qui utilisent le Client courant, si "user" ne fait pas
+	//  deja partie de ceux qui utilisent ce Client.
+	//  Sinon, err sera non nul.
+
+	removeUser(user: User, callback?: (err: Error, users: User[]) => any): Client;
+	//  Supprime l'utilisateur "user" de la liste des utilisateurs
+	//  qui utilise le Client courant, si "user" faisait deja
+	//  partie de la liste.
+	//  Sinon, ne fait rien , et err sera non nul.
 }
 
 /***************************************************************
