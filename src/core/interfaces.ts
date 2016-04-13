@@ -170,7 +170,7 @@ export interface User {
 	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Ajoute un compte a l'utilisateur courant
 
-	removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void;
+	removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
 	// Supprime un compte de l'utilisateur courant
 
   addContact(contact: Contact, callback? : (err: Error, succes: Account[]) => any): void;
