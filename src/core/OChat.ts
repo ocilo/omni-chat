@@ -20,7 +20,6 @@ export class OChatApp implements Client {
 		}
 	}
 
-	// Add a driver to the current app, if the app not already has one equivalent
 	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
 		let err: Error = null;
 		for(let prox: Proxy of this.drivers) {
@@ -37,7 +36,6 @@ export class OChatApp implements Client {
 		return this;
 	}
 
-	// Remove all drivers using the protocol given in parameters
 	removeDriversFor(protocol: string, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
 		let err = new Error("This app does not support protocol " + protocol);
 		for(let index: number = 0; index<this.drivers.length; index++) {
@@ -49,6 +47,32 @@ export class OChatApp implements Client {
 		}
 		if(callback) {
 			callback(err, this.drivers);
+		}
+		return this;
+	}
+
+	addUser(user: User, callback?: (err: Error, users: User[]) => any): OChatApp {
+		let err: Error = null;
+		if(this.users.indexOf(user) === -1) {
+			err = new Error("This user is already connected to this client.");
+		} else {
+			this.users.push(user);
+		}
+		if(callback) {
+			callback(err, this.users);
+		}
+		return this;
+	}
+
+	removeUser(user: User, callback?: (err: Error, users: User[]) => any): OChatApp {
+		let err: Error = null;
+		if(this.users.indexOf(user) === -1) {
+			err = new Error("This user was not connected to this client.");
+		} else {
+			this.users.splice(0, 1, user);
+		}
+		if(callback) {
+			callback(err, this.users);
 		}
 		return this;
 	}
