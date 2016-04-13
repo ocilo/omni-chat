@@ -86,7 +86,7 @@ export class OChatUser implements User {
 	}
 
 	getAccounts(): Promise<Account[]> {
-		return undefined;
+		return Promise.resolve(this.accounts);
 	}
 
 	getContacts(): Promise<Contact[]> {
