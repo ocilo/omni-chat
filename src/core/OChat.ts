@@ -209,11 +209,11 @@ export class OChatContact implements Contact {
 	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
 	}
 
-	addAccount(account: Account): Promise<any> {
+	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
 		return undefined;
 	}
 
-	removeAccount(accout: Account): Promise<any> {
+	removeAccount(accout: Account, callback? : (err: Error, succes: Account[]) => any): void {
 		return undefined;
 	}
 
