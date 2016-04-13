@@ -224,7 +224,7 @@ export class OChatContact implements Contact {
 		return this;
 	}
 
-	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Contact {
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		return this;
 	}
 
