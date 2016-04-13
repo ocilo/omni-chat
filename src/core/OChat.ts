@@ -79,7 +79,6 @@ export class OChatApp implements Client {
 }
 
 export class OChatUser implements User {
-
 	username: string;
 
 	app: OChatApp;
@@ -192,30 +191,33 @@ export class OChatUser implements User {
 }
 
 export class OChatContact implements Contact {
-	accounts:Account[];
-	fullname:string;
-	nicknames:string[];
-	localID:number;
+	accounts: Account[];
 
-	getAccounts():Promise<Account[]> {
+	fullname: string;
+
+	nicknames: string[];
+
+	localID: number;
+
+	getAccounts(): Promise<Account[]> {
+		return Promise.resolve(this.accounts);
+	}
+
+	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): void {
+	}
+
+	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
+	}
+
+	addAccount(account: Account): Promise<any> {
 		return undefined;
 	}
 
-	mergeContacts(contact:Contact, callback?:(err:Error, succes:Contact)=>any):void {
-	}
-
-	unmergeContacts(contact:Contact, callback?:(err:Error, succes:Contact[])=>any):void {
-	}
-
-	addAccount(account:Account):Promise<any> {
+	removeAccount(accout: Account): Promise<any> {
 		return undefined;
 	}
 
-	removeAccount(accout:Account):Promise<any> {
-		return undefined;
-	}
-
-	getOwner():Contact {
+	getOwner(): Contact {
 		return undefined;
 	}
 
