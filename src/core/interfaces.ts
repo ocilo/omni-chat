@@ -107,7 +107,7 @@ export interface Proxy {
  * it contains a list of accounts : those were the contact is
  * identified as the same as in the others.
  * The only way to tchat with someone is to start a discussion
- * with him. Other participants coul be added through the
+ * with him. Other participants could be added through the
  * interface Discussion.
  ***************************************************************/
 export interface Contact{
