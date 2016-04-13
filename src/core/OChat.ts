@@ -121,18 +121,36 @@ export class OChatUser implements User {
 		}
 	}
 
-	addContact(contact:Contact, callback?:(err:Error, succes:Account[])=>any): void {
+	addContact(contact: Contact, callback?: (err: Error, succes: Account[]) => any): void {
 	}
 
-	removeContact(contact:Contact):Promise<any> {
+	removeContact(contact: Contact, callback?: (err: Error, succes: Account[]) => any): void {
+		// WARNING : we need to warn the user that this will remove the contact from all his accounts
+		//this.getContacts().then( (friends: Contact[]) => {
+		//	let contactAccounts: Account[] = contact.accounts;
+		//	for(let userAccount: Account of this.accounts) {  // NOPE
+		//		for(let oneContactAccount: Account of contactAccounts) {
+		//			if(userAccount.protocol === oneContactAccount.protocol) {
+		//				// TODO : trop complique. Il serait plus simple que chaque compte soit lie a un proxy
+		//			}
+		//		}
+		//
+		//	}
+		//
+		//});
+		// TODO : an important problem appears when we try to implement this method
+		//        protocol being a simple string and proxies being present only in user and
+		//        not linked to any account, the complexity of this algorithm become way
+		//        to high.
+		//        We need to think again about the way we use proxies, and to think about
+		//        the data structures that we are using (array are maybe not the key).
+	}
+
+	onDiscussionRequest(callback: (disc: Discussion) => any): User {
 		return undefined;
 	}
 
-	onDiscussionRequest(callback:(disc:Discussion)=>any):User {
-		return undefined;
-	}
-
-	onContactRequest(callback:(contact:Contact)=>any):User {
+	onContactRequest(callback: (contact: Contact)=> any): User {
 		return undefined;
 	}
 
