@@ -108,7 +108,17 @@ export class OChatUser implements User {
 		}
 	}
 
-	removeAccount(accout:Account, callback?:(err:Error, succes:Account[])=>any): void {
+	removeAccount(account: Account, callback?: (err: Error, succes: Account[]) => any): void {
+		let index: number = this.accounts.indexOf(account);
+		let err: Error = null;
+		if(index === -1) {
+			this.accounts.splice(0, 1, account);
+		} else {
+			err = new Error("This account does not exist.");
+		}
+		if(callback) {
+			callback(err, this.accounts);
+		}
 	}
 
 	addContact(contact:Contact, callback?:(err:Error, succes:Account[])=>any): void {
