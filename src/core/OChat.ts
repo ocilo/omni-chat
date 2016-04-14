@@ -7,6 +7,10 @@ import {Contact} from "./interfaces";
 import {Discussion} from "./interfaces";
 import {Account} from "./interfaces";
 
+// TODO(Ruben) : Passer sur la refonte de l'utilisation des proxies.
+//               Ca devrait permettre de finir d'implémenter OChatUser, a part ce qui touche aux discussions.
+//               L'algo qui gere les Contacts pourra etre implemente en premiere approche de maniere basique.
+
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
 
@@ -214,7 +218,7 @@ export class OChatContact implements Contact {
 			});
 		}
 		if(numberOfErrors === contact.accounts.length) {
-			error = new Error("Unable to merge contact. Maybe the second was part of the current.")
+			error = new Error("Unable to merge contact. Maybe the second was part of the current.");
 		} else if(numberOfErrors !== 0) {
 			error = new Error(numberOfErrors + " account of the contact in parameters could not be added to the current contact.");
 		}
@@ -225,6 +229,21 @@ export class OChatContact implements Contact {
 	}
 
 	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
+		let error: Error = null;
+		for(let contactAccount: Account of contact.accounts) {
+			this.removeAccount(contactAccount, (err, acc) => {
+				if(err) {
+					error = new Error("Unable to unmerge contact. One account in the parameters is not part of the current Contact.");
+				}
+			});
+			if(error)
+			{
+				break;
+			}
+		}
+		if(callback) {
+			callback(error, this);
+		}
 		return this;
 	}
 
