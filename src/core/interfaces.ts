@@ -137,7 +137,8 @@ export interface Contact{
 	// Le contact fourni.
 	// Le contact courant MINUS le contact fourni.
 	// Ne fait rien si l'operation unmerge est impossible
-	// (i.e. l'un des deux contacts ressultant est nul).
+	// (i.e. l'un des deux contacts ressultant est nul, ou si "contact" ne fait pas
+	// partie du contact courant).
 	// La gestion du contact fourni apres cette methode est a la charge de l'appelant.
 	// Retourne le contact courrant apres eventuelles modifications.
 
