@@ -244,8 +244,11 @@ export interface Discussion {
 
   isPrivate: boolean;             // Privacite de la conversation
 
-	participants: ContactAccount[]; // Liste des participants a la conversation
-	// TODO : is owner implicit ? Should he be in participants ?
+	participants: ContactAccount[]; // Liste des participants a la conversation.
+																	// L'utilisateur n'en fait pas partie.
+
+	owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
+																	// cette discussion.
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]>;
   //  Retourne une liste des maxMessages derniers messages echanges pendant la discussion,
