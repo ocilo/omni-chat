@@ -329,6 +329,25 @@ export interface UserAccount {
 													//  Permet aux implementations de travailler avec
 													//  plus de details.
 													// TODO : ma map est-elle bonne ?
+
+	getContacts(): Promise<Contact[]>;
+	//  Accede a la liste des contacts du compte courant,
+	//  et les retourne sous forme de tableau de contacts.
+
+	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
+	//  Accede a la liste des discussions du compte courant
+	//  et retourne jusqu'a "max" Discussions dans un tableau.
+	//  Si filter est precise, ne retourne dans le tableau que les discussions
+	//  pour lesquelles la fonction "filter" retourne true.
+
+	getOrCreateConnection(): Promise<Connection>;
+	//  Connecte le compte courant, ou recupere la connexion existante.
+	//  Si la connexion n'existait pas, elle sera cree et directement accessible,
+	//  sauf erreur.
+
+	sendMessageTo(recipient: ContactAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void;
+	//  Envoie le message "msg" au contact "recipient".
+	//  Si le message ne peut pas etre envoye, err sera non nul.
 }
 
 /***************************************************************
