@@ -166,18 +166,27 @@ export class OChatUser implements User {
 	}
 
 	addContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
+		// TODO : this is advanced option.
+		//        It's about writing on an account,
+		//        and not only reading it.
+		//        We will do this later.
 	}
 
 	removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
 		// WARNING : we need to warn the user that this will remove the contact from all his accounts
-
+		// TODO : this is advanced option.
+		//        It's about writing on an account,
+		//        and not only reading it.
+		//        We will do this later.
 	}
 
 	onDiscussionRequest(callback: (disc: Discussion) => any): User {
+		// TODO : see troubles in interfaces.ts before
 		return undefined;
 	}
 
 	onContactRequest(callback: (contact: Contact)=> any): User {
+		// TODO : see troubles in interfaces.ts before
 		return undefined;
 	}
 }
