@@ -295,13 +295,24 @@ export interface Discussion {
 }
 
 /***************************************************************
+ * MSG_FLG constants are flags that are used to help us sending
+ * messages with different protocols (with Proxies).
+ * Whatever the messages content, text will always be send,
+ * even if the message does not contain any text. So every
+ * protocols will always be able to send something.
+ ***************************************************************/
+export const MSG_FLAG_TXT = 0x0001;   //  The message contains text
+export const MSG_FLAG_IMG = 0x0002;   //  The message contains picture(s)
+export const MSG_FLAG_VID = 0x0004;   //  The message contains video(s)
+export const MSG_FLAG_FIL = 0x0008;   //  The message contains other file(s)
+export const MSG_FLAG_EDI = 0x0010;   //  The message is editable
+
+/***************************************************************
  * Message is the object exchanged during a Discussion.
  * Examples of classes which can inherit from Message are :
  * TextMessage, ImageMessage, VideoMessage...
  ***************************************************************/
 export interface Message {
-	editable: boolean;    // Vrai si le message est editable
-
 	author: ContactAccount | UserAccount; // L'auteur du message.
 								                        // Ce ne peut pas etre un objet de type
 								                        // Contact. L'association entre ContactAccount
@@ -310,6 +321,12 @@ export interface Message {
 
 	body: string;         // Une representation sous forme de string
 												// du message.
+
+	content: any;         // Le contenu du message.
+												// Si le message contient uniquement du texte,
+												// body et content contiennent la meme string.
+
+	flags: number;        // Les flags du message.
 
   getText(): Promise<string>;
   //  Retourne une representation du message sous forme de String.
