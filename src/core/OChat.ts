@@ -238,6 +238,9 @@ export class OChatContact implements Contact {
 		let err: Error = null;
 		if(index === -1) {
 			this.nicknames.push(account.contactName);
+			if(!this.fullname) {
+				this.fullname = account.contactName;
+			}
 			this.accounts.push(account);
 		} else {
 			err = new Error("This account already exists for this contact.");
