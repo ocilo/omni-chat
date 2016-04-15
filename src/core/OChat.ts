@@ -7,6 +7,7 @@ import {Contact} from "./interfaces";
 import {Discussion} from "./interfaces";
 import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
+import {Message} from "./interfaces";
 
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
@@ -286,4 +287,44 @@ export class OChatContact implements Contact {
 	}
 }
 
+export class OChatDiscussion implements Discussion {
+	creationDate: Date;
+
+	name: string;
+
+	isPrivate: boolean;
+
+	participants: ContactAccount[];
+
+	getMessages(maxMessages:number, afterDate?:Date, filter?:(msg:Message)=>boolean):Promise<Message[]> {
+		return undefined;
+	}
+
+	sendMessage(msg:Message, callback?:(err:Error, succes:Message)=>any):void {
+	}
+
+	addParticipants(p:ContactAccount[], callback?:(err:Error, succes:ContactAccount[])=>any):void {
+	}
+
+	getParticipants():Promise<ContactAccount[]> {
+		return undefined;
+	}
+
+	onMessage(callback:(msg:Message)=>any):Promise<Discussion> {
+		return undefined;
+	}
+
+	getName():Promise<string> {
+		return undefined;
+	}
+
+	getDescription():Promise<string> {
+		return undefined;
+	}
+
+	getSettings():Promise<Map<string, any>> {
+		return undefined;
+	}
+
+}
 
