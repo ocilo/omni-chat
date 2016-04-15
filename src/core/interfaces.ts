@@ -18,7 +18,6 @@ import {EventEmitter} from 'events';
 /***************************************************************
  * Client is the entry point for the library.
  * Maintains the list of available proxies and connected users.
- * TODO : is last point still right ? If not, remove it
  ***************************************************************/
 export interface Client {
 	drivers: Proxy[];   // Les proxys disponibles pour ce client
