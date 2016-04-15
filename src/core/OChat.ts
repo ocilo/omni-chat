@@ -102,7 +102,7 @@ export class OChatUser implements User {
 		return Promise.resolve(discussion);
 	}
 
-	leaveDiscussion(discussion:Discussion, callback?:(err:Error, succes:Discussion)=>any): void {
+	leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion)=>any): void {
 
 	}
 
@@ -361,6 +361,33 @@ export class OChatDiscussion implements Discussion {
 	getSettings(): Promise<Map<string, any>> {
 		return Promise.resolve(this.settings);
 	}
-
 }
 
+export class OChatMessage implements Message {
+	editable: boolean;
+
+	author: ContactAccount | UserAccount;
+
+	body: string;
+
+	getText(): Promise<string> {
+		return undefined;
+	}
+
+	getCreationDate(): Promise<Date> {
+		return undefined;
+	}
+
+	getLastUpdateDate(): Promise<Date> {
+		return undefined;
+	}
+
+	getAuthor(): Promise<ContactAccount | UserAccount> {
+		return undefined;
+	}
+
+	getContent(): Promise<any> {
+		return undefined;
+	}
+
+}
