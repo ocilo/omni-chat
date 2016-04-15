@@ -163,22 +163,20 @@ export class OChatUser implements User {
 }
 
 export class OChatContact implements Contact {
-	accounts: Account[];
-
 	fullname: string;
 
 	nicknames: string[];
 
-	localID: number;
+	accounts: ContactAccount[];
 
-	getAccounts(): Promise<Account[]> {
+	getAccounts(): Promise<ContactAccount[]> {
 		return Promise.resolve(this.accounts);
 	}
 
 	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
 		let numberOfErrors: number = 0;
-		for(let contactAccount: Account of contact.accounts) {
+		for(let contactAccount: ContactAccount of contact.accounts) {
 			this.addAccount(contactAccount, (err, acc) => {
 				if(err) {
 					numberOfErrors++;
@@ -198,7 +196,7 @@ export class OChatContact implements Contact {
 
 	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
-		for(let contactAccount: Account of contact.accounts) {
+		for(let contactAccount: ContactAccount of contact.accounts) {
 			this.removeAccount(contactAccount, (err, acc) => {
 				if(err) {
 					error = new Error("Unable to unmerge contact. One account in the parameters is not part of the current Contact.");
@@ -215,7 +213,7 @@ export class OChatContact implements Contact {
 		return this;
 	}
 
-	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
+	addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void {
 		let index: number = this.accounts.indexOf(account);
 		let err: Error = null;
 		if(index === -1) {
@@ -228,7 +226,7 @@ export class OChatContact implements Contact {
 		}
 	}
 
-	removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void {
+	removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void {
 		let index: number = this.accounts.indexOf(account);
 		let err: Error = null;
 		if(index === -1) {
@@ -240,11 +238,6 @@ export class OChatContact implements Contact {
 			callback(err, this.accounts);
 		}
 	}
-
-	getOwner(): Contact {
-		return undefined;
-	}
-
 }
 
 export class OChat{
