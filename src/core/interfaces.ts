@@ -313,19 +313,6 @@ export interface Message {
 }
 
 /***************************************************************
- * Account is the representation of a chat account.
- * This interface is not exported, because we don't want any
- * Object directly using Account used.
- * Their is two interfaces extended from Account, and they are
- * TOTALLY different. The only reason for which they both
- * inherit from Account is to prevent code redondancies.
- * See UserAccount and ContactAccount for more details.
- ***************************************************************/
-interface Account {
-	username: string;   //  Le nom sous lequel le proprietaire du compte se fait connaitre.
-}
-
-/***************************************************************
  * UserAccount represente one account used by an user of
  * Omni-Chat. This user can use several accounts at the same
  * time : that's the reason why Omni-Chat was created.
@@ -334,8 +321,10 @@ interface Account {
  * everything he can do by using directly his accounts, without
  * using Omni-Chat.
  ***************************************************************/
-export interface UserAccount extends Account{
-	driver: Proxy;          //  Le pilote permettant d'acceder a ce compte
+export interface UserAccount {
+	username: string;       //  Le nom sous lequel peut se connecter l'utilisateur.
+
+	driver: Proxy;          //  Le pilote permettant d'acceder a ce compte.
 
   data: Map<string, any>; //  Les autres donnees du compte.
 													//  Permet aux implementations de travailler avec
@@ -352,8 +341,11 @@ export interface UserAccount extends Account{
  * send messages to them, so all he needs to know is how to
  * identify them and how to communicate with them.
  ***************************************************************/
-export interface ContactAccount extends Account {
-	protocol: string;       //  Le protocole associe a ce compte
+export interface ContactAccount {
+	contactName: string;    //  Le nom sous lequel se fait connaitre
+													//  le contact.
+
+	protocol: string;       //  Le protocole associe a ce compte.
 }
 
 /***************************************************************
@@ -416,10 +408,4 @@ export interface Connection {
 	//  has occurred, and will adopt the behavior wanted. This behavior is of
 	//  course the one specified by the existsing handler(s) for "eventName".
 	//  If no handlers are specified for "eventName", the event will be ignored.
-}
-
-export interface DiscussionMember {
-	protocol: string;
-	username: string;
-	constructor(contact: Contact);
 }
