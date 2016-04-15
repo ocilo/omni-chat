@@ -295,7 +295,7 @@ export interface Discussion {
 }
 
 /***************************************************************
- * MSG_FLG constants are flags that are used to help us sending
+ * MSG_FLAG constants are flags that are used to help us sending
  * messages with different protocols (with Proxies).
  * Whatever the messages content, text will always be send,
  * even if the message does not contain any text. So every
@@ -361,7 +361,7 @@ export interface Message {
 
 	isEditable(): boolean;
 	//  Retourne vrai si et seulement si le message courant est editable,
-	//  i.e. le flag MSG_FLG_EDI est present.
+	//  i.e. le flag MSG_FLAG_EDI est present.
 }
 
 /***************************************************************
