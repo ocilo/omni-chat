@@ -8,6 +8,7 @@ import {Discussion} from "./interfaces";
 import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
 import {Message} from "./interfaces";
+import {MSG_FLAG_EDI} from "./interfaces"
 
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
@@ -377,22 +378,30 @@ export class OChatMessage implements Message {
 	lastUpdated: Date;
 
 	getText(): Promise<string> {
-		return undefined;
+		return Promise.resolve(this.body);
 	}
 
 	getCreationDate(): Promise<Date> {
-		return undefined;
+		return Promise.resolve(this.creationDate);
 	}
 
 	getLastUpdateDate(): Promise<Date> {
-		return undefined;
+		return Promise.resolve(this.lastUpdated);
 	}
 
 	getAuthor(): Promise<ContactAccount | UserAccount> {
-		return undefined;
+		return Promise.resolve(this.author);
 	}
 
 	getContent(): Promise<any> {
-		return undefined;
+		return Promise.resolve(this.content);
+	}
+
+	getFlags():Promise<number> {
+		return Promise.resolve(this.flags);
+	}
+
+	isEditable(): boolean {
+		return (this.flags & MSG_FLAG_EDI) === MSG_FLAG_EDI;
 	}
 }
