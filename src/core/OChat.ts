@@ -364,11 +364,17 @@ export class OChatDiscussion implements Discussion {
 }
 
 export class OChatMessage implements Message {
-	editable: boolean;
-
 	author: ContactAccount | UserAccount;
 
 	body: string;
+
+	content: any;
+
+	flags: number;
+
+	creationDate: Date;
+
+	lastUpdated: Date;
 
 	getText(): Promise<string> {
 		return undefined;
@@ -389,5 +395,4 @@ export class OChatMessage implements Message {
 	getContent(): Promise<any> {
 		return undefined;
 	}
-
 }
