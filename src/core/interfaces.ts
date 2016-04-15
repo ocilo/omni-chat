@@ -242,6 +242,9 @@ export interface Discussion {
 
   name: string;                   // Nom de la conversation
 
+	description: string;            // Une description brève de la discussion,
+																	// sous forme textuelle.
+
   isPrivate: boolean;             // Privacite de la conversation
 
 	participants: ContactAccount[]; // Liste des participants a la conversation.
