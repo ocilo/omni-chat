@@ -61,19 +61,21 @@ export interface Client {
  * This imply that creating a new module (i.e to allow OmniChat
  * to communicate with other accounts) devs must create a new
  * proxy too.
- * TODO : use proxies as static methods ?
  ***************************************************************/
 export interface Proxy {
-	protocol: string;  // La liste des protocoles supportes par le proxy
+	protocol: string;       //  La liste des protocoles supportes par le proxy
+													//  Varie selon l'implementation de l'interface.
+
+	connection: Connection; //  Une connection, existante ou non, allumee ou non,
+													//  etablie entre l'utilisateur et
 
   isCompatibleWith(protocol: string): boolean;
   //  Retourne vrai si le protocole protocol est compatible avec ce proxy.
   //  Protocol sera peut-etre encapsule dans une enum ou une struct
   //  par la suite.
 
-	getOrCreateConnection(account: Account): Promise<any>;
+	getOrCreateConnection(account: Account): Promise<Connection>;
 	//  Cree une connexion au compte Account.
-	//  TODO :  definir un template (interface) pour une connexion
 
   getContacts(account: Account): Promise<Contact[]>;
   //  Accede a la liste des contacts du compte Account,
