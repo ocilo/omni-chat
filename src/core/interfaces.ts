@@ -13,6 +13,7 @@
  ***************************************************************/
 
 import * as Promise from 'bluebird';
+import {EventEmitter} from 'events';
 
 /***************************************************************
  * Client is the entry point for the library.
@@ -342,10 +343,12 @@ export interface Account {
 	//      TODO : Tu vois des methodes qui lui sont specifiques ? onReceptionMessage peut-être ?
 }
 
-/* GLOBAL COMMENT
- * Le plus gros soucis reste celui de la reception de messages.
- * Je pense que ca doit se faire pour chaque account sous forme d'un ecouteur...
- * Mais ca signifierai ENORMEMENT d'ecouteurs qui tournent en même temps, non ?
- * En revanche je pense que ca serait pratique : on lui passe juste un callback qui
- * s'occupe d'update la bonne discussion ou d'en créer une et voila.
- */
+/***************************************************************
+ * OChatEmitter is the object that send Events to Connections.
+ * You can handle any sort of Events by using .on().
+ * You can send any Event by using .emit(). Events for which
+ * there is no known handler will be ignored.
+ ***************************************************************/
+export interface OChatEmitter extends EventEmitter {
+	// Empty for the moment
+}
