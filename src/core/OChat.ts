@@ -274,8 +274,4 @@ export class OChatContact implements Contact {
 	}
 }
 
-export class OChat{
-	static useDriver(driver: any) {
-		return this;
-	}
-}
+
