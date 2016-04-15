@@ -8,10 +8,6 @@ import {Discussion} from "./interfaces";
 import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
 
-// TODO(Ruben) : Passer sur la refonte de l'utilisation des proxies.
-//               Ca devrait permettre de finir d'implémenter OChatUser, a part ce qui touche aux discussions.
-//               L'algo qui gere les Contacts pourra etre implemente en premiere approche de maniere basique.
-
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
 
@@ -114,9 +110,33 @@ export class OChatUser implements User {
 	}
 
 	getContacts(): Promise<Contact[]> {
-		return undefined;
-		// TODO : here goes the algotithm wich allow us to predict if two different accounts
-		//        represent the same personne, i.e. the same Contact.
+		// TODO : we can do lots of improvements :
+		//        -do not compare otherContact with other someContacts we already added to contacts
+		//        -improve how we check if ContactAccount are the same Contact
+		//        -check in base if the user specified some time ago that some accounts are the same
+		let contacts: Contact[] = null;
+		for(let account: UserAccount of this.accounts) {
+			account.getContacts().then((someContacts) => {
+				if(!contacts) {
+					contacts = someContacts;
+				} else {
+					for(let otherContact: Contact of someContacts) {
+						let merge: boolean = false;
+						for(let actualContact: Contact of contacts) {
+							if(otherContact.fullname === actualContact.fullname) {
+								actualContact.mergeContacts(otherContact);
+								merge = true;
+								break;
+							}
+						}
+						if(!merge) {
+							contacts.push(otherContact);
+						}
+					}
+				}
+			})
+		}
+		return Promise.resolve(contacts);
 	}
 
 	addAccount(account: UserAccount, callback?: (err: Error, succes: UserAccount[]) => any): void {
