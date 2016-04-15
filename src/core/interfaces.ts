@@ -253,6 +253,11 @@ export interface Discussion {
 	owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
 																	// cette discussion.
 
+	settings: Map<string, any>;     // La liste des autres parametres de la discussion,
+																	// meme specifiques.
+																	// Cela permet aux implementations de travailler
+																	// avec plus de donnees.
+
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]>;
   //  Retourne une liste des maxMessages derniers messages echanges pendant la discussion,
 	//  au plus : s'il y en a moins, alors retourne le nombre de messages disponibles.
