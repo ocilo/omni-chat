@@ -73,14 +73,14 @@ export interface Proxy {
   //  Protocol sera peut-etre encapsule dans une enum ou une struct
   //  par la suite.
 
-	getOrCreateConnection(account: Account): Promise<Connection>;
-	//  Cree une connexion au compte Account.
+	getOrCreateConnection(account: UserAccount): Promise<Connection>;
+	//  Cree une connexion au compte "account".
 
-  getContacts(account: Account): Promise<Contact[]>;
-  //  Accede a la liste des contacts du compte Account,
+  getContacts(account: UserAccount): Promise<Contact[]>;
+  //  Accede a la liste des contacts du compte "account",
   //  et les retourne sous forme de tableau de contacts.
 
-	getDiscussions(account: Account, max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
+	getDiscussions(account: UserAccount, max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
 	//  Accede a la liste des discussions du compte "account"
 	//  et retourne jusqu'a "max" Discussions dans un tableau.
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
@@ -113,19 +113,14 @@ export interface Proxy {
  * interface Discussion.
  ***************************************************************/
 export interface Contact{
-  accounts: Account[];  //  La liste des comptes connus de l'utilisateur
-                        //  pour lesquels ce contact est le meme.
+  accounts: ContactAccount[];  //  La liste des comptes connus de l'utilisateur
+                               //  pour lesquels ce contact est le meme.
 
-  fullname: string;     //  Le nom complet du contact.
+  fullname: string;            //  Le nom complet du contact.
 
-	nicknames: string[];  //  Les noms sous lesquels le contact est connu.
+	nicknames: string[];         //  Les noms sous lesquels le contact est connu.
 
-	localID: number;      //  Permet de distinguer deux Contacts qui portent
-												//  le meme nom.
-												//  N'est valide que pour une session donnée.
-												//  Pourra servir a identifier clairement un contact.
-
-  getAccounts(): Promise<Account[]>;
+  getAccounts(): Promise<ContactAccount[]>;
   //  Retourne la liste des comptes connus de l'utilisateur
   //  pour lesquels ce contact est le meme.
 
@@ -144,7 +139,7 @@ export interface Contact{
 	// La gestion du contact fourni apres cette methode est a la charge de l'appelant.
 	// Retourne le contact courrant apres eventuelles modifications.
 
-  addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
+  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void;
 	// Ajoute un compte au contact courant.
 	// Cette operation est differente de mergeContacts() dans le sens ou
 	// on rajoute un compte d'un certain type a un contact, mais que ce
@@ -156,17 +151,12 @@ export interface Contact{
 	// Cette operation necessite que l'utilisateur se serve d'un client qui
 	// supporte le protocole utilise par le compte "account".
 
-  removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
+  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void;
 	// Supprime un compte du contact courant.
 	// Cette operation est differente de mergeContacts() dans le sens ou
 	// on supprime un compte d'un certain type a un contact, mais que ce
 	// contact reste le meme.
 	// Exemple d'utilisation : un compte que le contact n'utilise plus.
-
-  getOwner(): Contact;
-	// TODO : C'est quoi ça ? Je pense que ca a pour vocation de trouver le Contact associe
-	//        a un certain Account. Si c'est le cas, ca doit dependre de l'utilisateur,
-	//        et du coup sa place est dans User.
 }
 
 /***************************************************************
@@ -175,11 +165,11 @@ export interface Contact{
  * rights as an user (for example acceed to your own contacts).
  ***************************************************************/
 export interface User {
-	accounts: Account[];  //  La liste des comptes connus de l'utilisateur
+	accounts: UserAccount[];  //  La liste des comptes connus de l'utilisateur
 
-	username: string;     //  Le nom complet de l'utilisateur
+	username: string;         //  Le nom complet de l'utilisateur
 
-  getOrCreateDiscussion(accounts: Account[]) : Promise<Discussion>;
+  getOrCreateDiscussion(accounts: ContactAccount[]) : Promise<Discussion>;
   //  Permet de commencer une discussion avec un contact,
 	//  ou de recuperer une discussion existante.
   //  C'est le seul moyen de communiquer avec quelqu'un.
@@ -191,7 +181,7 @@ export interface User {
 	//  Permet de quitter la discussion "discussion" et de ne plus
 	//  recevoir les notifications associées.
 
-  getAccounts(): Promise<Account[]>;
+  getAccounts(): Promise<UserAccount[]>;
   //  Retourne la liste des comptes de l'utilisateurs.
   //  Ce comptes peuvent bien entendu etre de tout type :
   //  IRC, Skype, Facebook... mais aussi OmniChat (recursivite).
@@ -201,23 +191,21 @@ export interface User {
   //  Retourne la liste des contacts de l'utilisateur courant.
   //  Pour chaque compte lie a l'utilisateur,
 
-	addAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
+	addAccount(account: UserAccount, callback? : (err: Error, succes: UserAccount[]) => any): void;
 	// Ajoute un compte a l'utilisateur courant
 
-	removeAccount(account: Account, callback? : (err: Error, succes: Account[]) => any): void;
+	removeAccount(account: UserAccount, callback? : (err: Error, succes: UserAccount[]) => any): void;
 	// Supprime un compte de l'utilisateur courant
 
-  addContact(contact: Contact, callback? : (err: Error, succes: Account[]) => any): void;
+  addContact(contact: Contact, callback? : (err: Error, succes: Contact[]) => any): void;
 	// Ajoute un contact a l'utilisateur courant
 
-  removeContact(contact: Contact, callback?: (err: Error, succes: Account[]) => any): void;
+  removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void;
 	// Supprime un contact de l'utilisateur courant
 
-  onDiscussionRequest(callback: (disc:Discussion) => any): User;
-	// TODO : a quoi sert le retour ?
-
-  onContactRequest(callback: (contact: Contact) => any): User;
-	// TODO : a quoi sert le retour ?
+  onDiscussionRequest(callback: (disc: Discussion) => any): void;
+  onContactRequest(callback: (contact: Contact) => any): void;
+	// TODO : i'm not sure about how these two methods are supposed to work
 }
 
 /***************************************************************
@@ -239,13 +227,13 @@ export interface DiscussionAuthorization{
  * you receive a message and so on.
  ***************************************************************/
 export interface Discussion {
-  creationDate: Date;       // Date de creation de la conversation
+  creationDate: Date;             // Date de creation de la conversation
 
-  name: string;             // Nom de la conversation
+  name: string;                   // Nom de la conversation
 
-  isPrivate: boolean;       // Privacite de la conversation
+  isPrivate: boolean;             // Privacite de la conversation
 
-	participants: Account[];  // Liste des participants a la conversation
+	participants: ContactAccount[]; // Liste des participants a la conversation
 	// TODO : is owner implicit ? Should he be in participants ?
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]>;
@@ -258,17 +246,17 @@ export interface Discussion {
   sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): void;
   //  Envoie le message "msg" a tous les participants de la discussion.
   //  Cette methode fait appel au proxy pour chaque Account de "participants".
-	//  TODO : le retour par Promise<Message> servait a quoi ?
 
-  addParticipants(p: Account[], callback?: (err: Error, succes: Account[]) => any): void;
+  addParticipants(p: ContactAccount[], callback?: (err: Error, succes: ContactAccount[]) => any): void;
   //  Ajoute des participants a la conversation
 
-  getParticipants(): Promise<Contact[]>;
+  getParticipants(): Promise<ContactAccount[]>;
   //  Retourne une liste des participants a la conversation.
 
   onMessage(callback: (msg: Message) => any): Promise<Discussion>;
   //  Appelle la methode a executer lors de la reception du message.
   //  TODO : callback ET retour par promesse ?
+	//  TODO : i'm not sure about how this method is supposed to work.
 
   getName(): Promise<string>;
   //  Retourne le nom de la discussion.
@@ -292,11 +280,11 @@ export interface Discussion {
 export interface Message {
 	editable: boolean;    // Vrai si le message est editable
 
-	author: Account;      // L'auteur du message.
-                        // Ce ne peut pas etre un objet de type
-                        // Contact. L'association entre Account
-												// et Contact se fera plus tard, car peut
-												// dependre de l'utilisateur.
+	author: ContactAccount | UserAccount; // L'auteur du message.
+								                        // Ce ne peut pas etre un objet de type
+								                        // Contact. L'association entre ContactAccount
+																				// et Contact se fera plus tard, car peut
+																				// dependre de l'utilisateur.
 
 	body: string;         // Une representation sous forme de string
 												// du message.
@@ -316,7 +304,7 @@ export interface Message {
   //  ce qui conduira peut-etre a supprimer cette methode
   //  de l'interface globale.
 
-  getAuthor(): Promise<Account>;
+  getAuthor(): Promise<ContactAccount | UserAccount>;
   //  Retourne l'auteur du message.
 
   getContent(): Promise<any>;
@@ -326,14 +314,14 @@ export interface Message {
 
 /***************************************************************
  * Account is the representation of a chat account.
- * This is an abstract class and not an interface, because we
- * don't want any Object directly using Account used. Their is
- * two interfaces extended from Account, and they are TOTALLY
- * different. The only reason for which they both inherit from
- * Account is to prevent code redondancies.
+ * This interface is not exported, because we don't want any
+ * Object directly using Account used.
+ * Their is two interfaces extended from Account, and they are
+ * TOTALLY different. The only reason for which they both
+ * inherit from Account is to prevent code redondancies.
  * See UserAccount and ContactAccount for more details.
  ***************************************************************/
-abstract class Account {
+interface Account {
 	username: string;   //  Le nom sous lequel le proprietaire du compte se fait connaitre.
 }
 
