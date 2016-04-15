@@ -345,8 +345,8 @@ export class OChatDiscussion implements Discussion {
 		return undefined;
 	}
 
-	getName():Promise<string> {
-		return undefined;
+	getName(): Promise<string> {
+		return Promise.resolve(this.name);
 	}
 
 	getDescription():Promise<string> {
