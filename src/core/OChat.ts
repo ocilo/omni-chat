@@ -294,6 +294,8 @@ export class OChatDiscussion implements Discussion {
 
 	isPrivate: boolean;
 
+	description: string;
+
 	participants: ContactAccount[];
 
 	owner: User;
@@ -341,7 +343,8 @@ export class OChatDiscussion implements Discussion {
 		return Promise.resolve(this.participants);
 	}
 
-	onMessage(callback:(msg:Message)=>any):Promise<Discussion> {
+	onMessage(callback: (msg :Message) => any): Promise<Discussion> {
+		// TODO : see troubles in interfaces.ts before
 		return undefined;
 	}
 
@@ -349,11 +352,11 @@ export class OChatDiscussion implements Discussion {
 		return Promise.resolve(this.name);
 	}
 
-	getDescription():Promise<string> {
-		return undefined;
+	getDescription(): Promise<string> {
+		return Promise.resolve(this.description);
 	}
 
-	getSettings():Promise<Map<string, any>> {
+	getSettings(): Promise<Map<string, any>> {
 		return undefined;
 	}
 
