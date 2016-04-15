@@ -113,16 +113,28 @@ export interface Proxy {
  * interface Discussion.
  ***************************************************************/
 export interface Contact{
-  accounts: ContactAccount[];  //  La liste des comptes connus de l'utilisateur
-                               //  pour lesquels ce contact est le meme.
+  accounts: ContactAccount[]; //  La liste des comptes connus de l'utilisateur
+                              //  pour lesquels ce contact est le meme.
 
-  fullname: string;            //  Le nom complet du contact.
+  fullname: string;           //  Le nom complet du contact.
 
-	nicknames: string[];         //  Les noms sous lesquels le contact est connu.
+	nicknames: string[];        //  Les noms sous lesquels le contact est connu.
+															//  Ne contient que les noms present pour les
+															//  differents comptes connus.
 
   getAccounts(): Promise<ContactAccount[]>;
   //  Retourne la liste des comptes connus de l'utilisateur
   //  pour lesquels ce contact est le meme.
+
+	getNicknames(): string[];
+	//  Retourne la liste des surnoms connus du contact courant.
+
+	getPrincipalName(): string;
+	//  Retourne la valeur du champ fullname.
+
+	setPrincipalName(newPrincipalName: string): void;
+	//  Met a jour le champ "fullname" du contact courant.
+	//  Ne modifie pas nicknames.
 
 	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact;
   // Fusionne les comptes du contact courant avec ceux du contact fourni.
