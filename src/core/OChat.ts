@@ -300,6 +300,8 @@ export class OChatDiscussion implements Discussion {
 
 	owner: User;
 
+	settings: Map<string, any>;
+
 	getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]> {
 		// TODO : this depends on how we manage heterogeneous ContactAccount
 		//        see above in OchatUser.getOrCreateDiscussion
@@ -357,7 +359,7 @@ export class OChatDiscussion implements Discussion {
 	}
 
 	getSettings(): Promise<Map<string, any>> {
-		return undefined;
+		return Promise.resolve(this.settings);
 	}
 
 }
