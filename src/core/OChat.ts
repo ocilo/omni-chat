@@ -337,8 +337,8 @@ export class OChatDiscussion implements Discussion {
 		}
 	}
 
-	getParticipants():Promise<ContactAccount[]> {
-		return undefined;
+	getParticipants(): Promise<ContactAccount[]> {
+		return Promise.resolve(this.participants);
 	}
 
 	onMessage(callback:(msg:Message)=>any):Promise<Discussion> {
