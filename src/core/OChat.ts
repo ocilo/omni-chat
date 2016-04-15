@@ -202,6 +202,18 @@ export class OChatContact implements Contact {
 		return Promise.resolve(this.accounts);
 	}
 
+	getNicknames(): string[] {
+		return this.nicknames;
+	}
+
+	getPrincipalName(): string {
+		return this.fullname;
+	}
+
+	setPrincipalName(newPrincipalName: string): void {
+		this.fullname = newPrincipalName;
+	}
+
 	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
 		let numberOfErrors: number = 0;
