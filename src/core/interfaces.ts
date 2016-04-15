@@ -355,6 +355,13 @@ export interface Message {
   getContent(): Promise<any>;
   //  Renvoi un contenu plus pertinent.
   //  Chaque type de message devra implementer elle-meme cette methode.
+
+	getFlags(): Promise<number>;
+	//  Retourne les flags du message.
+
+	isEditable(): boolean;
+	//  Retourne vrai si et seulement si le message courant est editable,
+	//  i.e. le flag MSG_FLG_EDI est present.
 }
 
 /***************************************************************
