@@ -327,22 +327,46 @@ export interface Message {
 
 /***************************************************************
  * Account is the representation of a chat account.
- * Examples of classes which can inherit from Account are :
- * IRCAccount, FacebookAccount... and OmniChatAccount.
+ * This is an abstract class and not an interface, because we
+ * don't want any Object directly using Account used. Their is
+ * two interfaces extended from Account, and they are TOTALLY
+ * different. The only reason for which they both inherit from
+ * Account is to prevent code redondancies.
+ * See UserAccount and ContactAccount for more details.
  ***************************************************************/
-export interface Account {
-	protocol: string;       //  Une representation du protocole de communication
-		                      //  utilise par ce compte.
-							            //  Protocol sera peut-etre encapsule dans une enum ou une struct
-							            //  par la suite.
+abstract class Account {
+	username: string;   //  Le nom sous lequel le proprietaire du compte se fait connaitre.
+}
 
-  data: Map<string, any>; //  Les donnees du compte.
+/***************************************************************
+ * UserAccount represente one account used by an user of
+ * Omni-Chat. This user can use several accounts at the same
+ * time : that's the reason why Omni-Chat was created.
+ * UserAccount is totally DIFFERENT from ContactAccount. An user
+ * can plenty acceed to all his accounts, and do (almost)
+ * everything he can do by using directly his accounts, without
+ * using Omni-Chat.
+ ***************************************************************/
+export interface UserAccount extends Account{
+	driver: Proxy;          //  Le pilote permettant d'acceder a ce compte
+
+  data: Map<string, any>; //  Les autres donnees du compte.
+													//  Permet aux implementations de travailler avec
+													//  plus de details.
 													// TODO : ma map est-elle bonne ?
+}
 
-	nickName: string;       //  Le nom sous lequel le proprietaire du compte se fait connaitre.
-
-	// NB : Account n'apparait presque plus que comme une couche d'abstraction pratique.
-	//      TODO : Tu vois des methodes qui lui sont specifiques ? onReceptionMessage peut-être ?
+/***************************************************************
+ * UserAccount represente one account used by a Contact of one
+ * user of Omni-Chat. This is just an username associated with
+ * a protocol through which the user can send messages.
+ * ContactAccount is totally DIFFERENT from UserAccount. An user
+ * can not acceed to his contacts accounts. All he wants is to
+ * send messages to them, so all he needs to know is how to
+ * identify them and how to communicate with them.
+ ***************************************************************/
+export interface ContactAccount extends Account {
+	protocol: string;       //  Le protocole associe a ce compte
 }
 
 /***************************************************************
@@ -405,4 +429,10 @@ export interface Connection {
 	//  has occurred, and will adopt the behavior wanted. This behavior is of
 	//  course the one specified by the existsing handler(s) for "eventName".
 	//  If no handlers are specified for "eventName", the event will be ignored.
+}
+
+export interface DiscussionMember {
+	protocol: string;
+	username: string;
+	constructor(contact: Contact);
 }
