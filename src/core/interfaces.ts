@@ -352,3 +352,55 @@ export interface Account {
 export interface OChatEmitter extends EventEmitter {
 	// Empty for the moment
 }
+
+/***************************************************************
+ * Connection represents a connection to a certain type of
+ * Account. It can establish and maintain a link between you and
+ * the Account you want be connected to, but it can also turn it
+ * off when you're done. It also allows you to add and remove
+ * some events listeners to precise what you want your
+ * connection to do.
+ ***************************************************************/
+export interface Connection {
+	emitter: OChatEmitter;  //  The emitter for this connection.
+
+	connected: boolean;     //  The actual state of this connection.
+													//  If it's already connected, it's true,
+													//  and false otherwise.
+
+	turnOn(callback?: (err: Error) => any): void;
+	//  If the connection is not already on (connected === false),
+	//  turn on the connection on and set connected to true.
+	//  If a problem appears during the connection, err won't be null.
+
+	turnOff(callback?: (err: Error) => any): void;
+	//  If the connection is not already off (connected === true),
+	//  turn off the connection on and set connected to false.
+	//  If a problem appears during the disconnection, err won't be null.
+
+	addEventListener(eventName: string, handler: (...args: any[]) => any): void;
+	//  After this call, whenever the event "eventName" is emitted,
+	//  the function "handler" will be tiggered.
+	//  Note that you can have several handlers for the same event.
+
+	removeEventListener(eventName: string, handler: (...args: any[]) => any): void;
+	//  After this call, the function "handler" won't be triggered anymore
+	//  whenever "eventName" is emitted.
+	//  If "handler" was the last existing handler for "eventName",
+	//  after this call "eventName" will be ignored.
+	//  Note that other handlers won't be deleted by this method.
+
+	removeAllEventListeners(eventNames?: string[], callback?: (err: Error) => any): void;
+	//  Remove all know events listeners for the current Connection,
+	//  or all those in "eventNames".
+	//  Note that this is generally a bad practice, since the listeners
+	//  are generally added elsewhere in the code.
+
+	dispatchEvent(eventName: string, callback?: (err: Error) => any): void;
+	//  Connections are like tubes between you and the service you want to acces.
+	//  Nothing can cross the tube, but the connection is able to react to events.
+	//  By calling this method, the connection will be aware that an event
+	//  has occurred, and will adopt the behavior wanted. This behavior is of
+	//  course the one specified by the existsing handler(s) for "eventName".
+	//  If no handlers are specified for "eventName", the event will be ignored.
+}
