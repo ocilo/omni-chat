@@ -296,11 +296,30 @@ export class OChatDiscussion implements Discussion {
 
 	participants: ContactAccount[];
 
-	getMessages(maxMessages:number, afterDate?:Date, filter?:(msg:Message)=>boolean):Promise<Message[]> {
+	owner: User;
+
+	getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Promise<Message[]> {
+		// TODO : this depends on how we manage heterogeneous ContactAccount
+		//        see above in OchatUser.getOrCreateDiscussion
 		return undefined;
 	}
 
-	sendMessage(msg:Message, callback?:(err:Error, succes:Message)=>any):void {
+	sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): void {
+		let err: Error = null;
+		for(let recipient of this.participants) {
+			let gotIt: boolean = false;
+			for(let ownerAccount of this.owner.accounts) {
+				if(ownerAccount.driver.isCompatibleWith(recipient.protocol)) {
+					ownerAccount.sendMessageTo(recipient, msg, callback);
+					gotIt = true;
+					break;
+				}
+			}
+			if(!err && !gotIt) {
+				err = new Error("At least one recipient could not be served.");
+			}
+		}
+		callback(err, msg);
 	}
 
 	addParticipants(p:ContactAccount[], callback?:(err:Error, succes:ContactAccount[])=>any):void {
