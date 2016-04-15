@@ -322,7 +322,19 @@ export class OChatDiscussion implements Discussion {
 		callback(err, msg);
 	}
 
-	addParticipants(p:ContactAccount[], callback?:(err:Error, succes:ContactAccount[])=>any):void {
+	addParticipants(p: ContactAccount[], callback?: (err: Error, succes: ContactAccount[]) => any): void {
+		let err: Error = null;
+		for(let part: ContactAccount of p) {
+			if(this.participants.indexOf(part) === -1) {
+				this.participants.push(part);
+			} else if (!err) {
+				err = new Error("At least one of these participants was already in this discussion.");
+			}
+		}
+
+		if(callback) {
+			callback(err, this.participants);
+		}
 	}
 
 	getParticipants():Promise<ContactAccount[]> {
