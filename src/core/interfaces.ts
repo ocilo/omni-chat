@@ -328,6 +328,12 @@ export interface Message {
 
 	flags: number;        // Les flags du message.
 
+	creationDate: Date;   // La date de creation du message,
+												// si elle est disponible.
+
+	lastUpdated: Date;    // La date de derniere modification
+												// du message, si disponible.
+
   getText(): Promise<string>;
   //  Retourne une representation du message sous forme de String.
   //  Tout message (texte, image, autre fichier) doit avoir cette
