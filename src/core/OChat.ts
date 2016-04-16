@@ -9,6 +9,9 @@ import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
 import {Message} from "./interfaces";
 import {MSG_FLAG_EDI} from "./interfaces"
+import {Connection} from "./interfaces";
+import {OChatEmitter} from "./interfaces";
+import {Listener} from "./interfaces";
 
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
@@ -406,3 +409,26 @@ export class OChatMessage implements Message {
 	}
 }
 
+export class OChatConnection implements Connection {
+	emitter: OChatEmitter;
+
+	connected: boolean;
+
+	listeners: Listener[];
+
+	getAllEventListeners(event?: string): Promise<Listener[]> {
+		return undefined;
+	}
+
+	addEventListener(listener: Listener, callback?:(err: Error, succes: Listener[]) => any): void {
+	}
+
+	removeEventListener(listener: Listener, callback?: (err: Error, succes: Listener[]) => any): void {
+	}
+
+	removeAllEventListeners(eventNames?: string[], callback?: (err: Error) => any): void {
+	}
+
+	dispatchEvent(eventName: string, callback?: (err: Error)=> any): void {
+	}
+}
