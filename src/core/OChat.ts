@@ -473,6 +473,7 @@ export class OChatConnection implements Connection {
 		}
 	}
 
-	dispatchEvent(eventName: string, callback?: (err: Error)=> any): void {
+	dispatchEvent(eventName: string, ...parameters: any[]): void {
+		this.emitter.emit(eventName, parameters);
 	}
 }
