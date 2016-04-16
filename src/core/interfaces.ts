@@ -434,9 +434,9 @@ export interface OChatEmitter extends EventEmitter {
 }
 
 export interface Listener {
-	event: string;                    //  Le nom de l'event associe
+	event: string;                    //  Le nom de l'event surveille.
 
-	handler: (...args: any[]) => any; //  La fonction associee a l'event
+	handler: (...args: any[]) => any; //  La fonction associee a l'event.
 }
 
 /***************************************************************
@@ -454,12 +454,19 @@ export interface Connection {
 													//  If it's already connected, it's true,
 													//  and false otherwise.
 
-	addEventListener(eventName: string, handler: (...args: any[]) => any): void;
+	listeners: Listener[];  //  The list of all know listeners for
+													//  this connection.
+
+	getAllEventListeners(event?: string): Promise<Listener[]>;
+	//  Return all the known listeners for the current connection,
+	//  or all the listeners know for the event "event".
+
+	addEventListener(listener: Listener, callback?: (err: Error, succes: Listener[]) => any): void;
 	//  After this call, whenever the event "eventName" is emitted,
 	//  the function "handler" will be tiggered.
 	//  Note that you can have several handlers for the same event.
 
-	removeEventListener(eventName: string, handler: (...args: any[]) => any): void;
+	removeEventListener(listener: Listener, callback?: (err: Error, succes: Listener[]) => any): void;
 	//  After this call, the function "handler" won't be triggered anymore
 	//  whenever "eventName" is emitted.
 	//  If "handler" was the last existing handler for "eventName",
