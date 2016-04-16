@@ -417,7 +417,17 @@ export class OChatConnection implements Connection {
 	listeners: Listener[];
 
 	getAllEventListeners(event?: string): Promise<Listener[]> {
-		return undefined;
+		if(event) {
+			let wantedListeners: Listener[] = [];
+			for(let listener: Listener of this.listeners) {
+				if(listener.event === event) {
+					wantedListeners.push(listener);
+				}
+			}
+			return Promise.resolve(wantedListeners);
+		} else {
+			return Promise.resolve(this.listeners);
+		}
 	}
 
 	addEventListener(listener: Listener, callback?:(err: Error, succes: Listener[]) => any): void {
