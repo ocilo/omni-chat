@@ -479,7 +479,7 @@ export interface Connection {
 	//  Note that this is generally a bad practice, since the listeners
 	//  are generally added elsewhere in the code.
 
-	dispatchEvent(eventName: string, callback?: (err: Error) => any): void;
+	dispatchEvent(eventName: string, ...parameters: any[]): void;
 	//  Connections are like tubes between you and the service you want to acces.
 	//  Nothing can cross the tube, but the connection is able to react to events.
 	//  By calling this method, the connection will be aware that an event
