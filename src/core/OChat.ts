@@ -452,6 +452,25 @@ export class OChatConnection implements Connection {
 	}
 
 	removeAllEventListeners(eventNames?: string[], callback?: (err: Error) => any): void {
+		let err: Error = null;
+		let originalLength: number = this.listeners.length;
+		if(eventNames) {
+			for(let name: string of eventNames) {
+				for(let listener: Listener of this.listeners) {
+					if(listener.event === name) {
+						this.listeners.splice(0, 1, listener);
+					}
+				}
+			}
+			if(originalLength === this.listeners.length) {
+				err = new Error("At least one of the specified events was not handled by this connection.")
+			}
+		} else {
+			this.listeners = [];  // There is no other references to this array, so we can do that
+		}
+		if(callback) {
+			callback(err);
+		}
 	}
 
 	dispatchEvent(eventName: string, callback?: (err: Error)=> any): void {
