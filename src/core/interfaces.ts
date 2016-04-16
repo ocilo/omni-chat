@@ -75,6 +75,10 @@ export interface Proxy {
 
 	getOrCreateConnection(account: UserAccount): Promise<Connection>;
 	//  Cree une connexion au compte "account".
+	//  Si l'objet connection existe mais n'est pas actif,
+	//  i.e. il y a eu une deconnexion, une tentative de
+	//  reconnexion sera faite. Ceci peut se traduire par un nouvel
+	//  objet connection.
 
   getContacts(account: UserAccount): Promise<Contact[]>;
   //  Accede a la liste des contacts du compte "account",
