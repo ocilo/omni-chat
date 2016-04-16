@@ -433,7 +433,7 @@ export interface OChatEmitter extends EventEmitter {
 	// Empty for the moment
 }
 
-export interface Handler {
+export interface Listener {
 	event: string;                    //  Le nom de l'event associe
 
 	handler: (...args: any[]) => any; //  La fonction associee a l'event
