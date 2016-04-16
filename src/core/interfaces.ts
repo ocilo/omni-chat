@@ -433,6 +433,12 @@ export interface OChatEmitter extends EventEmitter {
 	// Empty for the moment
 }
 
+export interface Handler {
+	event: string;                    //  Le nom de l'event associe
+
+	handler: (...args: any[]) => any; //  La fonction associee a l'event
+}
+
 /***************************************************************
  * Connection represents a connection to a certain type of
  * Account. It can establish and maintain a link between you and
