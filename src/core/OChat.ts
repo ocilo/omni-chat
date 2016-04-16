@@ -431,9 +431,15 @@ export class OChatConnection implements Connection {
 	}
 
 	addEventListener(listener: Listener, callback?:(err: Error, succes: Listener[]) => any): void {
+		this.emitter.addListener(listener.event, listener.handler);
+		this.listeners.push(listener);
+		if(callback) {
+			callback(null, this.listeners);
+		}
 	}
 
 	removeEventListener(listener: Listener, callback?: (err: Error, succes: Listener[]) => any): void {
+
 	}
 
 	removeAllEventListeners(eventNames?: string[], callback?: (err: Error) => any): void {
