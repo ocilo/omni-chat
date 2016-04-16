@@ -405,3 +405,4 @@ export class OChatMessage implements Message {
 		return (this.flags & MSG_FLAG_EDI) === MSG_FLAG_EDI;
 	}
 }
+

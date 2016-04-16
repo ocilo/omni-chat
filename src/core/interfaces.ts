@@ -66,7 +66,7 @@ export interface Proxy {
 													//  Varie selon l'implementation de l'interface.
 
 	connection: Connection; //  Une connection, existante ou non, allumee ou non,
-													//  etablie entre l'utilisateur et
+													//  etablie entre l'utilisateur et le service desire
 
   isCompatibleWith(protocol: string): boolean;
   //  Retourne vrai si le protocole protocol est compatible avec ce proxy.
@@ -443,16 +443,6 @@ export interface Connection {
 	connected: boolean;     //  The actual state of this connection.
 													//  If it's already connected, it's true,
 													//  and false otherwise.
-
-	turnOn(callback?: (err: Error) => any): void;
-	//  If the connection is not already on (connected === false),
-	//  turn on the connection on and set connected to true.
-	//  If a problem appears during the connection, err won't be null.
-
-	turnOff(callback?: (err: Error) => any): void;
-	//  If the connection is not already off (connected === true),
-	//  turn off the connection on and set connected to false.
-	//  If a problem appears during the disconnection, err won't be null.
 
 	addEventListener(eventName: string, handler: (...args: any[]) => any): void;
 	//  After this call, whenever the event "eventName" is emitted,
