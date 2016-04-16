@@ -439,7 +439,16 @@ export class OChatConnection implements Connection {
 	}
 
 	removeEventListener(listener: Listener, callback?: (err: Error, succes: Listener[]) => any): void {
-
+		let err: Error = null;
+		if(this.listeners.indexOf(listener) === -1) {
+			err = new Error("This listener does not exist for this connection.");
+		} else {
+			this.emitter.removeListener(listener.event, listener.handler);
+			this.listeners.splice(0, 1, listener);
+		}
+		if(callback) {
+			callback(err, this.listeners);
+		}
 	}
 
 	removeAllEventListeners(eventNames?: string[], callback?: (err: Error) => any): void {
