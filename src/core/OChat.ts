@@ -477,3 +477,27 @@ export class OChatConnection implements Connection {
 		this.emitter.emit(eventName, parameters);
 	}
 }
+
+export class OChatUserAccount implements UserAccount {
+	username: string;
+
+	driver: Proxy;
+
+	data: Map<string, any>;
+
+	getContacts(): Promise<Contact[]> {
+		return undefined;
+	}
+
+	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]> {
+		return undefined;
+	}
+
+	getOrCreateConnection(): Promise<Connection> {
+		return undefined;
+	}
+
+	sendMessageTo(recipient: ContactAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void {
+	}
+
+}
