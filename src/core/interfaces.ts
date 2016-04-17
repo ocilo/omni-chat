@@ -435,6 +435,11 @@ export interface OChatEmitter extends EventEmitter {
 	// Empty for the moment
 }
 
+/***************************************************************
+ * Listener represent a function attached to an Event.
+ * When the event is triggered, the associated handler is fired.
+ * This is just a structure wich helps us to manage events.
+ ***************************************************************/
 export interface Listener {
 	event: string;                    //  Le nom de l'event surveille.
 
