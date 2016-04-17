@@ -90,8 +90,10 @@ export interface Proxy {
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
 	//  pour lesquelles la fonction "filter" retourne true.
 
-  sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error, succesM: Message, succesD: Discussion) => any): void;
-	//  Envoie le message "msg" dans la discussion "discussion"
+  sendMessage(msg: Message, recipient: ContactAccount, callback?: (err: Error, succesM: Message) => any): void;
+	//  Envoie le message "msg" au destinataire "recipient".
+	//  Si le message ne peut pas etre envoye,
+	//  err sera non nul.
 
 }
 
