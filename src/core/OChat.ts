@@ -486,18 +486,19 @@ export class OChatUserAccount implements UserAccount {
 	data: Map<string, any>;
 
 	getContacts(): Promise<Contact[]> {
-		return undefined;
+		return this.driver.getContacts();
 	}
 
 	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]> {
-		return undefined;
+		return this.driver.getDiscussions(this, max, filter);
 	}
 
 	getOrCreateConnection(): Promise<Connection> {
-		return undefined;
+		return this.driver.getOrCreateConnection(this);
 	}
 
 	sendMessageTo(recipient: ContactAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void {
+		this.driver.sendMessage(msg, recipient, callback);
 	}
 
 }
