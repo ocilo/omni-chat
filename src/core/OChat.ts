@@ -486,7 +486,7 @@ export class OChatUserAccount implements UserAccount {
 	data: Map<string, any>;
 
 	getContacts(): Promise<Contact[]> {
-		return this.driver.getContacts();
+		return this.driver.getContacts(this);
 	}
 
 	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]> {
@@ -501,4 +501,10 @@ export class OChatUserAccount implements UserAccount {
 		this.driver.sendMessage(msg, recipient, callback);
 	}
 
+}
+
+export class OChatContactAccount implements ContactAccount {
+	contactName: string;
+
+	protocol: string;
 }
