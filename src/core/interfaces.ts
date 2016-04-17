@@ -95,6 +95,8 @@ export interface Proxy {
 	//  Si le message ne peut pas etre envoye,
 	//  err sera non nul.
 
+	// TODO(Ruben) : important method is missing : getting messages history
+
 }
 
 // A NOTER :  On pourrait implementer uniquement certaines methodes en faisant
