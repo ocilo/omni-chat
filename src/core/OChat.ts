@@ -8,7 +8,7 @@ import {Discussion} from "./interfaces";
 import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
 import {Message} from "./interfaces";
-import {MSG_FLAG_EDI} from "./interfaces"
+import {MSG_FLAG_EDI} from "./interfaces";
 import {Connection} from "./interfaces";
 import {OChatEmitter} from "./interfaces";
 import {Listener} from "./interfaces";
