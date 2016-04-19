@@ -114,18 +114,6 @@ export interface Proxy {
 	//  Si le message ne peut pas etre envoye, err sera non nul.
 }
 
-// A NOTER :  On pourrait implementer uniquement certaines methodes en faisant
-//        une implementation implicite : on ne declare pas la classe comme
-//        "implements ...", mais on redefinie uniquement les methodes qui nous
-//        interessent. Le compilo TypeScript comprendra alors que la classe
-//        implemente tout de meme l'interface en question.
-//        Ce fonctionnement est toutefois DANGEREUX : que se passe-t-il si
-//        on tente d'appeler une methode de maniere polymorphe (par exemple
-//        une methode statique sur l'un des constructeurs du tableau proxies
-//        de la classe Client, mais que celle-ci n'est pas defini pour la classe
-//        en question) ?
-
-
 /***************************************************************
  * Contact is the representation of someone you can chat with.
  * A contact may be the same for differents accounts. That's why
