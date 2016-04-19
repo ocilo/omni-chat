@@ -299,6 +299,8 @@ export class OChatDiscussion implements Discussion {
 
 	isPrivate: boolean;
 
+	heterogeneous: boolean;
+
 	description: string;
 
 	participants: GroupAccount[];
@@ -345,6 +347,9 @@ export class OChatDiscussion implements Discussion {
 		if(callback) {
 			callback(err, this.participants);
 		}
+	}
+
+	removeParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void {
 	}
 
 	getParticipants(): Promise<GroupAccount[]> {
