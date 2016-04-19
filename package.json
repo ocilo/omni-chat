@@ -2,14 +2,13 @@
   "name": "ochat",
   "version": "1.0.2",
   "description": "Omni chat.",
-  "main": "dist/node/node/main.js",
+  "main": "dist/node/main.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/insa-frif/omni-chat.git"
   },
   "scripts": {
-    "test": "gulp test",
-    "postinstall": "gulp install.noNpm"
+    "test": "gulp test"
   },
   "keywords": [
     "chat"
@@ -20,7 +19,7 @@
     "chai": "^3.4.1",
     "gulp": "^3.9.0",
     "typescript": "^1.8.0-dev.20160125",
-    "via-build-tools": "^0.6.3"
+    "via-build-tools": "^0.8.2"
   },
   "jspm": {
     "configFile": "systemjs.config.js",

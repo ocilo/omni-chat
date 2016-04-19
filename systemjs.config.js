@@ -8,7 +8,7 @@ System.config({
   },
 
   map: {
-    "lodash": "npm:lodash@4.10.0",
+    "lodash": "npm:lodash@4.11.1",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
     },
@@ -35,7 +35,7 @@ System.config({
     "npm:inherits@2.0.1": {
       "util": "github:jspm/nodelibs-util@0.1.0"
     },
-    "npm:lodash@4.10.0": {
+    "npm:lodash@4.11.1": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
       "process": "github:jspm/nodelibs-process@0.1.2"
     },
