@@ -12,6 +12,9 @@
  ***************************************************************
  ***************************************************************/
 
+// TODO : it seems like Map is not suported correctly yet.
+//        A possible alternative : https://github.com/Microsoft/TypeScript/issues/3290
+
 import * as Promise from 'bluebird';
 import {EventEmitter} from 'events';
 
@@ -488,7 +491,7 @@ export interface GroupAccount {
 															//  s'il existe. Depend directement
 															//  de la base et donc du protocole utilise.
 
-	addMembers(members: ContactAccount | ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void;
+	addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void;
 	//  Add all the ContactAccounts "members" to the list of
 	//  known members.
 	//  Note that the ContactAccount with the field "protocol"

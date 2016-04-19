@@ -364,7 +364,7 @@ export class OChatDiscussion implements Discussion {
 							// owns the current compatible participant.
 							// Now if it owns the ContactAccounts that we want to add
 							// to this discussion too, we win.
-							if(ownerAccount.hasContactAccount(p.members)) {
+							if(ownerAccount.hasContactAccount(p.members[0])) {
 								// That's it, we win !
 								ownerAccount.driver.addMembersToGroupChat(p.members, compatibleParticipant, (err) => {
 									if(!err) {
@@ -607,7 +607,7 @@ export class OChatGroupAccount implements GroupAccount {
 
 	localDiscussionID: number;
 
-	addMembers(members: ContactAccount | ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void {
+	addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void {
 		let err: Error = null;
 
 		for(let account of members) {
@@ -616,7 +616,7 @@ export class OChatGroupAccount implements GroupAccount {
 					err = new Error("One of the accounts does not have the right protocol.");
 				}
 			} else {
-				if(this.members.indexOf(account !== -1)) {
+				if(this.members.indexOf(account) !== -1) {
 					if(!err) {
 						err = new Error("One of the account is already a member.");
 					}
