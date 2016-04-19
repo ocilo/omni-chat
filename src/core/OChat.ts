@@ -111,7 +111,19 @@ export class OChatUser implements User {
 
 	}
 
-	getAccounts(): Promise<UserAccount[]> {
+	getAccounts(protocols?: string[]): Promise<UserAccount[]> {
+		if(protocols) {
+			let accounts: UserAccount[] = [];
+			for(let account of this.accounts) {
+				for(let protocol of protocols) {
+					if(account.driver.isCompatibleWith(protocol)) {
+						accounts.push(account);
+						break;
+					}
+				}
+			}
+			return Promise.resolve(accounts);
+		}
 		return Promise.resolve(this.accounts);
 	}
 
@@ -338,6 +350,9 @@ export class OChatDiscussion implements Discussion {
 		let err: Error = null;
 		for(let part of p) {
 			if(this.participants.indexOf(part) === -1) {
+				for(let k of this.owner.accounts) {
+
+				}
 				this.participants.push(part);
 			} else if (!err) {
 				err = new Error("At least one of these participants was already in this discussion.");
