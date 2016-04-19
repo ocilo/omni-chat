@@ -203,11 +203,13 @@ export interface User {
 	//  Permet de quitter la discussion "discussion" et de ne plus
 	//  recevoir les notifications associées.
 
-  getAccounts(): Promise<UserAccount[]>;
+  getAccounts(protocols?: string[]): Promise<UserAccount[]>;
   //  Retourne la liste des comptes de l'utilisateurs.
+	//  Si "protocol" est precise, ne retourne que la lite des
+	//  comptes de l'utilisateur courant qui utilise le
+	//  protocole "protocol".
   //  Ce comptes peuvent bien entendu etre de tout type :
   //  IRC, Skype, Facebook... mais aussi OmniChat (recursivite).
-  //  Probablement une surcharge de celle de Contact.
 
   getContacts(): Promise<Contact[]>;
   //  Retourne la liste des contacts de l'utilisateur courant.
