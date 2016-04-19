@@ -418,6 +418,11 @@ export interface UserAccount {
 	//  Accede a la liste des contacts du compte courant,
 	//  et les retourne sous forme de tableau de contacts.
 
+	hasContactAccount(account: ContactAccount): Promise<boolean>;
+	//  Retourne vrai si et seulement si le contact "account"
+	//  peut etre accede a partir du compte courant.
+	//  Necessite que account.localID soit defini.
+
 	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]>;
 	//  Accede a la liste des discussions du compte courant
 	//  et retourne jusqu'a "max" Discussions dans un tableau.
