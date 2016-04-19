@@ -65,15 +65,12 @@ export interface Proxy {
 	protocol: string;       //  La liste des protocoles supportes par le proxy
 													//  Varie selon l'implementation de l'interface.
 
-	connection: Connection; //  Une connection, existante ou non, allumee ou non,
-													//  etablie entre l'utilisateur et le service desire
-
   isCompatibleWith(protocol: string): boolean;
   //  Retourne vrai si le protocole protocol est compatible avec ce proxy.
   //  Protocol sera peut-etre encapsule dans une enum ou une struct
   //  par la suite.
 
-	getOrCreateConnection(account: UserAccount): Promise<Connection>;
+	createConnection(account: UserAccount): Promise<Connection>;
 	//  Cree une connexion au compte "account".
 	//  Si l'objet connection existe mais n'est pas actif,
 	//  i.e. il y a eu une deconnexion, une tentative de
@@ -90,13 +87,12 @@ export interface Proxy {
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
 	//  pour lesquelles la fonction "filter" retourne true.
 
-  sendMessage(msg: Message, recipient: ContactAccount, callback?: (err: Error, succesM: Message) => any): void;
-	//  Envoie le message "msg" au destinataire "recipient".
-	//  Si le message ne peut pas etre envoye,
-	//  err sera non nul.
-
-	// TODO(Ruben) : important method is missing : getting messages history
-
+  sendMessage(msg: Message, recipients: GroupAccount, callback?: (err: Error, succesM: Message) => any): void;
+	//  Envoie le message "msg" aux destinataires "recipients".
+	//  Il est a noter que le message sera envoye dans UNE SEULE
+	//  conversation, sauf si le protocole ne supporte pas les groupes.
+	//  Si la conversation n'existe pas, elle sera cree.
+	//  Si le message ne peut pas etre envoye, err sera non nul.
 }
 
 // A NOTER :  On pourrait implementer uniquement certaines methodes en faisant
@@ -189,12 +185,12 @@ export interface User {
 
 	username: string;         //  Le nom complet de l'utilisateur
 
-  getOrCreateDiscussion(accounts: ContactAccount[]) : Promise<Discussion>;
+  getOrCreateDiscussion(accounts: GroupAccount[]) : Promise<Discussion>;
   //  Permet de commencer une discussion avec un contact,
 	//  ou de recuperer une discussion existante.
   //  C'est le seul moyen de communiquer avec quelqu'un.
   //  En cas de création, garanti que l'initiateur de la
-	//  conversation est présent en tant que participant.
+	//  conversation est present en tant que participant.
 
   leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion) => any): void;
 	//  Permet de quitter la discussion "discussion" et de ne plus
@@ -255,7 +251,7 @@ export interface Discussion {
 
   isPrivate: boolean;             // Privacite de la conversation
 
-	participants: ContactAccount[]; // Liste des participants a la conversation.
+	participants: GroupAccount[];   // Liste des participants a la conversation.
 																	// L'utilisateur n'en fait pas partie.
 
 	owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
@@ -277,10 +273,12 @@ export interface Discussion {
   //  Envoie le message "msg" a tous les participants de la discussion.
   //  Cette methode fait appel au proxy pour chaque Account de "participants".
 
-  addParticipants(p: ContactAccount[], callback?: (err: Error, succes: ContactAccount[]) => any): void;
-  //  Ajoute des participants a la conversation
+  addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void;
+  //  Ajoute des participants a la conversation.
+	//  Ces participants peuvent aussi bien etre des groupes
+	//  (deja existants ou non) que des personnes seules.
 
-  getParticipants(): Promise<ContactAccount[]>;
+  getParticipants(): Promise<GroupAccount[]>;
   //  Retourne une liste des participants a la conversation.
 
   onMessage(callback: (msg: Message) => any): Promise<Discussion>;
@@ -299,7 +297,6 @@ export interface Discussion {
   //  Bien evidemment, nous ne pourrons pas tout traiter.
   //  Nous essayerons cependant de faire du mieux possible sans pour autant
   //  y passer des heures entieres.
-	//  TODO : ma map est-elle bonne ?
 }
 
 /***************************************************************
@@ -313,7 +310,8 @@ export const MSG_FLAG_TXT = 0x0001;   //  The message contains text
 export const MSG_FLAG_IMG = 0x0002;   //  The message contains picture(s)
 export const MSG_FLAG_VID = 0x0004;   //  The message contains video(s)
 export const MSG_FLAG_FIL = 0x0008;   //  The message contains other file(s)
-export const MSG_FLAG_EDI = 0x0010;   //  The message is editable
+export const MSG_FLAG_URL = 0x0010;   //  The message contains an URL
+export const MSG_FLAG_EDI = 0x0100;   //  The message is editable
 
 /***************************************************************
  * Message is the object exchanged during a Discussion.
@@ -386,10 +384,14 @@ export interface UserAccount {
 
 	driver: Proxy;          //  Le pilote permettant d'acceder a ce compte.
 
+	connection: Connection; //  Une connection, existante ou non, allumee ou non,
+                          //  etablie entre l'utilisateur et le service desire.
+
   data: Map<string, any>; //  Les autres donnees du compte.
 													//  Permet aux implementations de travailler avec
 													//  plus de details.
-													// TODO : ma map est-elle bonne ?
+
+	owner: User;            //  Le proprietaire du compte.
 
 	getContacts(): Promise<Contact[]>;
 	//  Accede a la liste des contacts du compte courant,
@@ -401,13 +403,18 @@ export interface UserAccount {
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
 	//  pour lesquelles la fonction "filter" retourne true.
 
+	getOwner(): Promise<User>;
+	//  Retourne l'utilisateur proprietaire du compte.
+
 	getOrCreateConnection(): Promise<Connection>;
 	//  Connecte le compte courant, ou recupere la connexion existante.
 	//  Si la connexion n'existait pas, elle sera cree et directement accessible,
 	//  sauf erreur.
 
-	sendMessageTo(recipient: ContactAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void;
-	//  Envoie le message "msg" au contact "recipient".
+	sendMessageTo(recipients: GroupAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void;
+	//  Envoie le message "msg" aux contacts "recipients"
+	//  dans UNE SEULE conversation, sauf si le protocole
+	//  ne supporte pas les groupes.
 	//  Si le message ne peut pas etre envoye, err sera non nul.
 }
 
@@ -421,20 +428,45 @@ export interface UserAccount {
  * identify them and how to communicate with them.
  ***************************************************************/
 export interface ContactAccount {
-	contactName: string;    //  Le nom sous lequel se fait connaitre
-													//  le contact.
+	contactName: string;  //  Le nom sous lequel se fait connaitre
+												//  le contact.
 
-	protocol: string;       //  Le protocole associe a ce compte.
+	protocol: string;     //  Le protocole associe a ce compte.
+
+	localID: number;      //  L'identifiant du contact.
+                        //  Ceci depend directement de la base
+                        //  et donc du protocol utilise.
 }
 
 /***************************************************************
- * OChatEmitter is the object that send Events to Connections.
- * You can handle any sort of Events by using .on().
- * You can send any Event by using .emit(). Events for which
- * there is no known handler will be ignored.
+ * GroupAccount represents an aggregation of several
+ * ContactAccounts. This allows us to send a message to an
+ * existant discussion group instead of sending it to each
+ * member separatly, losing the idea of "group" in the
+ * contact's side.
+ * Note that the field "protocol" of each ContactAccount in
+ * members must be the same that the field "protocol" of
+ * this object, to avoid errors later.
  ***************************************************************/
-export interface OChatEmitter extends EventEmitter {
-	// Empty for the moment
+export interface GroupAccount {
+	protocol: string;           //  Le protocole associe a ces comptes.
+
+	members: ContactAccount[];  //  La liste de tous les membres du
+															//  groupe de discussion.
+
+	localDiscussionID: number;  //  L'identifiant de la conversation,
+															//  s'il existe. Depend directement
+															//  de la base et donc du protocole utilise.
+
+	addMembers(members: ContactAccount | ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void;
+	//  Add all the ContactAccounts "members" to the list of
+	//  known members.
+	//  Note that the ContactAccount with the field "protocol"
+	//  different of the field "protocol" of the current object
+	//  will not be added. The same applies to accounts already
+	//  existing in members.
+	//  If at least one account can not be added, err will not
+	//  be null.
 }
 
 /***************************************************************
@@ -457,7 +489,7 @@ export interface Listener {
  * connection to do.
  ***************************************************************/
 export interface Connection {
-	emitter: OChatEmitter;  //  The emitter for this connection.
+	emitter: EventEmitter;  //  The emitter for this connection.
 
 	connected: boolean;     //  The actual state of this connection.
 													//  If it's already connected, it's true,

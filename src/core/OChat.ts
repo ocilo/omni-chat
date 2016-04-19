@@ -8,10 +8,11 @@ import {Discussion} from "./interfaces";
 import {UserAccount} from "./interfaces";
 import {ContactAccount} from "./interfaces";
 import {Message} from "./interfaces";
-import {MSG_FLAG_EDI} from "./interfaces"
 import {Connection} from "./interfaces";
-import {OChatEmitter} from "./interfaces";
 import {Listener} from "./interfaces";
+import {GroupAccount} from "./interfaces";
+import {EventEmitter} from 'events';
+import {MSG_FLAG_EDI} from "./interfaces";
 
 export class OChatApp implements Client {
 	drivers: Proxy[] = [];  // All drivers supported by the app
@@ -28,7 +29,7 @@ export class OChatApp implements Client {
 
 	addDriver(driver: Proxy, callback?: (err: Error, drivers: Proxy[]) => any): OChatApp {
 		let err: Error = null;
-		for(let prox: Proxy of this.drivers) {
+		for(let prox of this.drivers) {
 			if(prox.isCompatibleWith(driver.protocol)) {
 				err = new Error("This app already has a compatible protocol");
 			}
@@ -91,7 +92,7 @@ export class OChatUser implements User {
 
 	accounts: UserAccount[] = [];
 
-	getOrCreateDiscussion(accounts: ContactAccount[]): Promise<Discussion> {
+	getOrCreateDiscussion(accounts: GroupAccount[]): Promise<Discussion> {
 		let discussion: Discussion; // The discussion we are looking for
 
 							// TODO : Oups, we have forgotten something.
@@ -106,7 +107,7 @@ export class OChatUser implements User {
 		return Promise.resolve(discussion);
 	}
 
-	leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion)=>any): void {
+	leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion) => any): void {
 
 	}
 
@@ -120,14 +121,14 @@ export class OChatUser implements User {
 		//        -improve how we check if ContactAccount are the same Contact
 		//        -check in base if the user specified some time ago that some accounts are the same
 		let contacts: Contact[] = null;
-		for(let account: UserAccount of this.accounts) {
+		for(let account of this.accounts) {
 			account.getContacts().then((someContacts) => {
 				if(!contacts) {
 					contacts = someContacts;
 				} else {
-					for(let otherContact: Contact of someContacts) {
+					for(let otherContact of someContacts) {
 						let merge: boolean = false;
-						for(let actualContact: Contact of contacts) {
+						for(let actualContact of contacts) {
 							if(otherContact.fullname === actualContact.fullname) {
 								actualContact.mergeContacts(otherContact);
 								merge = true;
@@ -222,7 +223,7 @@ export class OChatContact implements Contact {
 	mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
 		let numberOfErrors: number = 0;
-		for(let contactAccount: ContactAccount of contact.accounts) {
+		for(let contactAccount of contact.accounts) {
 			this.addAccount(contactAccount, (err, acc) => {
 				if(err) {
 					numberOfErrors++;
@@ -242,7 +243,7 @@ export class OChatContact implements Contact {
 
 	unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
 		let error: Error = null;
-		for(let contactAccount: ContactAccount of contact.accounts) {
+		for(let contactAccount of contact.accounts) {
 			this.removeAccount(contactAccount, (err, acc) => {
 				if(err) {
 					error = new Error("Unable to unmerge contact. One account in the parameters is not part of the current Contact.");
@@ -300,7 +301,7 @@ export class OChatDiscussion implements Discussion {
 
 	description: string;
 
-	participants: ContactAccount[];
+	participants: GroupAccount[];
 
 	owner: User;
 
@@ -330,9 +331,9 @@ export class OChatDiscussion implements Discussion {
 		callback(err, msg);
 	}
 
-	addParticipants(p: ContactAccount[], callback?: (err: Error, succes: ContactAccount[]) => any): void {
+	addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void {
 		let err: Error = null;
-		for(let part: ContactAccount of p) {
+		for(let part of p) {
 			if(this.participants.indexOf(part) === -1) {
 				this.participants.push(part);
 			} else if (!err) {
@@ -345,7 +346,7 @@ export class OChatDiscussion implements Discussion {
 		}
 	}
 
-	getParticipants(): Promise<ContactAccount[]> {
+	getParticipants(): Promise<GroupAccount[]> {
 		return Promise.resolve(this.participants);
 	}
 
@@ -410,7 +411,7 @@ export class OChatMessage implements Message {
 }
 
 export class OChatConnection implements Connection {
-	emitter: OChatEmitter;
+	emitter: EventEmitter;
 
 	connected: boolean;
 
@@ -419,7 +420,7 @@ export class OChatConnection implements Connection {
 	getAllEventListeners(event?: string): Promise<Listener[]> {
 		if(event) {
 			let wantedListeners: Listener[] = [];
-			for(let listener: Listener of this.listeners) {
+			for(let listener of this.listeners) {
 				if(listener.event === event) {
 					wantedListeners.push(listener);
 				}
@@ -455,8 +456,8 @@ export class OChatConnection implements Connection {
 		let err: Error = null;
 		let originalLength: number = this.listeners.length;
 		if(eventNames) {
-			for(let name: string of eventNames) {
-				for(let listener: Listener of this.listeners) {
+			for(let name of eventNames) {
+				for(let listener of this.listeners) {
 					if(listener.event === name) {
 						this.listeners.splice(0, 1, listener);
 					}
@@ -483,7 +484,11 @@ export class OChatUserAccount implements UserAccount {
 
 	driver: Proxy;
 
+	connection: Connection;
+
 	data: Map<string, any>;
+
+	owner: User;
 
 	getContacts(): Promise<Contact[]> {
 		return this.driver.getContacts(this);
@@ -493,18 +498,43 @@ export class OChatUserAccount implements UserAccount {
 		return this.driver.getDiscussions(this, max, filter);
 	}
 
+	getOwner(): Promise<User> {
+		return Promise.resolve(this.owner);
+	}
+
 	getOrCreateConnection(): Promise<Connection> {
-		return this.driver.getOrCreateConnection(this);
+		if(this.connection && this.connection.connected) {
+			return Promise.resolve(this.connection);
+		}
+		return this.driver.createConnection(this);
 	}
 
-	sendMessageTo(recipient: ContactAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void {
-		this.driver.sendMessage(msg, recipient, callback);
+	sendMessageTo(recipients: GroupAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void {
+		this.driver.sendMessage(msg, recipients, callback);
 	}
 
+	constructor(owner: User) {
+		this.owner = owner;
+	}
 }
 
 export class OChatContactAccount implements ContactAccount {
 	contactName: string;
 
 	protocol: string;
+
+	localID: number;
+}
+
+export class OChatGroupAccount implements GroupAccount {
+	protocol: string;
+
+	members: ContactAccount[];
+
+	localDiscussionID: number;
+
+	addMembers(members: ContactAccount | ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void {
+		// TODO
+	}
+
 }
