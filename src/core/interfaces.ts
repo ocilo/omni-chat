@@ -249,6 +249,10 @@ export interface Discussion {
 	description: string;            // Une description brève de la discussion,
 																	// sous forme textuelle.
 
+	heterogeneous: boolean;         // Est vrai si la discussion est heterogene,
+                                  // c'est-a-dire composee de plusieurs participants
+                                  // utilisant des protocoles differents.
+
   isPrivate: boolean;             // Privacite de la conversation
 
 	participants: GroupAccount[];   // Liste des participants a la conversation.
@@ -274,17 +278,25 @@ export interface Discussion {
   //  Cette methode fait appel au proxy pour chaque Account de "participants".
 
   addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void;
-  //  Ajoute des participants a la conversation.
+  //  Ajoute des participants a la discussion courante.
 	//  Ces participants peuvent aussi bien etre des groupes
 	//  (deja existants ou non) que des personnes seules.
+	//  Si un des GroupAccounts precise est deja present en tant
+	//  que participant, err sera non nul.
+
+	removeParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void;
+	//  Enleve les participants "p" de la conversation courante.
+	//  Si un des GroupAccounts precise est n'est pas deja
+	//  present en tant que participant, err sera non nul.
 
   getParticipants(): Promise<GroupAccount[]>;
-  //  Retourne une liste des participants a la conversation.
+  //  Retourne une liste des participants de la discussion courante.
 
   onMessage(callback: (msg: Message) => any): Promise<Discussion>;
-  //  Appelle la methode a executer lors de la reception du message.
-  //  TODO : callback ET retour par promesse ?
-	//  TODO : i'm not sure about how this method is supposed to work.
+  //  Met a jour la methode a executer lors de la reception du message.
+  //  Retourne la discussion courante pour permettre de chainer
+	//  les appels.
+	//  TODO : this should maybe be somewhere else.
 
   getName(): Promise<string>;
   //  Retourne le nom de la discussion.
