@@ -331,6 +331,7 @@ export class OChatDiscussion implements Discussion {
 		let err: Error = null;
 		for(let recipient of this.participants) {
 			let gotIt: boolean = false;
+			// TODO : rework this
 			for(let ownerAccount of this.owner.accounts) {
 				if(ownerAccount.driver.isCompatibleWith(recipient.protocol)) {
 					ownerAccount.sendMessageTo(recipient, msg, callback);
@@ -350,9 +351,15 @@ export class OChatDiscussion implements Discussion {
 		let err: Error = null;
 		for(let part of p) {
 			if(this.participants.indexOf(part) === -1) {
-				for(let k of this.owner.accounts) {
+				let param: string[] = [part.protocol];
+				this.owner.getAccounts(param).then((accounts) => {
+					if(!accounts.empty()) {
+						//accounts[0].driver.addMembersToGroupChat(part.members, )
 
+					}
 				}
+
+				);
 				this.participants.push(part);
 			} else if (!err) {
 				err = new Error("At least one of these participants was already in this discussion.");
@@ -513,6 +520,17 @@ export class OChatUserAccount implements UserAccount {
 
 	getContacts(): Promise<Contact[]> {
 		return this.driver.getContacts(this);
+	}
+
+	hasContactAccount(account: ContactAccount): Promise<boolean> {
+		return Promise.resolve(this.getContacts().then((contacts): boolean => {
+			for(let contact of contacts) {
+				if(contact.accounts[0].localID === account.localID) {
+					return true;
+				}
+			}
+			return false;
+		}));
 	}
 
 	getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Promise<Discussion[]> {
