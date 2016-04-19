@@ -346,32 +346,67 @@ export class OChatDiscussion implements Discussion {
 		callback(err, msg);
 	}
 
-	addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void {
-		// TODO : we need to rework this
-		let err: Error = null;
-		for(let part of p) {
-			if(this.participants.indexOf(part) === -1) {
-				let param: string[] = [part.protocol];
-				this.owner.getAccounts(param).then((accounts) => {
-					if(!accounts.empty()) {
-						//accounts[0].driver.addMembersToGroupChat(part.members, )
-
+	addParticipants(p: GroupAccount): Promise<Discussion> {
+		if(this.participants.indexOf(p) === -1) {
+			let param: string[] = [p.protocol];
+			this.owner.getAccounts(param).then((ownerAccounts) => {
+				let compatibleParticipants: GroupAccount[] = [];
+				for(let participant of this.participants) {
+					if(participant.protocol === p.protocol) {
+						compatibleParticipants.push(participant);
 					}
 				}
-
-				);
-				this.participants.push(part);
-			} else if (!err) {
-				err = new Error("At least one of these participants was already in this discussion.");
-			}
+				let gotIt: boolean = false;
+				for(let compatibleParticipant of compatibleParticipants) {
+					for(let ownerAccount of ownerAccounts) {
+						if(ownerAccount.hasContactAccount(compatibleParticipant.members[0])) {
+							// Ok, we have determined which one of the user's accounts
+							// owns the current compatible participant.
+							// Now if it owns the ContactAccounts that we want to add
+							// to this discussion too, we win.
+							if(ownerAccount.hasContactAccount(p.members)) {
+								// That's it, we win !
+								ownerAccount.driver.addMembersToGroupChat(p.members, compatibleParticipant, (err) => {
+									if(!err) {
+										compatibleParticipant.addMembers(p.members);
+									}
+								});
+								gotIt = true;
+								break;
+							}
+						}
+					}
+					if(gotIt) {
+						break;
+					}
+				}
+				// In the case where we still not have been able to add these participants,
+				// there is two solutions :
+				if(!gotIt) {
+					if(compatibleParticipants.length === 0) {
+						// First, we are trying to add accounts using a protocol which is
+						// not in this discussion yet. We just have to add these participants
+						// to this discussion, which will become heterogeneous.
+						this.participants.push(p);
+						this.heterogeneous = true;
+					} else {
+						// Second, we are trying to add accounts from an UserAccount which has
+						// no current contacts in this discussion. We just have to add them.
+						this.participants.push(p);
+					}
+					// TODO : but how the new participants will know that they are in this discussion ?
+					//        For the moment, they won't know until we send a message to them.
+					//        I don't think that it is a real problem.
+					//        If it is, we coud just auto-send a message to them.
+				}
+			});
 		}
-
-		if(callback) {
-			callback(err, this.participants);
-		}
+		return Promise.resolve(this);
 	}
 
-	removeParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void {
+	removeParticipants(contactAccount: ContactAccount): Promise<Discussion> {
+		// TODO
+		return Promise.resolve(this);
 	}
 
 	getParticipants(): Promise<GroupAccount[]> {
