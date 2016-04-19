@@ -290,6 +290,8 @@ export interface Discussion {
   //  Ajoute les membres de "p" a la discussion courante.
 	//  Ces participants peuvent aussi bien etre un groupe
 	//  (deja existants ou non) qu'une personne seule.
+	//  Si il existe deja un GroupAccount utilisant le meme
+	//  protocole, p sera ajoute a ce groupe.
 
 	removeParticipants(contactAccount: ContactAccount): Promise<Discussion>;
 	//  Enleve le participant "contactAccount" de la discussion
