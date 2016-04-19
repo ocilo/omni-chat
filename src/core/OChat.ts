@@ -634,5 +634,4 @@ export class OChatGroupAccount implements GroupAccount {
 			callback(err, this.members);
 		}
 	}
-
 }
