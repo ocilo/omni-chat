@@ -332,6 +332,7 @@ export class OChatDiscussion implements Discussion {
 	}
 
 	addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void {
+		// TODO : we need to rework this
 		let err: Error = null;
 		for(let part of p) {
 			if(this.participants.indexOf(part) === -1) {
@@ -534,7 +535,31 @@ export class OChatGroupAccount implements GroupAccount {
 	localDiscussionID: number;
 
 	addMembers(members: ContactAccount | ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void {
-		// TODO
+		let err: Error = null;
+
+		for(let account of members) {
+			if(account.protocol.toLocaleLowerCase() !== this.protocol.toLocaleLowerCase()) {
+				if(!err) {
+					err = new Error("One of the accounts does not have the right protocol.");
+				}
+			} else {
+				if(this.members.indexOf(account !== -1)) {
+					if(!err) {
+						err = new Error("One of the account is already a member.");
+					}
+				} else {
+					this.members.push(account);
+					//this.localDiscussionID = null;  // We maybe need to do this
+					// TODO : we must add the member to the real group too,
+					//        i.e. through the driver.
+					//        Could we do this directly in Discussion.addParticipants() ?
+				}
+			}
+		}
+
+		if(callback) {
+			callback(err, this.members);
+		}
 	}
 
 }
