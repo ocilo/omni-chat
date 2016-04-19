@@ -286,17 +286,17 @@ export interface Discussion {
   //  Envoie le message "msg" a tous les participants de la discussion.
   //  Cette methode fait appel au proxy pour chaque Account de "participants".
 
-  addParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void;
-  //  Ajoute des participants a la discussion courante.
-	//  Ces participants peuvent aussi bien etre des groupes
-	//  (deja existants ou non) que des personnes seules.
-	//  Si un des GroupAccounts precise est deja present en tant
-	//  que participant, err sera non nul.
+  addParticipants(p: GroupAccount, callback?: (err: Error, succes: GroupAccount[]) => any): Promise<Discussion>;
+  //  Ajoute les membres de "p" a la discussion courante.
+	//  Ces participants peuvent aussi bien etre un groupe
+	//  (deja existants ou non) qu'une personne seule.
+	//  Si "p"" etait deja present en tantv que participant,
+	//  err sera non nul.
 
-	removeParticipants(p: GroupAccount[], callback?: (err: Error, succes: GroupAccount[]) => any): void;
+	removeParticipants(p: GroupAccount, callback?: (err: Error, succes: GroupAccount[]) => any): Promise<Discussion>;
 	//  Enleve les participants "p" de la conversation courante.
-	//  Si un des GroupAccounts precise est n'est pas deja
-	//  present en tant que participant, err sera non nul.
+	//  Si "p"" n'est pas deja present en tant que participant,
+	//  err sera non nul.
 
   getParticipants(): Promise<GroupAccount[]>;
   //  Retourne une liste des participants de la discussion courante.
