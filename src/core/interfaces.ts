@@ -60,9 +60,14 @@ export interface Client {
  * This imply that creating a new module (i.e to allow OmniChat
  * to communicate with other accounts) devs must create a new
  * proxy too.
+ * Note that Proxies only act in the side of the service they
+ * have access to. This means that it will not modify any
+ * object that are used as overlayer elsewhere. People calling
+ * they services offered by Proxies must edit these objects by
+ * their own, depending of the result of Proxies methods calls.
  ***************************************************************/
 export interface Proxy {
-	protocol: string;       //  La liste des protocoles supportes par le proxy
+	protocol: string;       //  Le protocol supporte par le proxy.
 													//  Varie selon l'implementation de l'interface.
 
   isCompatibleWith(protocol: string): boolean;
@@ -76,6 +81,8 @@ export interface Proxy {
 	//  i.e. il y a eu une deconnexion, une tentative de
 	//  reconnexion sera faite. Ceci peut se traduire par un nouvel
 	//  objet connection.
+	//  TODO : in the futur, we need to give other parameters :
+	//         servername, serverpassword...
 
   getContacts(account: UserAccount): Promise<Contact[]>;
   //  Accede a la liste des contacts du compte "account",
@@ -86,6 +93,18 @@ export interface Proxy {
 	//  et retourne jusqu'a "max" Discussions dans un tableau.
 	//  Si filter est precise, ne retourne dans le tableau que les discussions
 	//  pour lesquelles la fonction "filter" retourne true.
+
+	addMembersToGroupChat(members: ContactAccount[], groupChat: GroupAccount, callback?: (err: Error) => any): void;
+	//  Ajoute les membres "members" au groupe de discussion "groupChat".
+	//  Ceci ne se fait que du cote du service auquel le proxy courant
+	//  a acces. "groupChat" ne sera donc en aucun cas modifie.
+	//  Si au moins un des membres n'a pa pu etre ajoute, err sera non nul.
+
+	removeMembersFromGroupChat(members: ContactAccount[], groupChat: GroupAccount, callback?: (err: Error) => any): void;
+	//  Supprime les membres "members" du groupe de discussion "groupChat".
+	//  Ceci ne se fait que du cote du service auquel le proxy courant
+	//  a acces. "groupChat" ne sera donc en aucun cas modifie.
+	//  Si au moins un des membres n'a pa pu etre supprime, err sera non nul.
 
   sendMessage(msg: Message, recipients: GroupAccount, callback?: (err: Error, succesM: Message) => any): void;
 	//  Envoie le message "msg" aux destinataires "recipients".
