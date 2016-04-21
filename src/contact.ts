@@ -1,6 +1,6 @@
 import * as Bluebird from "bluebird";
 
-import {Contact} from "palantiri-interfaces";
+import {Contact} from "./interfaces/contact";
 import {ContactAccount} from "palantiri-interfaces";
 
 export class OChatContact implements Contact {

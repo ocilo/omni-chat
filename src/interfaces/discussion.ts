@@ -1,9 +1,9 @@
 import * as Bluebird from "bluebird";
-import {GroupAccount} from "./group-account";
 import {User} from "./user";
-import {Message} from "./message";
-import {ContactAccount} from "./contact-account";
-import {Dictionary} from "./utils";
+import {GroupAccount} from "palantiri-interfaces";
+import {Message} from "palantiri-interfaces";
+import {ContactAccount} from "palantiri-interfaces";
+import {utils} from "palantiri-interfaces";
 
 /***************************************************************
  * Discussion is the only thing you can use to chat with someone.
@@ -30,7 +30,7 @@ export interface Discussion {
   owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
                                   // cette discussion.
 
-  settings: Dictionary<any>;      // La liste des autres parametres de la discussion,
+  settings: utils.Dictionary<any>;// La liste des autres parametres de la discussion,
 		                              // meme specifiques.
 		                              // Cela permet aux implementations de travailler
 																	// avec plus de donnees.
@@ -73,7 +73,7 @@ export interface Discussion {
   getDescription(): Bluebird.Thenable<string>;
   //  Retourne une description de la discussion.
 
-  getSettings(): Bluebird.Thenable<Dictionary<any>>;
+  getSettings(): Bluebird.Thenable<utils.Dictionary<any>>;
   //  Retourne tout les paramètres de la discussion, même spécifiques (map).
   //  Bien evidemment, nous ne pourrons pas tout traiter.
   //  Nous essayerons cependant de faire du mieux possible sans pour autant

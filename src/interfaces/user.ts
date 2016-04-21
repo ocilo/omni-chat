@@ -1,6 +1,6 @@
 import * as Bluebird from "bluebird";
-import {UserAccount} from "./user-account";
-import {GroupAccount} from "./group-account";
+import {UserAccount} from "palantiri-interfaces";
+import {GroupAccount} from "palantiri-interfaces";
 import {Contact} from "./contact";
 import {Discussion} from "./discussion";
 import {EventEmitter} from "events";

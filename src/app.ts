@@ -1,7 +1,7 @@
 import * as Bluebird from "bluebird";
 
-import {User} from "palantiri-interfaces";
-import {App} from "palantiri-interfaces";
+import {User} from "./interfaces/user";
+import {App} from "./interfaces/app";
 
 export class OChatApp implements App {
   users: User[];          // All users connected to this client

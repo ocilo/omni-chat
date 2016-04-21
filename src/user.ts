@@ -1,13 +1,11 @@
 import * as Bluebird from "bluebird";
-
-import {Contact} from "palantiri-interfaces";
-import {User} from "palantiri-interfaces";
-import {Discussion} from "palantiri-interfaces";
+import {Contact} from "./interfaces/contact";
+import {User} from "./interfaces/user";
+import {Discussion} from "./interfaces/discussion";
+import {OChatContact} from "./contact";
 import {UserAccount} from "palantiri-interfaces";
 import {GroupAccount} from "palantiri-interfaces";
-import {OChatApp} from "./app";
 import {EventEmitter} from "events";
-import {OChatContact} from "../build/node/contact";
 
 export class OChatUser extends EventEmitter implements User {
   username: string;

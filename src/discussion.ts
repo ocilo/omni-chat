@@ -1,7 +1,7 @@
 import * as Bluebird from "bluebird";
 
-import {User} from "palantiri-interfaces";
-import {Discussion} from "palantiri-interfaces";
+import {User} from "./interfaces/user";
+import {Discussion} from "./interfaces/discussion";
 import {ContactAccount} from "palantiri-interfaces";
 import {GroupAccount} from "palantiri-interfaces";
 import {Message} from "palantiri-interfaces";

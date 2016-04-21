@@ -1,4 +1,4 @@
-import {ContactAccount} from "./contact-account";
+import {ContactAccount} from "palantiri-interfaces";
 import * as Bluebird from "bluebird";
 
 /***************************************************************
