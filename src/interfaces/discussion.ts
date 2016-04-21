@@ -7,8 +7,8 @@ import {Dictionary} from "./utils";
 
 /***************************************************************
  * Discussion is the only thing you can use to chat with someone.
- * It provides you methods to send a message, do something when
- * you receive a message and so on.
+ * It provides you methods to send a message, add and remove
+ * participants, and so on.
  ***************************************************************/
 export interface Discussion {
   creationDate: Date;             // Date de creation de la conversation
@@ -30,10 +30,10 @@ export interface Discussion {
   owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
                                   // cette discussion.
 
-  settings: Dictionary<any>;     // La liste des autres parametres de la discussion,
-                                  // meme specifiques.
-                                  // Cela permet aux implementations de travailler
-                                  // avec plus de donnees.
+  settings: Dictionary<any>;      // La liste des autres parametres de la discussion,
+		                              // meme specifiques.
+		                              // Cela permet aux implementations de travailler
+																	// avec plus de donnees.
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Bluebird.Thenable<Message[]>;
   //  Retourne une liste des maxMessages derniers messages echanges pendant la discussion,
@@ -42,9 +42,11 @@ export interface Discussion {
   //  Si filter est precise, ne retourne que les messages dont l'application de la fonction
   //  filter ne retourne true.
 
-  sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): void;
+  sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): Bluebird.Thenable<Discussion>;
   //  Envoie le message "msg" a tous les participants de la discussion.
-  //  Cette methode fait appel au proxy pour chaque Account de "participants".
+  //  Il est a noter que le message ne pourra etre envoye que si
+	//  les comptes de l'utilisateurs necessaires a cet envoie
+	//  disposent tous d'une connection allumee.
 
   addParticipants(p: GroupAccount): Bluebird.Thenable<Discussion>;
   //  Ajoute les membres de "p" a la discussion courante.
@@ -57,19 +59,13 @@ export interface Discussion {
   //  Enleve le participant "contactAccount" de la discussion
   //  courante. Plus exactement, supprime "contactAccount" d'un
   //  GroupAccount de this.participants et l'evince du groupe de
-  //  chat et de la conversation du cote du service (via un Proxy).
+  //  chat et de la conversation du cote du service (via un ConnectedApi).
   //  A noter que si jamais "contactAccount" etait present
   //  dans plusieurs GroupAccounts de this.participants, il ne
   //  sera supprime qu'une seule fois.
 
   getParticipants(): Bluebird.Thenable<GroupAccount[]>;
   //  Retourne une liste des participants de la discussion courante.
-
-  onMessage(callback: (msg: Message) => any): Bluebird.Thenable<Discussion>;
-  //  Met a jour la methode a executer lors de la reception du message.
-  //  Retourne la discussion courante pour permettre de chainer
-  //  les appels.
-  //  TODO : this should maybe be somewhere else.
 
   getName(): Bluebird.Thenable<string>;
   //  Retourne le nom de la discussion.

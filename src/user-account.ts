@@ -1,62 +1,95 @@
 import * as Bluebird from "bluebird";
 
-import {ContactAccount} from "./interfaces/contact-account";
-import {User} from "./interfaces/user";
-import {Discussion} from "./interfaces/discussion";
-import {Connection} from "./interfaces/connection";
-import {GroupAccount} from "./interfaces/group-account";
-import {Message} from "./interfaces/message";
-import {UserAccount} from "./interfaces/user-account";
-import {Proxy} from "./interfaces/proxy";
-import {Contact} from "./interfaces/contact";
-import {Dictionary} from "./interfaces/utils";
+import {ContactAccount} from "palantiri-interfaces";
+import {Discussion} from "palantiri-interfaces";
+import {Connection} from "palantiri-interfaces";
+import {GroupAccount} from "palantiri-interfaces";
+import {Message} from "palantiri-interfaces";
+import {UserAccount} from "palantiri-interfaces";
+import {utils} from "palantiri-interfaces";
 
-export class OChatUserAccount implements UserAccount {
+export abstract class OChatUserAccount implements UserAccount {
   username: string;
 
-  driver: Proxy;
+	protocol: string;
 
   connection: Connection;
 
-  data: Dictionary<any>;
+  data: utils.Dictionary<any>;
 
-  owner: User;
-
-  getContacts(): Bluebird<Contact[]> {
-    return Bluebird.resolve(this.driver.getContacts(this));
+  getContacts(): Bluebird<ContactAccount[]> {
+	  let accounts: ContactAccount[] = [];
+	  let that = this;
+	  if(this.connection && this.connection.connected) {
+		  this.connection.getConnectedApi()
+			  .then((api) => {
+				  return api.getContacts(that);
+			  })
+		    .then((contactsAccounts) => {
+			    accounts = contactsAccounts;
+		    });
+	  }
+    return Bluebird.resolve(accounts);
+	  // TODO : mon enchainement de promesse est-il bon ?
+	  // TODO : de maniere plus generale, est ce que mes retours par promesse sont bons ?
   }
 
   hasContactAccount(account: ContactAccount): Bluebird<boolean> {
     return Bluebird.resolve(this.getContacts().then((contacts): boolean => {
       for(let contact of contacts) {
-        if(contact.accounts[0].localID === account.localID) {
+        if(contact.localID === account.localID) {
           return true;
         }
       }
       return false;
     }));
+	  // TODO : et celui-la de retour, il est bon ?
   }
 
   getDiscussions(max?: number, filter?: (discuss: Discussion) => boolean): Bluebird<Discussion[]> {
-    return Bluebird.resolve(this.driver.getDiscussions(this, max, filter));
+	  let discuss: Discussion[] = [];
+	  let that = this;
+	  if(this.connection && this.connection.connected) {
+		  this.connection.getConnectedApi()
+			  .then((api) => {
+				  return api.getDiscussions(that, max, filter);
+			  })
+		    .then((discussions) => {
+			    discuss = discussions;
+		    });
+	  }
+    return Bluebird.resolve(discuss);
   }
 
-  getOwner(): Bluebird<User> {
-    return Bluebird.resolve(this.owner);
-  }
+  abstract getOrCreateConnection(): Bluebird<Connection>;
+	//  This method is abstract because specific :
+	//  We can't instanciate a new Connection object without
+	//  just with new Connection(), because it depends of
+	//  the used protocol of this account.
 
-  getOrCreateConnection(): Bluebird<Connection> {
-    if(this.connection && this.connection.connected) {
-      return Bluebird.resolve(this.connection);
-    }
-    return Bluebird.resolve(this.driver.createConnection(this));
-  }
+  sendMessageTo(recipients: GroupAccount, msg: Message, callback?: (err: Error, succes: Message) => any): Bluebird.Thenable<UserAccount> {
+    let error: Error = null;
+		if(recipients.protocol !== this.protocol) {
+			error = new Error("Protocols are inconpatible.");
+		} else if (!this.connection || !this.connection.connected) {
+			error = new Error("You are not connected to the current account.");
+		} else {
+			this.connection.getConnectedApi().then((api) => {
+				api.sendMessage(msg, recipients, (err, message) => {
+					if(err) {
+						error = err;
+					}
+				});
+			});
+		}
 
-  sendMessageTo(recipients: GroupAccount, msg: Message, callback?: (err: Error, succes: Message) => any): void {
-    this.driver.sendMessage(msg, recipients, callback);
-  }
+	  // TODO : et la, ca ne fait pas de la merde par hasard entre la promesse
+	  //        et les deux callbacks et le retour par promesse ?
 
-  constructor(owner: User) {
-    this.owner = owner;
+		if(callback) {
+			callback(error, msg);
+		}
+
+	  return Bluebird.resolve(this);
   }
 }

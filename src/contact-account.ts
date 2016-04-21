@@ -1,4 +1,4 @@
-import {ContactAccount} from "./interfaces/contact-account";
+import {ContactAccount} from "palantiri-interfaces";
 
 export class OChatContactAccount implements ContactAccount {
   contactName: string;

@@ -1,5 +1,6 @@
-import {ContactAccount} from "./interfaces/contact-account";
-import {GroupAccount} from "./interfaces/group-account";
+import {ContactAccount} from "palantiri-interfaces";
+import {GroupAccount} from "palantiri-interfaces";
+import * as Bluebird from "bluebird";
 
 export class OChatGroupAccount implements GroupAccount {
   protocol: string;
@@ -8,7 +9,7 @@ export class OChatGroupAccount implements GroupAccount {
 
   localDiscussionID: number;
 
-  addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void {
+  addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): Bluebird.Thenable<GroupAccount> {
     let err: Error = null;
 
     for(let account of members) {
@@ -34,5 +35,6 @@ export class OChatGroupAccount implements GroupAccount {
     if(callback) {
       callback(err, this.members);
     }
+	  return Bluebird.resolve(this);
   }
 }

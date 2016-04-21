@@ -1,16 +1,16 @@
 import * as Bluebird from "bluebird";
 
-import {Contact} from "./interfaces/contact";
-import {User} from "./interfaces/user";
-import {Discussion} from "./interfaces/discussion";
-import {UserAccount} from "./interfaces/user-account";
-import {GroupAccount} from "./interfaces/group-account";
+import {Contact} from "palantiri-interfaces";
+import {User} from "palantiri-interfaces";
+import {Discussion} from "palantiri-interfaces";
+import {UserAccount} from "palantiri-interfaces";
+import {GroupAccount} from "palantiri-interfaces";
 import {OChatApp} from "./app";
+import {EventEmitter} from "events";
+import {OChatContact} from "../build/node/contact";
 
-export class OChatUser implements User {
+export class OChatUser extends EventEmitter implements User {
   username: string;
-
-  app: OChatApp;
 
   accounts: UserAccount[] = [];
 
@@ -29,20 +29,23 @@ export class OChatUser implements User {
     return Bluebird.resolve(discussion);
   }
 
-  leaveDiscussion(discussion: Discussion, callback?: (err: Error, succes: Discussion) => any): void {
-
+  leaveDiscussion(discussion: Discussion): Bluebird.Thenable<User> {
+	  // TODO : two ways to implements this :
+	  //        -> for each accounts, get the connection, then the api, then call leaveGroupChat().
+	  //        -> just emit and event and connections will catch it and do what they need to do.
+		return Bluebird.resolve(this);
   }
 
   getAccounts(protocols?: string[]): Bluebird<UserAccount[]> {
     if(protocols) {
       let accounts: UserAccount[] = [];
       for(let account of this.accounts) {
-        for(let protocol of protocols) {
-          if(account.driver.isCompatibleWith(protocol)) {
-            accounts.push(account);
-            break;
-          }
-        }
+	      for(let protocol of protocols) {
+		      if(account.protocol.toLowerCase() === protocol.toLowerCase()) {
+			      accounts.push(account);
+			      break;
+		      }
+	      }
       }
       return Bluebird.resolve(accounts);
     }
@@ -57,10 +60,24 @@ export class OChatUser implements User {
     let contacts: Contact[] = null;
     for(let account of this.accounts) {
       account.getContacts().then((someContacts) => {
+	      let othersContacts: Contact[] = [];
+	      for(let someContact of someContacts) {
+		      let ctc = new OChatContact();
+		      ctc.fullname = someContact.contactName;
+		      if(!ctc.nicknames) {
+			      ctc.nicknames = [];
+		      }
+		      if(!ctc.accounts) {
+			      ctc.accounts = [];
+		      }
+		      ctc.nicknames.push(ctc.fullname);
+		      ctc.accounts.push(someContact);
+		      othersContacts.push(ctc);
+	      }
         if(!contacts) {
-          contacts = someContacts;
+          contacts = othersContacts;
         } else {
-          for(let otherContact of someContacts) {
+          for(let otherContact of othersContacts) {
             let merge: boolean = false;
             for(let actualContact of contacts) {
               if(otherContact.fullname === actualContact.fullname) {
@@ -79,7 +96,7 @@ export class OChatUser implements User {
     return Bluebird.resolve(contacts);
   }
 
-  addAccount(account: UserAccount, callback?: (err: Error, succes: UserAccount[]) => any): void {
+  addAccount(account: UserAccount, callback?: (err: Error, succes: UserAccount[]) => any): Bluebird.Thenable<User> {
     let index: number = this.accounts.indexOf(account);
     let err: Error = null;
     if(index === -1) {
@@ -90,9 +107,10 @@ export class OChatUser implements User {
     if(callback) {
       callback(err, this.accounts);
     }
+	  return Bluebird.resolve(this);
   }
 
-  removeAccount(account: UserAccount, callback?: (err: Error, succes: UserAccount[]) => any): void {
+  removeAccount(account: UserAccount, callback?: (err: Error, succes: UserAccount[]) => any): Bluebird.Thenable<User> {
     let index: number = this.accounts.indexOf(account);
     let err: Error = null;
     if(index === -1) {
@@ -103,30 +121,67 @@ export class OChatUser implements User {
     if(callback) {
       callback(err, this.accounts);
     }
+	  return Bluebird.resolve(this);
   }
 
-  addContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
+  addContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User> {
     // TODO : this is advanced option.
     //        It's about writing on an account,
     //        and not only reading it.
     //        We will do this later.
+	  return Bluebird.resolve(this);
   }
 
-  removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): void {
+  removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User> {
     // WARNING : we need to warn the user that this will remove the contact from all his accounts
     // TODO : this is advanced option.
     //        It's about writing on an account,
     //        and not only reading it.
     //        We will do this later.
+	  return Bluebird.resolve(this);
   }
 
-  onDiscussionRequest(callback: (disc: Discussion) => any): User {
-    // TODO : see troubles in interfaces.ts before
-    return undefined;
-  }
+	connectionsOn(event: string, handler: (...args: any[]) => any): Bluebird.Thenable<User> {
+		for(let account of this.accounts) {
+			if(account.connection && account.connection.connected) {
+				account.getOrCreateConnection().then((co) => {
+					co.on(event, handler);
+				})
+			}
+		}
+		return Bluebird.resolve(this);
+	}
 
-  onContactRequest(callback: (contact: Contact)=> any): User {
-    // TODO : see troubles in interfaces.ts before
-    return undefined;
-  }
+	connectionsOnce(event: string, handler: (...args: any[]) => any): Bluebird.Thenable<User> {
+		for(let account of this.accounts) {
+			if(account.connection && account.connection.connected) {
+				account.getOrCreateConnection().then((co) => {
+					co.once(event, handler);
+				})
+			}
+		}
+		return Bluebird.resolve(this);
+	}
+
+	removeConnectionsListener(event: string, handler: (...args: any[]) => any): Bluebird.Thenable<User> {
+		for(let account of this.accounts) {
+			if(account.connection && account.connection.connected) {
+				account.getOrCreateConnection().then((co) => {
+					co.removeListener(event, handler);
+				})
+			}
+		}
+		return Bluebird.resolve(this);
+	}
+
+	connectionsSetMaxListeners(n: number): Bluebird.Thenable<User> {
+		for(let account of this.accounts) {
+			if(account.connection && account.connection.connected) {
+				account.getOrCreateConnection().then((co) => {
+					co.setMaxListeners(n);
+				})
+			}
+		}
+		return Bluebird.resolve(this);
+	}
 }

@@ -30,16 +30,16 @@ export interface Contact{
   getPrincipalName(): string;
   //  Retourne la valeur du champ fullname.
 
-  setPrincipalName(newPrincipalName: string): void;
+  setPrincipalName(newPrincipalName: string): Bluebird.Thenable<Contact>;
   //  Met a jour le champ "fullname" du contact courant.
   //  Ne modifie pas nicknames.
 
-  mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact;
+  mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact>;
   // Fusionne les comptes du contact courant avec ceux du contact fourni.
   // La gestion du contact fourni apres cette methode est a la charge de l'appelant.
   // Retourne le contact courrant apres eventuelles modifications.
 
-  unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact;
+  unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact>;
   // Defusionne les comptes du contact courant afin de former deux contacts :
   // Le contact fourni.
   // Le contact courant MINUS le contact fourni.
@@ -49,7 +49,7 @@ export interface Contact{
   // La gestion du contact fourni apres cette methode est a la charge de l'appelant.
   // Retourne le contact courrant apres eventuelles modifications.
 
-  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void;
+  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact>;
   // Ajoute un compte au contact courant.
   // Cette operation est differente de mergeContacts() dans le sens ou
   // on rajoute un compte d'un certain type a un contact, mais que ce
@@ -61,7 +61,7 @@ export interface Contact{
   // Cette operation necessite que l'utilisateur se serve d'un client qui
   // supporte le protocole utilise par le compte "account".
 
-  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void;
+  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact>;
   // Supprime un compte du contact courant.
   // Cette operation est differente de mergeContacts() dans le sens ou
   // on supprime un compte d'un certain type a un contact, mais que ce

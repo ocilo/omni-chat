@@ -1,7 +1,7 @@
 import * as Bluebird from "bluebird";
 
-import {Contact} from "./interfaces/contact";
-import {ContactAccount} from "./interfaces/contact-account";
+import {Contact} from "palantiri-interfaces";
+import {ContactAccount} from "palantiri-interfaces";
 
 export class OChatContact implements Contact {
   fullname: string;
@@ -22,11 +22,12 @@ export class OChatContact implements Contact {
     return this.fullname;
   }
 
-  setPrincipalName(newPrincipalName: string): void {
+  setPrincipalName(newPrincipalName: string): Bluebird.Thenable<Contact> {
     this.fullname = newPrincipalName;
+	  return Bluebird.resolve(this);
   }
 
-  mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
+  mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact> {
     let error: Error = null;
     let numberOfErrors: number = 0;
     for(let contactAccount of contact.accounts) {
@@ -44,10 +45,10 @@ export class OChatContact implements Contact {
     if(callback) {
       callback(error, this);
     }
-    return this;
+    return Bluebird.resolve(this);
   }
 
-  unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Contact {
+  unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact> {
     let error: Error = null;
     for(let contactAccount of contact.accounts) {
       this.removeAccount(contactAccount, (err, acc) => {
@@ -63,10 +64,10 @@ export class OChatContact implements Contact {
     if(callback) {
       callback(error, this);
     }
-    return this;
+    return Bluebird.resolve(this);
   }
 
-  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void {
+  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact> {
     let index: number = this.accounts.indexOf(account);
     let err: Error = null;
     if(index === -1) {
@@ -81,9 +82,10 @@ export class OChatContact implements Contact {
     if(callback) {
       callback(err, this.accounts);
     }
+	  return Bluebird.resolve(this);
   }
 
-  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): void {
+  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact> {
     let index: number = this.accounts.indexOf(account);
     let err: Error = null;
     if(index === -1) {
@@ -95,5 +97,6 @@ export class OChatContact implements Contact {
     if(callback) {
       callback(err, this.accounts);
     }
+	  return Bluebird.resolve(this);
   }
 }

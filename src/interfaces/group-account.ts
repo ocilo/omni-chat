@@ -1,4 +1,5 @@
 import {ContactAccount} from "./contact-account";
+import * as Bluebird from "bluebird";
 
 /***************************************************************
  * GroupAccount represents an aggregation of several
@@ -20,7 +21,7 @@ export interface GroupAccount {
                               //  s'il existe. Depend directement
                               //  de la base et donc du protocole utilise.
 
-  addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): void;
+  addMembers(members: ContactAccount[], callback?: (err: Error, members: ContactAccount[]) => any): Bluebird.Thenable<GroupAccount>;
   //  Add all the ContactAccounts "members" to the list of
   //  known members.
   //  Note that the ContactAccount with the field "protocol"

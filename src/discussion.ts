@@ -1,11 +1,11 @@
 import * as Bluebird from "bluebird";
 
-import {User} from "./interfaces/user";
-import {Discussion} from "./interfaces/discussion";
-import {ContactAccount} from "./interfaces/contact-account";
-import {GroupAccount} from "./interfaces/group-account";
-import {Message} from "./interfaces/message";
-import {Dictionary} from "./interfaces/utils";
+import {User} from "palantiri-interfaces";
+import {Discussion} from "palantiri-interfaces";
+import {ContactAccount} from "palantiri-interfaces";
+import {GroupAccount} from "palantiri-interfaces";
+import {Message} from "palantiri-interfaces";
+import {utils} from "palantiri-interfaces";
 
 export class OChatDiscussion implements Discussion {
   creationDate: Date;
@@ -22,31 +22,45 @@ export class OChatDiscussion implements Discussion {
 
   owner: User;
 
-  settings: Dictionary<any>;
+  settings: utils.Dictionary<any>;
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Bluebird<Message[]> {
     // TODO : this depends on how we manage heterogeneous ContactAccount
-    //        see above in OchatUser.getOrCreateDiscussion
+    //        see in OchatUser.getOrCreateDiscussion
+    // NOTES : as discussed, the best for heterogeneous Discussions is to just getMessage
+    //         not older than the creationDate of the discussion.
+    //         In an extreme case, we can let the user did it, but he will then have to
+    //         give us a method that merge messages, because it has no semantic for us.
     return undefined;
   }
 
-  sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): void {
+  sendMessage(msg: Message, callback?: (err: Error, succes: Message) => any): Bluebird.Thenable<Discussion> {
     let err: Error = null;
     for(let recipient of this.participants) {
       let gotIt: boolean = false;
-      // TODO : rework this
       for(let ownerAccount of this.owner.accounts) {
-        if(ownerAccount.driver.isCompatibleWith(recipient.protocol)) {
-          ownerAccount.sendMessageTo(recipient, msg, callback);
-          gotIt = true;
-          break;
+        if(ownerAccount.protocol.toLowerCase() === recipient.protocol.toLowerCase()) {
+          let hasAllAccounts: boolean = true;
+          for(let recipAccount of recipient.members) {
+            if(!ownerAccount.hasContactAccount(recipAccount)) {
+              hasAllAccounts = false;
+              break;
+            }
+          }
+          if(hasAllAccounts) {
+            ownerAccount.sendMessageTo(recipient, msg, callback);
+            gotIt = true;
+          }
         }
       }
       if(!err && !gotIt) {
         err = new Error("At least one recipient could not be served.");
       }
     }
-    callback(err, msg);
+	  if(callback) {
+		  callback(err, msg);
+	  }
+    return Bluebird.resolve(this);
   }
 
   addParticipants(p: GroupAccount): Bluebird<Discussion> {
@@ -69,11 +83,19 @@ export class OChatDiscussion implements Discussion {
               // to this discussion too, we win.
               if(ownerAccount.hasContactAccount(p.members[0])) {
                 // That's it, we win !
-                ownerAccount.driver.addMembersToGroupChat(p.members, compatibleParticipant, (err) => {
-                  if(!err) {
-                    compatibleParticipant.addMembers(p.members);
-                  }
-                });
+	              // TODO : well, almost. We need to check if every member is accessible,
+	              //        or it could lead to some problems.
+                ownerAccount.getOrCreateConnection()
+                  .then((co) => {
+                    return co.getConnectedApi();
+                  })
+                  .then((api) => {
+                    api.addMembersToGroupChat(p.members, compatibleParticipant, (err) => {
+                      if(!err) {
+                        compatibleParticipant.addMembers(p.members);
+                      }
+                    });
+                  });
                 gotIt = true;
                 break;
               }
@@ -119,6 +141,7 @@ export class OChatDiscussion implements Discussion {
   onMessage(callback: (msg: Message) => any): Bluebird<Discussion> {
     // TODO : see troubles in interfaces.ts before
     return undefined;
+
   }
 
   getName(): Bluebird<string> {
@@ -129,7 +152,7 @@ export class OChatDiscussion implements Discussion {
     return Bluebird.resolve(this.description);
   }
 
-  getSettings(): Bluebird<Dictionary<any>> {
+  getSettings(): Bluebird<utils.Dictionary<any>> {
     return Bluebird.resolve(this.settings);
   }
 }

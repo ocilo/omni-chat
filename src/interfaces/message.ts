@@ -9,12 +9,14 @@ import {UserAccount} from "./user-account";
  * even if the message does not contain any text. So every
  * protocols will always be able to send something.
  ***************************************************************/
-export const MSG_FLAG_TXT = 0x0001;   //  The message contains text
-export const MSG_FLAG_IMG = 0x0002;   //  The message contains picture(s)
-export const MSG_FLAG_VID = 0x0004;   //  The message contains video(s)
-export const MSG_FLAG_FIL = 0x0008;   //  The message contains other file(s)
-export const MSG_FLAG_URL = 0x0010;   //  The message contains an URL
-export const MSG_FLAG_EDI = 0x0100;   //  The message is editable
+export const MessageFlags = {
+  TEXT: 0x0001,   //  The message contains text
+  IMAGE: 0x0002,   //  The message contains picture(s)
+  VIDEO: 0x0004,   //  The message contains video(s)
+  FILE: 0x0008,   //  The message contains other file(s)
+  URL: 0x0010,   //  The message contains an URL
+  EDITABLE: 0x0100   //  The message is editable
+};
 
 /***************************************************************
  * Message is the object exchanged during a Discussion.
