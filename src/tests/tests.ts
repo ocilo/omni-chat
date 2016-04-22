@@ -1,12 +1,12 @@
 import {OChatApp} from "../app";
 import {OChatUser} from "../user";
-import {UserAccount} from "palantiri";  // TODO : use FacebookUserAccount
+import {FacebookUserAccount} from "palantiri-driver-facebook";
 import {Message} from "palantiri";
 import {MessageFlags} from "palantiri-interfaces";
 
 let app = new OChatApp();
 let user = new OChatUser();
-let fbacc = new UserAccount();
+let fbacc = new FacebookUserAccount();
 fbacc.protocol = "facebook";
 fbacc.username = "ochat.frif";
 user.addAccount(fbacc);
@@ -17,7 +17,7 @@ fbacc.getOrCreateConnection()
 		return user.getContacts();
 	})
 	.then((contacts) => {
-		return user.getOrCreateDiscussion(contacts[0]);
+		return user.getOrCreateDiscussion(contacts[0].accounts[0]);
 	})
 	.then((discuss) =>{
 		let msg: Message = new Message();

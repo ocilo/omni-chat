@@ -2,7 +2,8 @@ import * as Bluebird from "bluebird";
 import {Contact} from "./interfaces/contact";
 import {ContactAccount} from "./interfaces/contact-account";
 import {User} from "./interfaces/user";
-import {Discussion} from "./discussion";
+import {Discussion} from "./interfaces/discussion";
+import {OChatDiscussion} from "./discussion";
 import {OChatContact} from "./contact";
 import {UserAccount} from "palantiri-interfaces";
 import {Message} from "palantiri-interfaces";
@@ -14,52 +15,59 @@ export class OChatUser implements User {
   accounts: UserAccount[] = [];
 
   getOrCreateDiscussion(contactAccount: ContactAccount): Bluebird<Discussion> {
-    let discussion: Discussion = new Discussion(); // The discussion we are looking for
+    let discuss: Discussion = new OChatDiscussion(); // The discussion we are looking for
 	  let that = this;
-	  let ownerAccount = undefined;
+	  let ownerAccount: UserAccount = undefined;
 	  for(let account of this.accounts) {
 		  if(account.hasContactAccount(contactAccount)) {
 			  ownerAccount = account;
 			  account.getDiscussions(1, (disc): boolean => {
-					disc.getParticipants().then((part) => {
-						for(let participant of part) {
-							if(participant === contactAccount) {
-								return true;
+				  let contains: boolean = false;
+					disc.getParticipants()
+						.then((part) => {
+							for(let participant of part) {
+								if(participant === contactAccount) {
+									contains = true;
+								}
 							}
-						}
-					});
-				  return false;
-			  }).then((discussions) => {
+							contains = false;
+						});
+				  return contains;
+			  })
+				  .then((discussions) => {
 				  if(discussions && discussions.length !== 0) {
-					  discussion.creationDate = discussions[0].creationDate;
-					  discussion.name = discussions[0].name;
-					  discussion.description = discussions[0].description;
-					  discussion.subdiscussions.push({since: new Date(), discussion: discussions[0]});
+					  discuss.creationDate = discussions[0].creationDate;
+					  discuss.name = discussions[0].name;
+					  discuss.description = discussions[0].description;
+					  discuss.addSubdiscussion(discussions[0]);
 				  } else {
-					  discussion.creationDate = new Date();
-					  discussion.name = "Discussion with " + contactAccount.fullname;
-					  discussion.description = "Discussion with " + contactAccount.fullname;
-					  let subdisc: GroupChat = new GroupChat();
-					  subdisc.protocol = contactAccount.protocol;
-					  subdisc.localDiscussionID = undefined;
-					  subdisc.creationDate = new Date();
-					  subdisc.name = undefined;
-					  subdisc.description = undefined;
-					  subdisc.participants = [contactAccount];
-					  subdisc.owner = ownerAccount;
-					  subdisc.authorizations = undefined;
-					  subdisc.settings = undefined;
+					  discuss.creationDate = new Date();
+					  discuss.name = "Discussion with " + contactAccount.fullname;
+					  discuss.description = "Discussion with " + contactAccount.fullname;
+					  // TODO : fix what's under this comment. It comes from export and type alias.
+					  let subdisc: GroupChat = <GroupChat> {
+						  protocol: contactAccount.protocol,
+						  localDiscussionID: undefined,
+						  creationDate: new Date(),
+						  name: undefined,
+						  description: undefined,
+						  isPrivate: true,
+						  participants: [contactAccount],
+						  owner: ownerAccount,
+						  authorizations: undefined,
+						  settings: undefined
+					  };
 					  // TODO : for the moment, the contact has no clue that we started a Discussion with him.
 					  //        is that a problem ?
-					  discussion.addSubdiscussion(subdisc);
+					  discuss.addSubdiscussion(subdisc);
 				  }
-				  discussion.heterogeneous = false;
-				  discussion.owner = that;
+					  discuss.heterogeneous = false;
+					  discuss.owner = that;
 			  });
 			  break;
 		  }
 	  }
-    return Bluebird.resolve(discussion);
+    return Bluebird.resolve(discuss);
   }
 
 	getAllDiscussions(filter?: (discussion: Discussion) => boolean): Bluebird.Thenable<Discussion[]> {
