@@ -29,9 +29,7 @@ export interface Discussion {
   heterogeneous: boolean;         // Est vrai si la Discussion est heterogene,
                                   // c'est-a-dire composee de plusieurs sous
                                   // discussions utilisant des protocoles differents.
-
-  isPrivate: boolean;             // Privacite de la Discussion.
-
+	
   subdiscussions: Subdiscussion;  // Ensemble des conversations mono-protocole,
 																	// mono-compte dont est compose la Discussion.
 																	// La date permet une recuperation correcte des
