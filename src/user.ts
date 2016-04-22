@@ -82,7 +82,17 @@ export class OChatUser implements User {
   }
 
 	sendMessage(msg: Message, discussion: Discussion, callback?: (err: Error) => any): Bluebird.Thenable<User> {
-		// TODO
+		let err: Error = null;
+		for(let subdiscussion of discussion.subdiscussions) {
+			subdiscussion.discussion.owner.sendMessage(msg, subdiscussion.discussion, (error) => {
+				if(error) {
+					err = error;
+				}
+			});
+		}
+		if(callback) {
+			callback(err);
+		}
 		return Bluebird.resolve(this);
 	}
 
