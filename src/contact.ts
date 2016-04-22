@@ -1,7 +1,7 @@
 import * as Bluebird from "bluebird";
 
 import {Contact} from "./interfaces/contact";
-import {ContactAccount} from "palantiri-interfaces";
+import {ContactAccount} from "./interfaces/contact-account";
 
 export class OChatContact implements Contact {
   fullname: string;
@@ -71,9 +71,9 @@ export class OChatContact implements Contact {
     let index: number = this.accounts.indexOf(account);
     let err: Error = null;
     if(index === -1) {
-      this.nicknames.push(account.contactName);
+      this.nicknames.push(account.fullname);
       if(!this.fullname) {
-        this.fullname = account.contactName;
+        this.fullname = account.fullname;
       }
       this.accounts.push(account);
     } else {
@@ -90,7 +90,7 @@ export class OChatContact implements Contact {
     let err: Error = null;
     if(index === -1) {
       this.accounts.splice(0, 1, account);
-      this.nicknames.splice(0, 1, account.contactName);
+      this.nicknames.splice(0, 1, account.fullname);
     } else {
       err = new Error("This account does not exist for this contact.");
     }
