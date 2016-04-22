@@ -42,7 +42,7 @@ export class OChatUser implements User {
 		return Bluebird.resolve(this);
 	}
 
-	getContacts(): Bluebird<Contact[]> {
+	getContacts(filter?: (contact: Contact) => boolean): Bluebird<Contact[]> {
 		// TODO : we can do lots of improvements :
 		//        -use the mail address(a lot more efficient !)
 		//        -do not compare otherContact with other someContacts we already added to contacts
@@ -63,7 +63,10 @@ export class OChatUser implements User {
 					}
 					ctc.nicknames.push(ctc.fullname);
 					ctc.accounts.push(someContact);
-					othersContacts.push(ctc);
+					if(!filter || filter(ctc)) {
+						othersContacts.push(ctc);
+					}
+					// TODO : correctly use filter
 				}
 				if(!contacts) {
 					contacts = othersContacts;
