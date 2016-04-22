@@ -30,7 +30,7 @@ export interface Discussion {
                                   // c'est-a-dire composee de plusieurs sous
                                   // discussions utilisant des protocoles differents.
 	
-  subdiscussions: Subdiscussion;  // Ensemble des conversations mono-protocole,
+  subdiscussions: Subdiscussion[];// Ensemble des conversations mono-protocole,
 																	// mono-compte dont est compose la Discussion.
 																	// La date permet une recuperation correcte des
 																	// messages de la Discussion.
@@ -67,7 +67,7 @@ export interface Discussion {
 	//  Si cela supprime le dernier participant d'une sous discussion,
 	//  la sous discussion sera supprimee.
 
-  getSubdiscussions(): Bluebird.Thenable<Subdiscussion>;
+  getSubdiscussions(): Bluebird.Thenable<Subdiscussion[]>;
   //  Retourne une liste des sous discussions de la Discussion courante.
 
   getName(): string;

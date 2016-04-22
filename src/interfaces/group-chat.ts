@@ -18,4 +18,4 @@ export type GroupChat = Discussion;
  * the messages from this discussions without losing the
  * meaning of the Discussion.
  ***************************************************************/
-export type Subdiscussion = Array<{since: Date, discussion: GroupChat}>;
+export type Subdiscussion = {since: Date, discussion: GroupChat};

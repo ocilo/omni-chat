@@ -16,7 +16,7 @@ export class OChatDiscussion implements Discussion {
 
   heterogeneous: boolean;
 	
-	subdiscussions: Subdiscussion;
+	subdiscussions: Subdiscussion[];
 
   owner: User;
 
@@ -94,18 +94,16 @@ export class OChatDiscussion implements Discussion {
 						let sender = msg.author;
 						let foundSender: boolean = false;
 						for(let subdiscussion of that.subdiscussions) {
-							for(let groupChat of subdiscussion.discussion) {
-								if(!foundSender) {
-									for(let contact of groupChat.participants) {
-										if(sender === contact) {
-											foundSender = true;
-											break;
-										}
+							if(!foundSender) {
+								for(let contact of subdiscussion.discussion.participants) {
+									if(sender === contact) {
+										foundSender = true;
+										break;
 									}
 								}
-								if(!foundSender) {
-									groupChat.owner.sendMessage(msg, groupChat);
-								}
+							}
+							if(!foundSender) {
+								subdiscussion.discussion.owner.sendMessage(msg, subdiscussion.discussion);
 							}
 						}
 					});
@@ -124,7 +122,7 @@ export class OChatDiscussion implements Discussion {
     return Bluebird.resolve(this);
   }
 
-  getSubdiscussions(): Bluebird<Subdiscussion> {
+  getSubdiscussions(): Bluebird<Subdiscussion[]> {
     return Bluebird.resolve(this.subdiscussions);
   }
 
