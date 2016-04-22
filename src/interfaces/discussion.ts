@@ -16,6 +16,8 @@ import {Message} from "palantiri-interfaces";
  * are reachable from as many accounts as you want, using as
  * many protocols as you want.
  ***************************************************************/
+// TODO(important) : where do we put the methods that send to other types of accounts
+//                   a message received from a contactin an heterogeneous discussion ?
 export interface Discussion {
   creationDate: Date;             // Date de creation de la Discussion.
 
