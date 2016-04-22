@@ -53,6 +53,12 @@ export interface User {
 	//  lorsqu'il est avere que les comptes representent la
 	//  meme personne.
 
+	addContact(contact: Contact, callback? : (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User>;
+	//  Ajoute un contact a l'utilisateur courant.
+
+	removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User>;
+	//  Supprime un contact de l'utilisateur courant.
+
   getAccounts(protocols?: string[]): Bluebird.Thenable<UserAccount[]>;
   //  Retourne la liste des comptes de l'utilisateurs.
   //  Si "protocol" est precise, ne retourne que la lite des
@@ -64,12 +70,6 @@ export interface User {
 
   removeAccount(account: UserAccount, callback? : (err: Error, succes: UserAccount[]) => any): Bluebird.Thenable<User>;
   //  Supprime un compte de l'utilisateur courant.
-
-  addContact(contact: Contact, callback? : (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User>;
-  //  Ajoute un contact a l'utilisateur courant.
-
-  removeContact(contact: Contact, callback?: (err: Error, succes: Contact[]) => any): Bluebird.Thenable<User>;
-  //  Supprime un contact de l'utilisateur courant.
 
 	on(eventname: string, handler: (...args: any[]) => any): Bluebird.Thenable<User>;
 	//  Permet d'enregistrer l'utilisateur courant en tant que
