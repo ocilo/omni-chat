@@ -10,3 +10,12 @@ import {Discussion} from "palantiri-interfaces";
  * The type alias prevent some misunderstandings.
  ***************************************************************/
 export type GroupChat = Discussion;
+
+/***************************************************************
+ * Subdiscussion represents a mono-protocol and mono-account
+ * discussion involved in a multi-accounts and multi-protocols
+ * Discussion. The attribute "since" allows us to correctly get
+ * the messages from this discussions without losing the
+ * meaning of the Discussion.
+ ***************************************************************/
+export type Subdiscussion = Array<{since: Date, discussion: GroupChat}>;
