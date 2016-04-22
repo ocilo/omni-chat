@@ -54,7 +54,7 @@ export class OChatUser implements User {
 				let othersContacts: Contact[] = [];
 				for(let someContact of someContacts) {
 					let ctc = new OChatContact();
-					ctc.fullname = someContact.contactName;
+					ctc.fullname = someContact.fullname;
 					if(!ctc.nicknames) {
 						ctc.nicknames = [];
 					}

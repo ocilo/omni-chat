@@ -6,7 +6,6 @@ import {ContactAccount} from "./interfaces/contact-account";
 import {Subdiscussion} from "./interfaces/group-chat";
 import {GroupChat} from "./interfaces/group-chat";
 import {Message} from "palantiri-interfaces";
-import {utils} from "palantiri-interfaces";
 
 export class OChatDiscussion implements Discussion {
   creationDate: Date;
@@ -33,8 +32,8 @@ export class OChatDiscussion implements Discussion {
   }
 
 	addSubdiscussion(subdiscuss: GroupChat): Bluebird.Thenable<Discussion> {
-		// TODO : rework this. This is probably wrong now
-		if(this.subdiscussions.indexOf(subdiscuss) === -1) {
+		// TODO : rework all of this. This is probably wrong now
+		if(this.subdiscussions.indexOf({since: undefined, discussion: subdiscuss}) === -1) {
 			let param: string[] = [subdiscuss.protocol];
 			this.owner.getAccounts(param).then((ownerAccounts) => {
 				let compatibleSubdiscussions: GroupChat[] = [];
@@ -60,7 +59,7 @@ export class OChatDiscussion implements Discussion {
 										return co.getConnectedApi();
 									})
 									.then((api) => {
-										api.addMembersToGroupChat(subdiscuss.participants, compatibleParticipant, (err) => {
+										api.addMembersToDiscussion(subdiscuss.participants, compatibleParticipant, (err) => {
 											if(!err) {
 												compatibleParticipant.addParticipants(subdiscuss.participants);
 											}
@@ -83,12 +82,12 @@ export class OChatDiscussion implements Discussion {
 						// First, we are trying to add accounts using a protocol which is
 						// not in this discussion yet. We just have to add these participants
 						// to this discussion, which will become heterogeneous.
-						this.subdiscussions.push({currentDate, subdiscuss});
+						this.subdiscussions.push({since: currentDate, discussion: subdiscuss});
 						this.heterogeneous = true;
 					} else {
 						// Second, we are trying to add accounts from an UserAccount which has
 						// no current contacts in this discussion. We just have to add them.
-						this.subdiscussions.push({currentDate, subdiscuss});
+						this.subdiscussions.push({since: currentDate, discussion: subdiscuss});
 					}
 					// TODO : but how the new participants will know that they are in this discussion ?
 					//        For the moment, they won't know until we send a message to them.
