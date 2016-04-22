@@ -89,6 +89,26 @@ export class OChatDiscussion implements Discussion {
 						// no current contacts in this discussion. We just have to add them.
 						this.subdiscussions.push({since: currentDate, discussion: subdiscuss});
 					}
+					let that = this;
+					subdiscuss.owner.connection.on("msgRcv", (msg: Message) => {
+						let sender = msg.author;
+						let foundSender: boolean = false;
+						for(let subdiscussion of that.subdiscussions) {
+							for(let groupChat of subdiscussion.discussion) {
+								if(!foundSender) {
+									for(let contact of groupChat.participants) {
+										if(sender === contact) {
+											foundSender = true;
+											break;
+										}
+									}
+								}
+								if(!foundSender) {
+									groupChat.owner.sendMessage(msg, groupChat);
+								}
+							}
+						}
+					});
 					// TODO : but how the new participants will know that they are in this discussion ?
 					//        For the moment, they won't know until we send a message to them.
 					//        I don't think that it is a real problem.
