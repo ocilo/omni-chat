@@ -15,11 +15,19 @@
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.2.1",
+    "incident": "^1.0.5",
+    "lodash": "^4.0.0",
+    "palantiri": "^0.1.0",
+    "palantiri-interfaces": "^0.1.1"
+  },
   "devDependencies": {
     "chai": "^3.4.1",
     "gulp": "^3.9.0",
     "typescript": "^1.8.10",
-    "via-build-tools": "^0.8.2"
+    "via-build-tools": "^0.8.2",
+    "palantiri-driver-facebook": "^0.0.0"
   },
   "jspm": {
     "configFile": "systemjs.config.js",
@@ -27,11 +35,5 @@
       "lodash": "npm:lodash@^4.0.0"
     },
     "devDependencies": {}
-  },
-  "dependencies": {
-    "bluebird": "^3.2.1",
-    "lodash": "^4.0.0",
-    "palantiri": "^0.1.0",
-    "palantiri-interfaces": "^0.1.1"
   }
 }

@@ -8,11 +8,30 @@ import {OChatContact} from "./contact";
 import {UserAccount} from "palantiri-interfaces";
 import {Message} from "palantiri-interfaces";
 import {GroupChat} from "./interfaces/group-chat";
+import {OChatApp} from "./app";
 
 export class OChatUser implements User {
+  /**
+   * The app used by this user
+   * @type {null}
+   */
+  private app: OChatApp = null;
+
+  /**
+   * A human-readable name
+   */
   username: string;
 
+  /**
+   * The list of accounts associated with this user
+   * @type {Array}
+   */
   accounts: UserAccount[] = [];
+
+  constructor (app: OChatApp, username: string) {
+    this.app = app;
+    this.username = username;
+  }
 
   getOrCreateDiscussion(contactAccount: ContactAccount): Bluebird<Discussion> {
     let discuss: Discussion = new OChatDiscussion(); // The discussion we are looking for

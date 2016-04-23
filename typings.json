@@ -3,11 +3,11 @@
     "bluebird": "registry:npm/bluebird#3.3.4+20160411163813",
     "lodash": "registry:npm/lodash#4.0.0+20160416211519",
     "palantiri": "npm:palantiri",
-    "palantiri-interfaces": "npm:palantiri-interfaces",
-    "palantiri-driver-facebook": "npm:palantiri-driver-facebook"
+    "palantiri-interfaces": "npm:palantiri-interfaces"
   },
   "devDependencies": {
-    "chai": "registry:npm/chai#3.5.0+20160415060238"
+    "chai": "registry:npm/chai#3.5.0+20160415060238",
+    "palantiri-driver-facebook": "npm:palantiri-driver-facebook"
   },
   "ambientDependencies": {},
   "ambientDevDependencies": {
