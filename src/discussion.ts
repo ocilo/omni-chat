@@ -3,30 +3,86 @@ import * as Bluebird from "bluebird";
 import {User} from "./interfaces/user";
 import {Discussion} from "./interfaces/discussion";
 import {ContactAccount} from "./interfaces/contact-account";
-import {Subdiscussion} from "./interfaces/group-chat";
 import {GroupChat} from "./interfaces/group-chat";
-import {Message} from "palantiri-interfaces";
+import * as palantiri from "palantiri-interfaces";
+import {OChatUserAccount} from "./user-account";
+import {TokenSet} from "./utils/tokens";
 
-export class OChatDiscussion implements Discussion {
+function randomDiscussionId(): string {
+  return "discussion:" + Math.random();
+}
+
+/**
+ * Reprents a low-level palantiri pair between a local account and a palantiri discussion
+ * The current user can use its account `localAccount` to send messages to the discussion `discussion`
+ */
+interface SubDiscussion {
+  localAccount: OChatUserAccount;
+  discussionToken: palantiri.DiscussionToken;
+}
+
+/**
+ * Reprents a low-level palantiri link between two accounts:
+ * The current user can use its account `localAccount` to send messages to a contact's account `remoteAccount` trough the discussion `discussion`
+ */
+interface PalantiriLink {
+  localAccount: palantiri.AccountToken;
+  remoteAccount: palantiri.AccountToken;
+  discussion: palantiri.DiscussionToken;
+}
+
+export class OChatDiscussion {
+  driver: string = "ochat"; // ochat -> means that this a group of smaller discussions
+  id: string = randomDiscussionId();
+
+  subDiscussions: SubDiscussion[];
+
+  palantiriLinks: PalantiriLink[];
+
   creationDate: Date;
+  description: string;
+  heterogeneous: boolean; // subDiscussions.length > 0
 
-  name: string;
-
-	description: string;
-
-  heterogeneous: boolean;
-	
-	subdiscussions: Subdiscussion[];
 
   owner: User;
+  name: string;
 
-  getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: Message) => boolean): Bluebird<Message[]> {
-	  let messages: Message[] = [];
+  /**
+   * Returns a list of tokens representing the native discussions in this discussion
+   * @returns {Token[]}
+   */
+  getDistinctPalantiriDiscussions(): palantiri.DiscussionToken[] {
+    let discussionsSet = new TokenSet();
+    for (let link of this.palantiriLinks) {
+      discussionsSet.add(link.discussion);
+    }
+    return discussionsSet.values();
+  }
+
+  // TODO: is it really needed ?
+  /**
+   * Returns a list of tokens representing the participants in this discussion (except the accounts of the owner)
+   * @returns {Token[]}
+   */
+  getDistinctPalantiriContacts(): palantiri.AccountToken[] {
+    let contactsSet = new TokenSet();
+    for (let link of this.palantiriLinks) {
+      contactsSet.add(link.remoteAccount);
+    }
+    return contactsSet.values();
+  }
+
+  isHeterogeneous(): boolean {
+    return this.getDistinctPalantiriDiscussions().length > 1;
+  }
+
+  getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: palantiri.Message) => boolean): Bluebird<palantiri.Message[]> {
+	  let messages: palantiri.Message[] = [];
     // TODO : this depends on how we manage heterogeneous ContactAccount
     //        see in OchatUser.getOrCreateDiscussion
     // NOTES : as discussed, the best for heterogeneous Discussions is to just getMessage
     //         not older than the creationDate of the discussion.
-    //         In an extreme case, we can let the user did it, but he will then have to
+    //         In an extreme case, we can let the user do it, but he will then have to
     //         give us a method that merge messages, because it has no semantic for us.
     return Bluebird.resolve(messages);
   }
