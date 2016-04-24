@@ -2,10 +2,12 @@ import {OChatApp} from "../app";
 import {OChatUser} from "../user";
 import {Message} from "palantiri";
 import {MessageFlags, Connection, Api} from "palantiri-interfaces";
-import {getConnection} from "./connections/facebook";
+import {Connection as FacebookConnection, facebookFromConsole} from "./connections/facebook";
 
 let app = new OChatApp();
 let user = new OChatUser(app, "username");
+
+app.useDriver(FacebookConnection, facebookFromConsole);
 
 getConnection().then((connection: Connection) => {
   connection.connect().then((api: Api) => {
