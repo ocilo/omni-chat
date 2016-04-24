@@ -196,37 +196,27 @@ export class User implements UserInterface {
 		// //        We will do this later.
 		// return Bluebird.resolve(this);
 	}
-  
-  getAccounts(protocols?: string[]): Bluebird<UserAccountInterface[]> {
-    return Bluebird.reject(new Incident("todo", "User:getAccounts is not implemented"));
-    // if(protocols) {
-    //   let accounts: UserAccountInterface[] = [];
-    //   for(let account of this.accounts) {
-    //     for(let protocol of protocols) {
-    //       if(account.driver.toLowerCase() === protocol.toLowerCase()) {
-    //         accounts.push(account);
-    //         break;
-    //       }
-    //     }
-    //   }
-    //   return Bluebird.resolve(accounts);
-    // }
-    // return Bluebird.resolve(this.accounts);
+
+  getAccounts(driverNames?: string[]): Bluebird<UserAccountInterface[]> {
+    return Bluebird.resolve(this.accounts)
+      .filter((account: UserAccountInterface) => {
+        if (!driverNames) {
+          return Bluebird.resolve(true);
+        }
+        return account.getPalantiriToken()
+          .then(token => driverNames.indexOf(token.driver) >= 0);
+      });
   }
 
   addAccount(account: UserAccountInterface): Bluebird<this> {
-    return Bluebird.reject(new Incident("todo", "User:addAccount is not implemented"));
-    // let index: number = this.accounts.indexOf(account);
-    // let err: Error = null;
-    // if(index === -1) {
-     //  this.accounts.push(account);
-    // } else {
-     //  err = new Error("This account already exists.");
-    // }
-    // if(callback) {
-     //  callback(err, this.accounts);
-    // }
-	  // return Bluebird.resolve(this);
+    return Bluebird
+      .try(() => {
+        let index = this.accounts.indexOf(account);
+        if (index < 0) {
+          this.accounts.push(account);
+        }
+        return this;
+      });
   }
 
   removeAccount(account: UserAccountInterface): Bluebird.Thenable<this> {

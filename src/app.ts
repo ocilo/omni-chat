@@ -7,8 +7,7 @@ import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 
 import {User} from "./user";
-
-export type ConnectionStrategy = (account: UserAccountInterface) => Bluebird.Thenable <palantiri.Connection>;
+import {ConnectionStrategy} from "./interfaces/app";
 
 export class App implements AppInterface {
   /**
@@ -31,6 +30,12 @@ export class App implements AppInterface {
     };
   };
 
+  constructor() {
+    this.users = [];
+    this.connectionStrategies = {};
+    this.activeConnections = {};
+  }
+
   /**
    * Register a new driver with its data acquisition function
    * @param driver
@@ -38,6 +43,9 @@ export class App implements AppInterface {
    * @returns {OChatApp}
    */
   useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): this {
+    if(!driver || !driver.driver) {
+      throw new Incident("missing-driver-name", {driver: driver}, "Cannot register driver, no .driver attribute");
+    }
     this.connectionStrategies[driver.driver] = strategy;
     return this;
   }

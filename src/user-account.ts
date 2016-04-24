@@ -51,13 +51,11 @@ export class UserAccount implements UserAccountInterface {
    * but not the retrieved one.
    */
   getOrCreateConnection(): Bluebird<palantiri.Connection> {
-    return Bluebird.reject(new Incident("todo", "UserAccount:getOrCreateConnection is not implemented"));
-    // return this.app.getOrCreateConnection(this);
+    return Bluebird.resolve(this.app.getOrCreateConnection(this));
   }
 
   getOrCreateApi(): Bluebird<palantiri.Api> {
-    return Bluebird.reject(new Incident("todo", "UserAccount:getOrCreateApi is not implemented"));
-    // return this.app.getOrCreateApi(this);
+    return Bluebird.resolve(this.app.getOrCreateApi(this));
   }
 
   /**

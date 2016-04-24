@@ -24,15 +24,21 @@ user.addAccount(fbacc);
 user
   .getAccounts()
   .then((accounts: UserAccountInterface[]) => {
-    console.log("Registered accounts: " + accounts.join(", "));
+    console.log("Registered accounts: ");
+    for(let account of accounts) {
+      console.log(account);
+    }
     let localAccount = accounts[0];
     // normally, localAccount === fbacc
 
     return localAccount.getDiscussions()
       .then(discussions => {
-        console.log("Found discussions: " + discussions.join(", "));
+        console.log("Found discussions: ");
+        for(let discussion of discussions) {
+          console.log(discussion);
+        }
         let msg = {body: "Hello!"};
-        // return discussion.sendMessage(msg);
+        return discussions[0].sendMessage(msg);
       });
 
     // return localAccount.getContactAccounts()
