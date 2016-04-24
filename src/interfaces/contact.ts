@@ -23,7 +23,7 @@ export interface Contact {
   /**
    * Returns the main (full) name of the contact
    */
-  getName(): string;
+  getName(): Thenable<string>;
 
   /**
    * Set the main name of this contact.
@@ -59,7 +59,7 @@ export interface Contact {
    * @param account
    * @param callback
    */
-  addAccount(account: ContactAccount): Thenable<Contact>;
+  addAccount(account: ContactAccount): Thenable<this>;
 
   // TODO: the old behaviour was related to having a tree of contacts ? Might be good to restore it
   // Ajoute un compte au Contact courant.
@@ -78,7 +78,7 @@ export interface Contact {
    * Returns the updated contact
    * @param account
    */
-  removeAccount(account: ContactAccount): Thenable<Contact>;
+  removeAccount(account: ContactAccount): Thenable<this>;
 
   // TODO: the old behaviour was related to having a tree of contacts ? Might be good to restore it
   // Supprime un compte du Contact courant.

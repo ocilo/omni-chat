@@ -1,4 +1,4 @@
-import {Message as MessageInterface} from "./interfaces/message";
+import MessageInterface from "./interfaces/message";
 
 /**
  * Represents a high-level message

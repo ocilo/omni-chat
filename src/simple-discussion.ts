@@ -2,23 +2,24 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import {OChatApp} from "./app"; // todo: use interface
+import AppInterface from "./interfaces/app";
+import ContactAccountInterface from "./interfaces/contact-account";
+import DiscussionInterface from "./interfaces/discussion";
+import MessageInterface from "./interfaces/message";
+import UserInterface from "./interfaces/user";
+import UserAccountInterface from "./interfaces/user-account";
 
-import {ContactAccount as ContactAccountInterface} from "./interfaces/contact-account";
-import {Discussion as DiscussionInterface, GetMessagesOptions} from "./interfaces/discussion";
-import {Message as MessageInterface} from "./interfaces/message";
-import {User as UserInterface} from "./interfaces/user";
-import {UserAccount as UserAccountInterface} from "./interfaces/user-account";
+import {GetMessagesOptions} from "./interfaces/discussion";
 
 /**
  * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
  */
 class SimpleDiscussion implements DiscussionInterface {
-  private app: OChatApp;
+  private app: AppInterface;
   private account: UserAccountInterface;
   private palantiriDiscussion: palantiri.DiscussionToken;
 
-  constructor (app: OChatApp, account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
+  constructor (app: AppInterface, account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
     this.app = app;
     this.account = account;
     this.palantiriDiscussion = palantiriDiscussion;

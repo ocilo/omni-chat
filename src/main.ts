@@ -1,4 +1,4 @@
-export {OChatApp as App} from "./app";
-export {OChatContact as Contact} from "./contact";
-export {OChatDiscussion as Discussion} from "./discussion";
-export {OChatUser as User} from "./user";
+export {App} from "./app";
+export {Contact} from "./contact";
+export {Discussion} from "./discussion";
+export {User} from "./user";

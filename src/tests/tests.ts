@@ -1,17 +1,18 @@
-import {OChatApp} from "../app";
-import {OChatUser} from "../user";
-import {OChatUserAccount} from "../user-account";
+import {App} from "../app";
+import {User} from "../user";
+import {UserAccount} from "../user-account";
 import {Message} from "palantiri";
 import {MessageFlags, Connection, Api} from "palantiri-interfaces";
 import * as facebook from "./connections/facebook";
+import UserAccountInterface from "../interfaces/user-account";
 
-let app = new OChatApp();
+let app = new App();
 
-app.useDriver(facebook.Connection, facebook.fromConsole);
+app.useDriver(<any> facebook.Connection, facebook.fromConsole);
 
-let user = new OChatUser(app, "ochat.frif");
+let user = new User(app, "ochat.frif");
 
-let fbacc = new OChatUserAccount(app, {
+let fbacc = new UserAccount(app, {
   driver: "facebook",
   id: "fb:ochat.frif", // a unique string identifying this account
   username: "ochat.frif"
@@ -22,7 +23,7 @@ user.addAccount(fbacc);
 // app.getUsers().then(users => users[0]).then(user =>
 user
   .getAccounts()
-  .then((accounts: OChatUserAccount[]) => {
+  .then((accounts: UserAccountInterface[]) => {
     console.log("Registered accounts: " + accounts.join(", "));
     let firstAccount = accounts[0];
     // normally, fbacc === firstAccount

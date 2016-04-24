@@ -1,6 +1,16 @@
 import * as Bluebird from "bluebird";
-import {Connection, Message, Discussion, Api} from "palantiri-interfaces";
-import {OChatApp} from "./app";
+import * as palantiri from "palantiri-interfaces";
+import Incident from "incident";
+
+import AppInterface from "./interfaces/app";
+import ContactInterface from "./interfaces/contact";
+import ContactAccountInterface from "./interfaces/contact-account";
+import DiscussionInterface from "./interfaces/discussion";
+import UserInterface from "./interfaces/user";
+import UserAccountInterface from "./interfaces/user-account";
+import MessageInterface from "./interfaces/message";
+
+import {App} from "./app";
 
 interface UserAccountData {
   driver: string;
@@ -10,8 +20,8 @@ interface UserAccountData {
   // email?: string;
 }
 
-export class OChatUserAccount {
-  private app: OChatApp;
+export class UserAccount implements UserAccountInterface {
+  private app: AppInterface;
   driver: string;
   id: string;
 
@@ -27,17 +37,27 @@ export class OChatUserAccount {
     this.data = accountData;
   }
 
+  getUser(): Bluebird<UserInterface> {
+    return Bluebird.reject(new Incident("todo", "UserAccount:getUser is not implemented"));
+  }
+
+  getPalantiriToken(): Bluebird<palantiri.AccountToken> {
+    return Bluebird.resolve({driver: this.driver, id: this.id});
+  }
+
   /*
    * Connect the current user's account, or retrieve an existing
    * connection. The created connection will already be turned on,
    * but not the retrieved one.
    */
-  getOrCreateConnection(): Bluebird<Connection> {
-    return this.app.getOrCreateConnection(this);
+  getOrCreateConnection(): Bluebird<palantiri.Connection> {
+    return Bluebird.reject(new Incident("todo", "UserAccount:getOrCreateConnection is not implemented"));
+    // return this.app.getOrCreateConnection(this);
   }
 
-  getOrCreateApi(): Bluebird<Api> {
-    return this.app.getOrCreateApi(this);
+  getOrCreateApi(): Bluebird<palantiri.Api> {
+    return Bluebird.reject(new Incident("todo", "UserAccount:getOrCreateApi is not implemented"));
+    // return this.app.getOrCreateApi(this);
   }
 
   /**
@@ -49,11 +69,12 @@ export class OChatUserAccount {
    * @param msg
    * @param discussion
    */
-  sendMessage(msg: Message, discussion: Discussion): Bluebird<this> {
-    return this.getOrCreateApi()
-      .then((api: Api) => {
-        api.sendMessage(msg, discussion.id);
-      })
-      .thenReturn(this);
+  sendMessage(msg: MessageInterface, discussion: DiscussionInterface): Bluebird<this> {
+    return Bluebird.reject(new Incident("todo", "UserAccount:sendMessage is not implemented"));
+    // return this.getOrCreateApi()
+    //   .then((api: palantiri.Api) => {
+    //     api.sendMessage(msg, discussion.id);
+    //   })
+    //   .thenReturn(this);
   }
 }

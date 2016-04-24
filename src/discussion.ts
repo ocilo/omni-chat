@@ -1,23 +1,21 @@
-import * as _ from "lodash";
 import * as Bluebird from "bluebird";
-import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import {OChatApp} from "./app"; // todo: use interface
-
-import {ContactAccount as ContactAccountInterface} from "./interfaces/contact-account";
-import {Discussion as DiscussionInterface, GetMessagesOptions} from "./interfaces/discussion";
-import {Message as MessageInterface} from "./interfaces/message";
-import {User as UserInterface} from "./interfaces/user";
+import AppInterface from "./interfaces/app";
+import ContactAccountInterface from "./interfaces/contact-account";
+import DiscussionInterface from "./interfaces/discussion";
+import UserInterface from "./interfaces/user";
+import MessageInterface from "./interfaces/message";
+import {GetMessagesOptions} from "./interfaces/discussion";
 
 export class Discussion implements DiscussionInterface {
-  app: OChatApp;
+  app: AppInterface;
   user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
   subDiscussions: Discussion[];
 
-  constructor (app: OChatApp, user: UserInterface) {
+  constructor (app: AppInterface, user: UserInterface) {
     this.app = app;
     this.user = user;
   }
@@ -186,3 +184,5 @@ export class Discussion implements DiscussionInterface {
     return Promise.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
   }
 }
+
+export default Discussion;
