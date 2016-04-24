@@ -29,8 +29,8 @@ function consolePrompt(account?: UserAccount): Bluebird<facebook.ConnectionOptio
 
   return Bluebird
     .try(() => {
-      if (account && account["email"]) {
-        return Bluebird.resolve(account["email"]);
+      if (account && (<any> account).email) {
+        return Bluebird.resolve(<string> (<any> account).email);
       }
 
       return Bluebird.fromCallback((cb) => {

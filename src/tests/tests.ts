@@ -1,10 +1,10 @@
 import {App} from "../app";
 import {User} from "../user";
 import {UserAccount} from "../user-account";
-import {Message} from "palantiri";
-import {MessageFlags, Connection, Api} from "palantiri-interfaces";
-import * as facebook from "./connections/facebook";
+
 import UserAccountInterface from "../interfaces/user-account";
+
+import * as facebook from "./connections/facebook";
 
 let app = new App();
 
@@ -25,23 +25,19 @@ user
   .getAccounts()
   .then((accounts: UserAccountInterface[]) => {
     console.log("Registered accounts: " + accounts.join(", "));
-    let firstAccount = accounts[0];
-    // normally, fbacc === firstAccount
+    let localAccount = accounts[0];
+    // normally, localAccount === fbacc
 
-    return user.getContacts()
-      .then((contacts) => {
-        let firstContact = contacts[0];
-        let firstAccountOfFirstContact = firstContact.accounts[0];
-        // get or create a discussion with this contact
-        return user.getOrCreateDiscussion(firstAccountOfFirstContact);
+    return localAccount.getContactAccounts()
+      .then(contactAccounts => {
+        console.log("Contacts found for first account: " + accounts.join(", "));
+        return contactAccounts[0];
       })
-      .then((discussion) =>{
-        let msg: Message = new Message();
-        msg.author = fbacc;
-        msg.body = "Hello !";
-        msg.content = msg.body;
-        msg.creationDate = new Date();
-        msg.flags = MessageFlags.TEXT;
-        user.sendMessage(msg, discussion);
+      .then(contactAccount => {
+        return localAccount.getOrCreateDiscussion(contactAccount)
+      })
+      .then(discussion => {
+        let msg = {body: "Hello!"};
+        // return discussion.sendMessage(msg);
       });
   });

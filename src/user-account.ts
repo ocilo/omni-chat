@@ -3,12 +3,16 @@ import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
 import AppInterface from "./interfaces/app";
+import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 import MessageInterface from "./interfaces/message";
 
-interface UserAccountData {
+import ContactAccount from "./contact-account";
+import {SimpleDiscussion} from "./simple-discussion";
+
+export interface UserAccountData {
   driver: string;
   id: string;
 
@@ -24,7 +28,7 @@ export class UserAccount implements UserAccountInterface {
   username: string;
   data: UserAccountData;
 
-  constructor (app, accountData: UserAccountData) {
+  constructor (app: AppInterface, accountData: UserAccountData) {
     this.app = app;
     this.driver = accountData.driver;
     this.id = accountData.id;
@@ -72,6 +76,30 @@ export class UserAccount implements UserAccountInterface {
     //     api.sendMessage(msg, discussion.id);
     //   })
     //   .thenReturn(this);
+  }
+
+  getContactAccounts(): Bluebird<ContactAccountInterface[]> {
+    return Bluebird.resolve(this.getOrCreateApi())
+      .then((api: palantiri.Api) => {
+        return api.getContacts()
+      })
+      .map((account: palantiri.Account) => {
+        return new ContactAccount(this.app, this, account);
+      });
+  }
+
+  getDiscussions(): Bluebird<DiscussionInterface[]> {
+    return Bluebird.resolve(this.getOrCreateApi())
+      .then((api: palantiri.Api) => {
+        return api.getDiscussions()
+      })
+      .map((discussion: palantiri.Discussion) => {
+        return new SimpleDiscussion(this.app, this, discussion);
+      });
+  }
+
+  getOrCreateDiscussion(remoteContactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
+    return Bluebird.reject(new Incident("todo", "UserAccount:getOrCreateDiscussion is not implemented"));
   }
 }
 

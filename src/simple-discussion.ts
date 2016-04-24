@@ -30,7 +30,7 @@ export class SimpleDiscussion implements DiscussionInterface {
    * @returns {Thenable<palantiri.Discussion>}
    */
   private getPalantiriDiscussion(): Bluebird<palantiri.Discussion> {
-    return this.account.getOrCreateApi()
+    return Bluebird.resolve(this.account.getOrCreateApi())
       .then((api: palantiri.Api) => {
         // TODO: fetch the real informations
         // return api.getDiscussionInfo(this.palantiriDiscussion);
@@ -58,7 +58,7 @@ export class SimpleDiscussion implements DiscussionInterface {
     return this.getPalantiriDiscussion().then(info => info.creationDate);
   }
 
-  getUser(): Bluebird<UserInterface> {
+  getUser(): Bluebird.Thenable<UserInterface> {
     return this.account.getUser();
   }
 
@@ -67,7 +67,7 @@ export class SimpleDiscussion implements DiscussionInterface {
   }
 
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Promise.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
+    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
 
     // TODO: add .getMessages to palantiri api
     /*
@@ -85,11 +85,11 @@ export class SimpleDiscussion implements DiscussionInterface {
 
 
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<this> {
-    return Promise.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));
+    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));
   }
 
   getSubdiscussions(): Bluebird<DiscussionInterface[]> {
-    return return Bluebird.resolve([]); // There is no sub-discussion
+    return Bluebird.resolve([]); // There is no sub-discussion
   }
 }
 

@@ -27,9 +27,8 @@ export class TokenSet {
   constructor () {}
 
   add (token: Token): this {
-    let str: string = asString(token);
-    if (!this.has(str)) {
-      this.tokens.push(str);
+    if (!this.has(token)) {
+      this.tokens.push(asString(token));
       this.size = this.tokens.length;
     }
     return this;
@@ -50,7 +49,6 @@ export class TokenSet {
     return true;
   }
 
-  private has (token: string): boolean
   has (token: Token): boolean {
     return this.tokens.indexOf(asString(token)) >= 0;
   }

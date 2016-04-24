@@ -15,8 +15,10 @@ export class Contact implements ContactInterface {
 
   getNicknames(): Bluebird<string[]> {
     return this.getAccounts()
-      .map(account => account.getName())
-      .then(names => {
+      .map((account: ContactAccountInterface) => {
+        return account.getName();
+      })
+      .then((names: string[]) => {
         names.push(this.name);
         return _.uniq(names);
       });

@@ -8,7 +8,7 @@ import UserAccountInterface from "./interfaces/user-account";
 
 import {User} from "./user";
 
-type ConnectionStrategy = (account: UserAccountInterface) => Bluebird.Thenable <palantiri.Connection>;
+export type ConnectionStrategy = (account: UserAccountInterface) => Bluebird.Thenable <palantiri.Connection>;
 
 export class App implements AppInterface {
   /**
@@ -37,8 +37,8 @@ export class App implements AppInterface {
    * @param strategy
    * @returns {OChatApp}
    */
-  useDriver (driver: palantiri.Connection.Constructor, strategy: ConnectionStrategy): this {
-    this.connectionStrategies[driver.name] = strategy;
+  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): this {
+    this.connectionStrategies[driver.driver] = strategy;
     return this;
   }
 

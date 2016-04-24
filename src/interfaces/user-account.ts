@@ -1,6 +1,8 @@
 import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
 import {User} from "./user";
+import {ContactAccount} from "./contact-account";
+import {Discussion} from "./discussion";
 
 export interface UserAccount {
   /**
@@ -25,6 +27,12 @@ export interface UserAccount {
    * A shortcut for getOrCreateConnection().connect()
    */
   getOrCreateApi(): Thenable<palantiri.Api>;
+
+  getContactAccounts(): Thenable<ContactAccount[]>;
+
+  getDiscussions(): Thenable<Discussion[]>;
+
+  getOrCreateDiscussion(remoteContactAccount: ContactAccount): Thenable<Discussion>;
 }
 
 export default UserAccount;

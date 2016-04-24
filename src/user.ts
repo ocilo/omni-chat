@@ -178,16 +178,16 @@ export class User implements UserInterface {
 		// }
 		// return Bluebird.resolve(contacts);
 	}
-	addContact(contact: ContactInterface, callback?: (err: Error, succes: ContactInterface[]) => any): Bluebird.Thenable<User> {
+	addContact(contact: ContactInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "User:addContact is not implemented"));
 		// TODO : this is advanced option.
 		//        It's about writing on an account,
 		//        and not only reading it.
 		//        We will do this later.
-		return Bluebird.resolve(this);
+		// return Bluebird.resolve(this);
 	}
 
-	removeContact(contact: ContactInterface, callback?: (err: Error, succes: ContactInterface[]) => any): Bluebird.Thenable<User> {
+	removeContact(contact: ContactInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "User:removeContact is not implemented"));
 		// // WARNING : we need to warn the user that this will remove the contact from all his accounts
 		// // TODO : this is advanced option.
@@ -214,7 +214,7 @@ export class User implements UserInterface {
     // return Bluebird.resolve(this.accounts);
   }
 
-  addAccount(account: UserAccountInterface, callback?: (err: Error, succes: UserAccountInterface[]) => any): Bluebird.Thenable<User> {
+  addAccount(account: UserAccountInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "User:addAccount is not implemented"));
     // let index: number = this.accounts.indexOf(account);
     // let err: Error = null;
@@ -229,7 +229,7 @@ export class User implements UserInterface {
 	  // return Bluebird.resolve(this);
   }
 
-  removeAccount(account: UserAccountInterface, callback?: (err: Error, succes: UserAccountInterface[]) => any): Bluebird.Thenable<User> {
+  removeAccount(account: UserAccountInterface): Bluebird.Thenable<this> {
     return Bluebird.reject(new Incident("todo", "User:removeAccount is not implemented"));
     // let index: number = this.accounts.indexOf(account);
     // let err: Error = null;

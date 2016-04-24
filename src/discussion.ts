@@ -34,7 +34,9 @@ export class Discussion implements DiscussionInterface {
    */
   getCreationDate(): Bluebird<Date> {
     return Bluebird.resolve(this.getSubdiscussions())
-      .map(discussion => discussion.getCreationDate())
+      .map((discussion: DiscussionInterface) => {
+        return discussion.getCreationDate();
+      })
       .then((creationDates: Date[]) => {
         // TODO: choose the oldest...
         return new Date();
@@ -177,11 +179,11 @@ export class Discussion implements DiscussionInterface {
 	}
 
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<Discussion> {
-    return Promise.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
+    return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
   }
 
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Promise.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
+    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
   }
 }
 
