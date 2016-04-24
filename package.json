@@ -17,6 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.2.1",
+    "facebook-chat-api": "^1.1.0",
     "incident": "^1.0.5",
     "lodash": "^4.0.0",
     "palantiri-interfaces": "^0.1.1"
