@@ -1,5 +1,5 @@
+import {Thenable} from "bluebird";
 import {ContactAccount} from "./contact-account";
-import * as Bluebird from "bluebird";
 
 /***************************************************************
  * Contact is the representation of someone you can chat with.
@@ -11,46 +11,57 @@ import * as Bluebird from "bluebird";
  * interface Discussion.
  ***************************************************************/
 export interface Contact {
-  accounts: ContactAccount[]; //  La liste des comptes connus de l'utilisateur
-                              //  pour lesquels ce contact est le meme.
-
-  fullname: string;           //  Le nom complet du contact.
-
-  nicknames: string[];        //  Les noms sous lesquels le contact est connu.
-                              //  Ne contient que les noms present pour les
-                              //  differents comptes connus.
-
-  getAccounts(): Bluebird.Thenable<ContactAccount[]>;
+  getAccounts(): Thenable<ContactAccount[]>;
   //  Retourne la liste des comptes connus de l'utilisateur
   //  pour lesquels le Contact courant est le meme.
 
-  getNicknames(): string[];
-  //  Retourne la liste des surnoms connus du Contact courant.
+  /**
+   * Returns the list of the known names of this account
+   */
+  getNicknames(): Thenable<string[]>;
 
-  getPrincipalName(): string;
-  //  Retourne la valeur du champ fullname.
+  /**
+   * Returns the main (full) name of the contact
+   */
+  getName(): string;
 
-  setPrincipalName(newPrincipalName: string): Bluebird.Thenable<Contact>;
-  //  Met a jour le champ "fullname" du Contact courant.
-  //  Ne modifie pas nicknames.
+  /**
+   * Set the main name of this contact.
+   * Does not change the nicknames
+   * @param newPrincipalName
+   */
+  setName(newName: string): Thenable<this>;
 
-  mergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact>;
-  // Fusionne les comptes du Contact courant avec ceux du Contact fourni.
-  // La gestion du contact fourni apres cette methode est a la charge de l'appelant.
-	// Le nom principal du Contact resultant sera celui du Contact courant.
-  // Retourne le contact courrant apres eventuelles modifications.
+  /**
+   * Adds the accounts of the supplied account to this account.
+   * The supplied account is not modified
+   * The current contact keeps its name
+   * Returns the updated contact
+   * @param contact
+   */
+  mergeWithContact (otherContact: Contact): Thenable<this>;
 
-  unmergeContacts(contact: Contact, callback?: (err: Error, succes: Contact) => any): Bluebird.Thenable<Contact>;
-  // Defusionne les comptes du Contact courant afin de former deux contacts :
-  // Le Contact fourni.
-  // Le Contact courant MINUS le Contact fourni.
-  // Ne fait rien si l'operation unmerge est impossible
-  // (i.e. l'un des deux Contacts ressultant est nul, ou si "contact" ne fait pas
-  // partie du Contact courant).
-  // La gestion du Contact fourni apres cette methode est a la charge de l'appelant.
-  // Retourne le Contact courrant apres eventuelles modifications.
+  // TODO: the original implementation was more powerful (tree of contacts, each one having its own accounts)
+  //       Now its just a set of accounts.
+  //       It might be good to restore the original behaviour.
+  /**
+   * Updates the associated accounts: updatedAccounts = currentAccounts - otherCountactAccounts
+   * The supplied account is not modified.
+   * Returns the updated contact.
+   * @param contact
+   * @param callback
+   */
+  unmergeWithContact (otherContact: Contact): Thenable<this>;
 
-  addAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact>;
+  /**
+   * Register a new account for this contact
+   * Returns the updated contact
+   * @param account
+   * @param callback
+   */
+  addAccount(account: ContactAccount): Thenable<Contact>;
+
+  // TODO: the old behaviour was related to having a tree of contacts ? Might be good to restore it
   // Ajoute un compte au Contact courant.
   // Cette operation est differente de mergeContacts() dans le sens ou
   // on rajoute un compte d'un certain type a un Contact, mais que ce
@@ -62,7 +73,14 @@ export interface Contact {
   // Cette operation necessite que l'utilisateur se serve d'un client qui
   // supporte le protocole utilise par le compte "account".
 
-  removeAccount(account: ContactAccount, callback? : (err: Error, succes: ContactAccount[]) => any): Bluebird.Thenable<Contact>;
+  /**
+   * Removes the supplied account from this contact
+   * Returns the updated contact
+   * @param account
+   */
+  removeAccount(account: ContactAccount): Thenable<Contact>;
+
+  // TODO: the old behaviour was related to having a tree of contacts ? Might be good to restore it
   // Supprime un compte du Contact courant.
   // Cette operation est differente de unmergeContacts() dans le sens ou
   // on supprime un compte d'un certain type a un Contact, mais que ce

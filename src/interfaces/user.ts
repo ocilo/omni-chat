@@ -2,8 +2,8 @@ import * as Bluebird from "bluebird";
 import {Contact} from "./contact";
 import {Discussion} from "./discussion";
 import {ContactAccount} from "./contact-account";
-import {UserAccount} from "palantiri-interfaces";
-import {Message} from "palantiri-interfaces";
+import {UserAccount} from "./user-account";
+import {Message} from "./message";
 
 /***************************************************************
  * User is the representation of someone connected with OmniChat.

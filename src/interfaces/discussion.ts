@@ -16,6 +16,8 @@ import {Message} from "./message";
  ***************************************************************/
 // TODO(important) : where do we put the methods that send to other types of accounts
 //                   a message received from a contactin an heterogeneous discussion ?
+// Here, sendMessage sends the message to every account or calls sendMessage on the subDiscussions
+
 export interface Discussion {
   getName(): Thenable<string>;
   //  Retourne le nom de la discussion.
