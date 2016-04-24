@@ -23,3 +23,5 @@ export interface ContactAccount {
    */
   getName(): Thenable<string>;
 }
+
+export default ContactAccount;

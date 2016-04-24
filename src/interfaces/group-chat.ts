@@ -16,3 +16,5 @@ export type GroupChat = Discussion;
  * meaning of the Discussion.
  ***************************************************************/
 export type Subdiscussion = {since: Date, discussion: GroupChat};
+
+export default GroupChat;

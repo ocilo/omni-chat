@@ -25,3 +25,5 @@ export interface App {
   //  partie de la liste.
   //  Sinon, ne fait rien , et err sera non nul.
 }
+
+export default App;

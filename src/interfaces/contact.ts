@@ -87,3 +87,5 @@ export interface Contact {
   // Contact reste le meme.
   // Exemple d'utilisation : un compte que le Contact n'utilise plus.
 }
+
+export default Contact;

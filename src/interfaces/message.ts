@@ -5,3 +5,5 @@
 export interface Message {
 
 }
+
+export default Message;

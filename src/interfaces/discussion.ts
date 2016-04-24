@@ -93,3 +93,5 @@ export interface GetMessagesOptions {
   afterDate?: Date;
   filter?: (msg: Message) => boolean
 }
+
+export default Discussion;

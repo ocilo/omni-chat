@@ -86,3 +86,5 @@ export interface User {
 	//  il déclenchera une seule fois la fonction "handler",
 	//  puis ne surveillera plis l'Event "eventname".
 }
+
+export default User;

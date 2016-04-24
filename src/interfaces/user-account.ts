@@ -8,7 +8,7 @@ export interface UserAccount {
    * (an account is owned by only one user)
    */
   getUser(): Thenable<User>;
-  
+
   /**
    * Returns the palantiri token (driver + internal id) of this user-account
    */
@@ -26,3 +26,5 @@ export interface UserAccount {
    */
   getOrCreateApi(): Thenable<palantiri.Api>;
 }
+
+export default UserAccount;
