@@ -26,7 +26,14 @@ export interface Discussion {
   // sous forme textuelle.
 
   // getLocalAccounts(): Bluebird.Thenable<UserAccount>;
+
+  /**
+   * The user associated to the local accounts of this discussion
+   * @returns {Thenable<User>}
+   */
   getUser(): Thenable<User>;
+  // owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
+  //                                 // cette Discussion.
 
   isHeterogeneous(): Thenable<boolean>;
 
@@ -43,8 +50,7 @@ export interface Discussion {
   // 														     // La date permet une recuperation correcte des
   // 														     // messages de la Discussion.
   //
-  // owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
-  //                                 // cette Discussion.
+
 
 
   getMessages(options?: GetMessagesOptions): Thenable<Message[]>;
@@ -65,7 +71,7 @@ export interface Discussion {
   //  en seront informes. Sinon, ils ne le seront que lors de l'envoie
   //  d'un message.
 
-  removeParticipants(contactAccount: ContactAccount): Thenable<Discussion>;
+  removeParticipants(contactAccount: ContactAccount): Thenable<this>;
   //  Enleve le participant "contactAccount" de la Discussion
   //  courante. Plus exactement, supprime "contactAccount" d'un
   //  GroupAccount de this.subdiscussion et l'evince du groupe de

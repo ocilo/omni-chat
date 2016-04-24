@@ -1,27 +1,24 @@
-// The class simple discussion adds higher-level methods to a palantiri discussion
-// It is a discussion beteween one local account and one remote native Discussion
-
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
 import {OChatApp} from "./app"; // todo: use interface
 
-import {ContactAccount} from "./interfaces/contact-account";
-import {Discussion, GetMessagesOptions} from "./interfaces/discussion";
-import {Message} from "./interfaces/message";
-import {User} from "./interfaces/user";
-import {UserAccount} from "./interfaces/user-account";
+import {ContactAccount as ContactAccountInterface} from "./interfaces/contact-account";
+import {Discussion as DiscussionInterface, GetMessagesOptions} from "./interfaces/discussion";
+import {Message as MessageInterface} from "./interfaces/message";
+import {User as UserInterface} from "./interfaces/user";
+import {UserAccount as UserAccountInterface} from "./interfaces/user-account";
 
 /**
- * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to the single account of a single user
+ * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
  */
-class SimpleDiscussion implements Discussion {
+class SimpleDiscussion implements DiscussionInterface {
   private app: OChatApp;
-  private account: UserAccount;
+  private account: UserAccountInterface;
   private palantiriDiscussion: palantiri.DiscussionToken;
 
-  constructor (app: OChatApp, account: UserAccount, palantiriDiscussion: palantiri.DiscussionToken) {
+  constructor (app: OChatApp, account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
     this.app = app;
     this.account = account;
     this.palantiriDiscussion = palantiriDiscussion;
@@ -60,7 +57,7 @@ class SimpleDiscussion implements Discussion {
     return this.getPalantiriDiscussion().then(info => info.creationDate);
   }
 
-  getUser(): Bluebird<User> {
+  getUser(): Bluebird<UserInterface> {
     return this.account.getUser();
   }
 
@@ -68,7 +65,7 @@ class SimpleDiscussion implements Discussion {
     return Bluebird.resolve(false); // Tells that this discussion uses a single account for a single discussion
   }
 
-  getMessages (options?: GetMessagesOptions): Bluebird<Message[]> {
+  getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
     return Promise.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
 
     // TODO: add .getMessages to palantiri api
@@ -86,11 +83,11 @@ class SimpleDiscussion implements Discussion {
   }
 
 
-  removeParticipants(contactAccount: ContactAccount): Bluebird<this> {
+  removeParticipants(contactAccount: ContactAccountInterface): Bluebird<this> {
     return Promise.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));
   }
 
-  getSubdiscussions(): Bluebird<Discussion[]> {
+  getSubdiscussions(): Bluebird<DiscussionInterface[]> {
     return return Bluebird.resolve([]); // There is no sub-discussion
   }
 }
