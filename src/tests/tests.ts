@@ -28,16 +28,24 @@ user
     let localAccount = accounts[0];
     // normally, localAccount === fbacc
 
-    return localAccount.getContactAccounts()
-      .then(contactAccounts => {
-        console.log("Contacts found for first account: " + accounts.join(", "));
-        return contactAccounts[0];
-      })
-      .then(contactAccount => {
-        return localAccount.getOrCreateDiscussion(contactAccount)
-      })
-      .then(discussion => {
+    return localAccount.getDiscussions()
+      .then(discussions => {
+        console.log("Found discussions: " + discussions.join(", "));
         let msg = {body: "Hello!"};
         // return discussion.sendMessage(msg);
       });
+
+    // return localAccount.getContactAccounts()
+    //   .then(contactAccounts => {
+    //     console.log("Contacts found for first account: " + accounts.join(", "));
+    //     return contactAccounts[0];
+    //   })
+    //   .then(contactAccount => {
+    //     return localAccount.getOrCreateDiscussion(contactAccount)
+    //   })
+    //   .then(discussions => {
+    //     console.log("Found discussions: " + discussions.join(", "));
+    //     let msg = {body: "Hello!"};
+    //     // return discussion.sendMessage(msg);
+    //   });
   });

@@ -86,12 +86,23 @@ export interface Discussion {
 
   getSubdiscussions(): Thenable<Discussion[]>;
   //  Retourne une liste des sous discussions de la Discussion courante.
+
+  /**
+   * Sends the message newMessage to the discussion.
+   * Returns the sent Message
+   */
+  sendMessage(newMessage: NewMessage): Thenable<Message>;
 }
 
 export interface GetMessagesOptions {
   maxMessages: number;
   afterDate?: Date;
   filter?: (msg: Message) => boolean
+}
+
+export interface NewMessage {
+  body: string;
+  date?: Date;
 }
 
 export default Discussion;

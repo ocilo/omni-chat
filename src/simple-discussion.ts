@@ -9,7 +9,8 @@ import MessageInterface from "./interfaces/message";
 import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 
-import {GetMessagesOptions} from "./interfaces/discussion";
+import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
+import {Message} from "./message";
 
 /**
  * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
@@ -90,6 +91,17 @@ export class SimpleDiscussion implements DiscussionInterface {
 
   getSubdiscussions(): Bluebird<DiscussionInterface[]> {
     return Bluebird.resolve([]); // There is no sub-discussion
+  }
+
+  sendMessage(newMessage: NewMessage): Bluebird<Message> {
+    return Bluebird.resolve(this.account.getOrCreateApi())
+      .then((api: palantiri.Api) => {
+        return api.sendMessage(newMessage, this.palantiriDiscussion.id);
+      })
+      .then((message: palantiri.Message) => {
+        // TODO: create a SimpleMessage and Message class
+        return new Message();
+      });
   }
 }
 

@@ -6,7 +6,9 @@ import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import UserInterface from "./interfaces/user";
 import MessageInterface from "./interfaces/message";
-import {GetMessagesOptions} from "./interfaces/discussion";
+
+import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
+import {Message} from "./message";
 
 export class Discussion implements DiscussionInterface {
   app: AppInterface;
@@ -184,6 +186,17 @@ export class Discussion implements DiscussionInterface {
 
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
     return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
+  }
+
+  sendMessage(newMessage: NewMessage): Bluebird<Message> {
+    return this.getSubdiscussions()
+      .map((discussion: DiscussionInterface) => {
+        return discussion.sendMessage(newMessage);
+      })
+      .then((messages) => {
+        // TODO: merge the sub-messages
+        return new Message();
+      });
   }
 }
 
