@@ -37,8 +37,6 @@ export class OChatDiscussion {
 
   subDiscussions: SubDiscussion[];
 
-  palantiriLinks: PalantiriLink[];
-
   creationDate: Date;
   description: string;
   heterogeneous: boolean; // subDiscussions.length > 0
@@ -46,35 +44,6 @@ export class OChatDiscussion {
 
   owner: User;
   name: string;
-
-  /**
-   * Returns a list of tokens representing the native discussions in this discussion
-   * @returns {Token[]}
-   */
-  getDistinctPalantiriDiscussions(): palantiri.DiscussionToken[] {
-    let discussionsSet = new TokenSet();
-    for (let link of this.palantiriLinks) {
-      discussionsSet.add(link.discussion);
-    }
-    return discussionsSet.values();
-  }
-
-  // TODO: is it really needed ?
-  /**
-   * Returns a list of tokens representing the participants in this discussion (except the accounts of the owner)
-   * @returns {Token[]}
-   */
-  getDistinctPalantiriContacts(): palantiri.AccountToken[] {
-    let contactsSet = new TokenSet();
-    for (let link of this.palantiriLinks) {
-      contactsSet.add(link.remoteAccount);
-    }
-    return contactsSet.values();
-  }
-
-  isHeterogeneous(): boolean {
-    return this.getDistinctPalantiriDiscussions().length > 1;
-  }
 
   getMessages(maxMessages: number, afterDate?: Date, filter?: (msg: palantiri.Message) => boolean): Bluebird<palantiri.Message[]> {
 	  let messages: palantiri.Message[] = [];
@@ -87,7 +56,7 @@ export class OChatDiscussion {
     return Bluebird.resolve(messages);
   }
 
-	addSubdiscussion(subdiscuss: GroupChat): Bluebird.Thenable<Discussion> {
+	addSubdiscussion(subDiscussion: SubDiscussion): Bluebird<Discussion> {
 		// TODO : rework all of this. This is probably wrong now
 		if(this.subdiscussions.indexOf({since: undefined, discussion: subdiscuss}) === -1) {
 			let param: string[] = [subdiscuss.protocol];
