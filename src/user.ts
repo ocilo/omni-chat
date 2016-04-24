@@ -5,7 +5,7 @@ import {User} from "./interfaces/user";
 import {Discussion} from "./interfaces/discussion";
 import {OChatDiscussion} from "./discussion";
 import {OChatContact} from "./contact";
-import {UserAccount} from "palantiri-interfaces";
+import {OChatUserAccount as UserAccount} from "./user-account";
 import {Message} from "palantiri-interfaces";
 import {GroupChat} from "./interfaces/group-chat";
 import {OChatApp} from "./app";
@@ -36,9 +36,9 @@ export class OChatUser implements User {
   getOrCreateDiscussion(contactAccount: ContactAccount): Bluebird<Discussion> {
     let discuss: Discussion = new OChatDiscussion(); // The discussion we are looking for
 	  let that = this;
-	  let ownerAccount: UserAccount = undefined;
+    let ownerAccount: UserAccount = undefined;
 	  for(let account of this.accounts) {
-		  if(account.hasContactAccount(contactAccount)) {
+      if(account.hasContactAccount(contactAccount)) {
 			  ownerAccount = account;
 			  account.getDiscussions(1, (disc): boolean => {
 				  let contains: boolean = false;
@@ -193,7 +193,7 @@ export class OChatUser implements User {
       let accounts: UserAccount[] = [];
       for(let account of this.accounts) {
 	      for(let protocol of protocols) {
-		      if(account.protocol.toLowerCase() === protocol.toLowerCase()) {
+		      if(account.driver.toLowerCase() === protocol.toLowerCase()) {
 			      accounts.push(account);
 			      break;
 		      }

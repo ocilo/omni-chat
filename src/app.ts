@@ -3,7 +3,7 @@ import * as Bluebird from "bluebird";
 import {Connection, utils, Api} from "palantiri-interfaces";
 import {User} from "./interfaces/user";
 import {App} from "./interfaces/app";
-import {UserAccount} from "./user-account";
+import {OChatUserAccount as UserAccount} from "./user-account";
 import {Incident} from "incident";
 import {OChatUser} from "./user";
 

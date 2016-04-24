@@ -1,19 +1,30 @@
 import * as Bluebird from "bluebird";
-import {Connection, Message, Discussion, UserAccount as UserAccountData, Api} from "palantiri-interfaces";
+import {Connection, Message, Discussion, Api} from "palantiri-interfaces";
 import {OChatApp} from "./app";
 
-export class UserAccount {
-  private app: OChatApp;
-
+interface UserAccountData {
   driver: string;
   id: string;
+
+  username?: string;
+  // email?: string;
+}
+
+export class OChatUserAccount {
+  private app: OChatApp;
+  driver: string;
+  id: string;
+
+  username: string;
   data: UserAccountData;
 
-  constructor (app, data: UserAccountData) {
+  constructor (app, accountData: UserAccountData) {
     this.app = app;
-    this.driver = data.driver;
-    this.id = data.id;
-    this.data = UserAccountData;
+    this.driver = accountData.driver;
+    this.id = accountData.id;
+
+    this.username = accountData.username || null;
+    this.data = accountData;
   }
 
   /*
@@ -38,9 +49,11 @@ export class UserAccount {
    * @param msg
    * @param discussion
    */
-  sendMessage(msg: Message, discussion: Discussion): Bluebird<UserAccount> {
-    return this.getOrCreateApi().then((api: Api) => {
-      api.sendMessage(msg, discussion.id);
-    })
+  sendMessage(msg: Message, discussion: Discussion): Bluebird<this> {
+    return this.getOrCreateApi()
+      .then((api: Api) => {
+        api.sendMessage(msg, discussion.id);
+      })
+      .thenReturn(this);
   }
 }
