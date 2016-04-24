@@ -268,3 +268,5 @@ export class User implements UserInterface {
 		// return Bluebird.resolve(this);
 	}
 }
+
+export default User;

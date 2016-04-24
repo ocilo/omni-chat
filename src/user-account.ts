@@ -3,14 +3,10 @@ import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
 import AppInterface from "./interfaces/app";
-import ContactInterface from "./interfaces/contact";
-import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 import MessageInterface from "./interfaces/message";
-
-import {App} from "./app";
 
 interface UserAccountData {
   driver: string;
@@ -78,3 +74,5 @@ export class UserAccount implements UserAccountInterface {
     //   .thenReturn(this);
   }
 }
+
+export default UserAccount;

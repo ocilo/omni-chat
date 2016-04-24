@@ -14,7 +14,7 @@ import {GetMessagesOptions} from "./interfaces/discussion";
 /**
  * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
  */
-class SimpleDiscussion implements DiscussionInterface {
+export class SimpleDiscussion implements DiscussionInterface {
   private app: AppInterface;
   private account: UserAccountInterface;
   private palantiriDiscussion: palantiri.DiscussionToken;
@@ -92,3 +92,5 @@ class SimpleDiscussion implements DiscussionInterface {
     return return Bluebird.resolve([]); // There is no sub-discussion
   }
 }
+
+export default SimpleDiscussion;

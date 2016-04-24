@@ -151,3 +151,5 @@ export class App implements AppInterface {
     return this;
   }
 }
+
+export default App;

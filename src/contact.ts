@@ -111,3 +111,5 @@ export class Contact implements ContactInterface {
 	  // return Bluebird.resolve(this);
   }
 }
+
+export default Contact;

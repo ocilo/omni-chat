@@ -14,7 +14,7 @@ let user = new User(app, "ochat.frif");
 
 let fbacc = new UserAccount(app, {
   driver: "facebook",
-  id: "fb:ochat.frif", // a unique string identifying this account
+  id: "0000123456789", // a unique string identifying this account
   username: "ochat.frif"
 });
 
