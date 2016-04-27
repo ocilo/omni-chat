@@ -9,33 +9,27 @@ import UserAccountInterface from "./interfaces/user-account";
 import {User} from "./user";
 import {ConnectionStrategy} from "./interfaces/app";
 
-export class App implements AppInterface {
-  /**
-   * The list of all the users using this app instance
-   */
-  users: UserInterface[];
+/**
+ * The list of all the users using this app instance
+ */
+let users: UserInterface[] = [];
 
-  /**
-   * The set of available drivers with the function to require the data needed to create th connection.
-   * (This function can be an access to the database, a console prompt, a gui modal, a read from a config file, etc.)
-   */
-  private connectionStrategies: {[driverName: string]:  ConnectionStrategy;};
+/**
+ * The set of available drivers with the function to require the data needed to create th connection.
+ * (This function can be an access to the database, a console prompt, a gui modal, a read from a config file, etc.)
+ */
+let connectionStrategies: {[driverName: string]:  ConnectionStrategy;} = {};
 
-  /**
-   * A collection/cache of currently open connections.
-   */
-  private activeConnections: {
-    [driverName: string]: {
-      [accountId: string]: palantiri.Connection;
-    };
+/**
+ * A collection/cache of currently open connections.
+ */
+let activeConnections: {
+  [driverName: string]: {
+    [accountId: string]: palantiri.Connection;
   };
+} = {};
 
-  constructor() {
-    this.users = [];
-    this.connectionStrategies = {};
-    this.activeConnections = {};
-  }
-
+export let app: AppInterface = {
   /**
    * Register a new driver with its data acquisition function
    * @param driver
@@ -46,9 +40,9 @@ export class App implements AppInterface {
     if(!driver || !driver.driver) {
       throw new Incident("missing-driver-name", {driver: driver}, "Cannot register driver, no .driver attribute");
     }
-    this.connectionStrategies[driver.driver] = strategy;
+    connectionStrategies[driver.driver] = strategy;
     return this;
-  }
+  },
 
   /**
    * Adds this connection to the set of active connections.
@@ -62,27 +56,27 @@ export class App implements AppInterface {
         if (token.driver !== connection.driver) {
           throw new Incident("account-connection-mismatch", {account: account, connection: connection}, "The driver required by account does not match the one of connection");
         }
-        if (!(token.driver in this.activeConnections)) {
-          this.activeConnections[token.driver] = {};
+        if (!(token.driver in activeConnections)) {
+          activeConnections[token.driver] = {};
         }
-        let driver = this.activeConnections[token.driver];
+        let driver = activeConnections[token.driver];
         driver[token.id] = connection;
         return this;
       })
       .thenReturn(this);
-  }
+  },
 
   // TODO: optional argument to throw if not found
   getConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
     return Bluebird.resolve(account.getPalantiriToken())
       .then((token: palantiri.AccountToken) => {
-        if (!(token.driver in this.activeConnections)) {
+        if (!(token.driver in activeConnections)) {
           return null;
         }
-        let driver = this.activeConnections[token.driver];
+        let driver = activeConnections[token.driver];
         return driver[token.id] || null;
       })
-  }
+  },
 
   getOrCreateConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
     return this.getConnection(account)
@@ -92,14 +86,14 @@ export class App implements AppInterface {
         }
         return account.getPalantiriToken()
           .then((token: palantiri.AccountToken) => {
-            if (!(token.driver in this.connectionStrategies)) {
+            if (!(token.driver in connectionStrategies)) {
               return Bluebird.reject(new Incident("Unable to get connection"));
             }
-            return Bluebird.resolve(this.connectionStrategies[token.driver](account))
+            return Bluebird.resolve(connectionStrategies[token.driver](account))
               .tap((connection) => this.setActiveConnection(account, connection));
           });
       });
-  }
+  },
 
   /**
    * get or create connection and api for account
@@ -110,7 +104,7 @@ export class App implements AppInterface {
     return this.getOrCreateConnection(account).then((connection) => {
       return connection.connect();
     });
-  }
+  },
 
 
   /**
@@ -120,44 +114,44 @@ export class App implements AppInterface {
   createUser (username: string): User {
     let users = this.getUsers((user) => user.username === username);
     if (users.length === 0) {
-      let user = new User(this, username);
+      let user = new User(username); // TODO: remove this function, we no longer need it
       this.addUser(user);
       return user;
     } else {
       throw new Error("The user already exists");
     }
-  }
+  },
 
   getUsers(filter?: (user: UserInterface) => boolean): UserInterface[] {
     if(filter) {
       let okUsers: UserInterface[] = [];
-      for(let user of this.users) {
+      for(let user of users) {
         if(filter(user)) {
           okUsers.push(user);
         }
       }
       return okUsers;
     }
-    return this.users;
-  }
+    return users;
+  },
 
   addUser(user: UserInterface): this {
-    if(this.users.indexOf(user) === -1) {
+    if(users.indexOf(user) === -1) {
       throw new Error("This user is already connected to this client.");
     } else {
-      this.users.push(user);
+      users.push(user);
     }
     return this;
-  }
+  },
 
   removeUser(user: UserInterface): this {
-    if(this.users.indexOf(user) === -1) {
+    if(users.indexOf(user) === -1) {
       throw new Error("This user was not connected to this client.");
     } else {
-      this.users.splice(0, 1, user);
+      users.splice(0, 1, user);
     }
     return this;
   }
-}
+};
 
-export default App;
+export default app;

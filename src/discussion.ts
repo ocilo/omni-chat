@@ -1,7 +1,6 @@
 import * as Bluebird from "bluebird";
 import Incident from "incident";
 
-import AppInterface from "./interfaces/app";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import UserInterface from "./interfaces/user";
@@ -11,14 +10,12 @@ import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {Message} from "./message";
 
 export class Discussion implements DiscussionInterface {
-  app: AppInterface;
   user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
   subDiscussions: Discussion[];
 
-  constructor (app: AppInterface, user: UserInterface) {
-    this.app = app;
+  constructor (user: UserInterface) {
     this.user = user;
   }
 

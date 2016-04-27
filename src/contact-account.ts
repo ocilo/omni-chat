@@ -2,17 +2,11 @@ import * as Bluebird from "bluebird";
 import Incident from "incident";
 import * as palantiri from "palantiri-interfaces";
 
-import AppInterface from "./interfaces/app";
 import ContactInterface from "./interfaces/contact";
 import ContactAccountInterface from "./interfaces/contact-account";
 import UserAccountInterface from "./interfaces/user-account";
 
 export class ContactAccount implements ContactAccountInterface {
-  /**
-   * The app context
-   */
-  app: AppInterface = null;
-
   /**
    * The account of localAccount -> this ContactAccount is a contact of localAccount
    * It means that you can talk to this remote contact by using this localAccount
@@ -24,8 +18,7 @@ export class ContactAccount implements ContactAccountInterface {
    */
   token: palantiri.AccountToken = null;
 
-  constructor (app: AppInterface, localAccount: UserAccountInterface, token: palantiri.AccountToken) {
-    this.app = app;
+  constructor (localAccount: UserAccountInterface, token: palantiri.AccountToken) {
     this.localAccount = localAccount;
     this.token = token;
   }

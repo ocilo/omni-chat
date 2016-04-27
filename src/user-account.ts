@@ -11,6 +11,7 @@ import MessageInterface from "./interfaces/message";
 
 import ContactAccount from "./contact-account";
 import {SimpleDiscussion} from "./simple-discussion";
+import app from "./app";
 
 export interface UserAccountData {
   driver: string;
@@ -21,15 +22,13 @@ export interface UserAccountData {
 }
 
 export class UserAccount implements UserAccountInterface {
-  private app: AppInterface;
   driver: string;
   id: string;
 
   username: string;
   data: UserAccountData;
 
-  constructor (app: AppInterface, accountData: UserAccountData) {
-    this.app = app;
+  constructor (accountData: UserAccountData) {
     this.driver = accountData.driver;
     this.id = accountData.id;
 
@@ -51,11 +50,11 @@ export class UserAccount implements UserAccountInterface {
    * but not the retrieved one.
    */
   getOrCreateConnection(): Bluebird<palantiri.Connection> {
-    return Bluebird.resolve(this.app.getOrCreateConnection(this));
+    return Bluebird.resolve(app.getOrCreateConnection(this));
   }
 
   getOrCreateApi(): Bluebird<palantiri.Api> {
-    return Bluebird.resolve(this.app.getOrCreateApi(this));
+    return Bluebird.resolve(app.getOrCreateApi(this));
   }
 
   /**
@@ -82,7 +81,7 @@ export class UserAccount implements UserAccountInterface {
         return api.getContacts()
       })
       .map((account: palantiri.Account) => {
-        return new ContactAccount(this.app, this, account);
+        return new ContactAccount(this, account);
       });
   }
 
@@ -92,7 +91,7 @@ export class UserAccount implements UserAccountInterface {
         return api.getDiscussions()
       })
       .map((discussion: palantiri.Discussion) => {
-        return new SimpleDiscussion(this.app, this, discussion);
+        return new SimpleDiscussion(this, discussion);
       });
   }
 

@@ -2,7 +2,6 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import AppInterface from "./interfaces/app";
 import ContactInterface from "./interfaces/contact";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
@@ -14,12 +13,6 @@ import {Discussion} from "./discussion";
 
 export class User implements UserInterface {
   /**
-   * The app used by this user
-   * @type {null}
-   */
-  private app: AppInterface = null;
-
-  /**
    * A human-readable name
    */
   username: string;
@@ -30,8 +23,7 @@ export class User implements UserInterface {
    */
   accounts: UserAccountInterface[] = [];
 
-  constructor (app: AppInterface, username: string) {
-    this.app = app;
+  constructor (username: string) {
     this.username = username;
   }
 

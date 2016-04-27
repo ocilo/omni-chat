@@ -2,7 +2,6 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import AppInterface from "./interfaces/app";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import MessageInterface from "./interfaces/message";
@@ -16,12 +15,10 @@ import {Message} from "./message";
  * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
  */
 export class SimpleDiscussion implements DiscussionInterface {
-  private app: AppInterface;
   private account: UserAccountInterface;
   private palantiriDiscussion: palantiri.DiscussionToken;
 
-  constructor (app: AppInterface, account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
-    this.app = app;
+  constructor (account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
     this.account = account;
     this.palantiriDiscussion = palantiriDiscussion;
   }
