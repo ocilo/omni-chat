@@ -56,8 +56,8 @@ export class SimpleDiscussion implements DiscussionInterface {
     return this.getPalantiriDiscussion().then(info => info.creationDate);
   }
 
-  getUser(): Bluebird.Thenable<UserInterface> {
-    return this.account.getUser();
+  getLocalUserAccount(): Bluebird.Thenable<UserAccountInterface> {
+    return Bluebird.resolve(this.account);
   }
 
   isHeterogeneous(): Bluebird<boolean> {

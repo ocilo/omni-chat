@@ -1,8 +1,8 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
+import {EventEmitter} from "events";
 import Incident from "incident";
 
-import ContactInterface from "./interfaces/contact";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import UserInterface from "./interfaces/user";
@@ -11,7 +11,7 @@ import MessageInterface from "./interfaces/message";
 
 import {Discussion} from "./discussion";
 
-export class User implements UserInterface {
+export class User extends EventEmitter implements UserInterface {
   /**
    * A human-readable name
    */
@@ -24,6 +24,7 @@ export class User implements UserInterface {
   accounts: UserAccountInterface[] = [];
 
   constructor (username: string) {
+    super();
     this.username = username;
   }
 
@@ -122,73 +123,6 @@ export class User implements UserInterface {
 		// return Bluebird.resolve(this);
 	}
 
-	getContacts(filter?: (contact: ContactInterface) => boolean): Bluebird<ContactInterface[]> {
-    return Bluebird.reject(new Incident("todo", "User:getContacts is not implemented"));
-		// // TODO : we can do lots of improvements :
-		// //        -use the mail address(a lot more efficient !)
-		// //        -do not compare otherContact with other someContacts we already added to contacts
-		// //        -improve how we check if ContactAccount are the same Contact
-		// //        -check in base if the user specified some time ago that some accounts are the same
-		// let contacts: Contact[] = null;
-		// for(let account of this.accounts) {
-		// 	account.getContacts().then((someContacts) => {
-		// 		let othersContacts: Contact[] = [];
-		// 		for(let someContact of someContacts) {
-		// 			let ctc = new OChatContact();
-		// 			ctc.fullname = someContact.name;
-		// 			if(!ctc.nicknames) {
-		// 				ctc.nicknames = [];
-		// 			}
-		// 			if(!ctc.accounts) {
-		// 				ctc.accounts = [];
-		// 			}
-		// 			ctc.nicknames.push(ctc.fullname);
-		// 			ctc.accounts.push(someContact);
-		// 			if(!filter || filter(ctc)) {
-		// 				othersContacts.push(ctc);
-		// 			}
-		// 			// TODO : correctly use filter
-		// 		}
-		// 		if(!contacts) {
-		// 			contacts = othersContacts;
-		// 		} else {
-		// 			for(let otherContact of othersContacts) {
-		// 				let merge: boolean = false;
-		// 				for(let actualContact of contacts) {
-		// 					if(otherContact.name === actualContact.name) {
-		// 						actualContact.mergeContacts(otherContact);
-		// 						merge = true;
-		// 						break;
-		// 					}
-		// 				}
-		// 				if(!merge) {
-		// 					contacts.push(otherContact);
-		// 				}
-		// 			}
-		// 		}
-		// 	})
-		// }
-		// return Bluebird.resolve(contacts);
-	}
-	addContact(contact: ContactInterface): Bluebird<this> {
-    return Bluebird.reject(new Incident("todo", "User:addContact is not implemented"));
-		// TODO : this is advanced option.
-		//        It's about writing on an account,
-		//        and not only reading it.
-		//        We will do this later.
-		// return Bluebird.resolve(this);
-	}
-
-	removeContact(contact: ContactInterface): Bluebird<this> {
-    return Bluebird.reject(new Incident("todo", "User:removeContact is not implemented"));
-		// // WARNING : we need to warn the user that this will remove the contact from all his accounts
-		// // TODO : this is advanced option.
-		// //        It's about writing on an account,
-		// //        and not only reading it.
-		// //        We will do this later.
-		// return Bluebird.resolve(this);
-	}
-
   getAccounts(driverNames?: string[]): Bluebird<UserAccountInterface[]> {
     return Bluebird.resolve(this.accounts)
       .filter((account: UserAccountInterface) => {
@@ -225,30 +159,6 @@ export class User implements UserInterface {
     // }
     // return Bluebird.resolve(this);
   }
-
-	on(eventname: string, handler: (...args: any[]) => any): Bluebird.Thenable<User> {
-    return Bluebird.reject(new Incident("todo", "User:on is not implemented"));
-		// for(let account of this.accounts) {
-		// 	if(account.connection && account.connection.connected) {
-		// 		account.getOrCreateConnection().then((co) => {
-		// 			co.on(eventname, handler);
-		// 		})
-		// 	}
-		// }
-		// return Bluebird.resolve(this);
-	}
-
-	once(eventname: string, handler: (...args: any[]) => any): Bluebird.Thenable<User> {
-    return Bluebird.reject(new Incident("todo", "User:once is not implemented"));
-		// for(let account of this.accounts) {
-		// 	if(account.connection && account.connection.connected) {
-		// 		account.getOrCreateConnection().then((co) => {
-		// 			co.once(eventname, handler);
-		// 		})
-		// 	}
-		// }
-		// return Bluebird.resolve(this);
-	}
 }
 
 export default User;

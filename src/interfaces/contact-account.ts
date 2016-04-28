@@ -1,27 +1,21 @@
 import {Thenable} from "bluebird";
 import * as palantiri from "palantiri-interfaces";
-import {Contact} from "./contact";
 
 /***************************************************************
  * ContactAccount represents a mono-protocol Contact, reachable
  * through one UserAccount.
  * The type alias prevent some misunderstandings.
  ***************************************************************/
-export interface ContactAccount {
-  /**
-   * Returns the contact owning this contact-account
-   */
-  getContact(): Thenable<Contact>;
-
+export interface ContactAccountInterface {
   /**
    * Returns the palantiri token (driver + internal id) of this contact-account
    */
   getPalantiriToken(): Thenable<palantiri.AccountToken>;
 
   /**
-   * Returns a human-readable name for this account
+   * Returns a human-readable name for this contact-account
    */
   getName(): Thenable<string>;
 }
 
-export default ContactAccount;
+export default ContactAccountInterface;

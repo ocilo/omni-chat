@@ -1,16 +1,10 @@
 import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
-import {User} from "./user";
-import {ContactAccount} from "./contact-account";
-import {Discussion} from "./discussion";
+import {UserInterface} from "./user";
+import {ContactAccountInterface} from "./contact-account";
+import {DiscussionInterface} from "./discussion";
 
-export interface UserAccount {
-  /**
-   * Returns the user owning the account
-   * (an account is owned by only one user)
-   */
-  getUser(): Thenable<User>;
-
+export interface UserAccountInterface {
   /**
    * Returns the palantiri token (driver + internal id) of this user-account
    */
@@ -28,11 +22,19 @@ export interface UserAccount {
    */
   getOrCreateApi(): Thenable<palantiri.Api>;
 
-  getContactAccounts(): Thenable<ContactAccount[]>;
+  getContactAccounts(): Thenable<ContactAccountInterface[]>;
 
-  getDiscussions(): Thenable<Discussion[]>;
+  /**
+   * Returns a list of account-specific discussions
+   * TODO: support a set of similar options to user.getDiscussions
+   */
+  getDiscussions(): Thenable<DiscussionInterface[]>;
 
-  getOrCreateDiscussion(remoteContactAccount: ContactAccount): Thenable<Discussion>;
+  /**
+   *
+   * @param remoteContactAccount
+   */
+  getOrCreateDiscussion(remoteContactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
 }
 
-export default UserAccount;
+export default UserAccountInterface;

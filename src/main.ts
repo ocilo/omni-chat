@@ -1,5 +1,4 @@
 export {app} from "./app";
-export {Contact} from "./contact";
 export {ContactAccount} from "./contact-account";
 export {Discussion} from "./discussion";
 export {Message} from "./message";

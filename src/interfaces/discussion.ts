@@ -1,7 +1,7 @@
 import {Thenable} from "bluebird";
-import {User} from "./user";
-import {ContactAccount} from "./contact-account";
-import {Message} from "./message";
+import {UserInterface} from "./user";
+import {ContactAccountInterface} from "./contact-account";
+import {MessageInterface} from "./message";
 
 /***************************************************************
  * Discussion is the only thing you can use to chat with
@@ -18,7 +18,7 @@ import {Message} from "./message";
 //                   a message received from a contactin an heterogeneous discussion ?
 // Here, sendMessage sends the message to every account or calls sendMessage on the subDiscussions
 
-export interface Discussion {
+export interface DiscussionInterface {
   getName(): Thenable<string>;
   //  Retourne le nom de la discussion.
 
@@ -27,15 +27,18 @@ export interface Discussion {
   // Une description brève de la Discussion,
   // sous forme textuelle.
 
+  // Rather use this one:
   // getLocalAccounts(): Bluebird.Thenable<UserAccount>;
 
-  /**
-   * The user associated to the local accounts of this discussion
-   * @returns {Thenable<User>}
-   */
-  getUser(): Thenable<User>;
-  // owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
-  //                                 // cette Discussion.
+  // Than this one (a simple discussion only knows its local account but the localAccount does not have the possibility
+  // to get the owner user) (or inject the user at construction ?):
+  // /**
+  //  * The user associated to the local accounts of this discussion
+  //  * @returns {Thenable<UserInterface>}
+  //  */
+  // getUser(): Thenable<UserInterface>;
+  // // owner: User;                    // L'utilisateur d'Omni-Chat qui utilise
+  // //                                 // cette Discussion.
 
   isHeterogeneous(): Thenable<boolean>;
 
@@ -55,7 +58,7 @@ export interface Discussion {
 
 
 
-  getMessages(options?: GetMessagesOptions): Thenable<Message[]>;
+  getMessages(options?: GetMessagesOptions): Thenable<MessageInterface[]>;
   //  Retourne une liste des "maxMessages" derniers messages echanges pendant la Discussion,
   //  au plus : s'il y en a moins, alors retourne le nombre de messages disponibles.
   //  Si afterDate est precise, ne retourne que les messages posterieurs a afterDate.
@@ -73,7 +76,7 @@ export interface Discussion {
   //  en seront informes. Sinon, ils ne le seront que lors de l'envoie
   //  d'un message.
 
-  removeParticipants(contactAccount: ContactAccount): Thenable<this>;
+  removeParticipants(contactAccount: ContactAccountInterface): Thenable<this>;
   //  Enleve le participant "contactAccount" de la Discussion
   //  courante. Plus exactement, supprime "contactAccount" d'un
   //  GroupAccount de this.subdiscussion et l'evince du groupe de
@@ -84,20 +87,20 @@ export interface Discussion {
   //  Si cela supprime le dernier participant d'une sous discussion,
   //  la sous discussion sera supprimee.
 
-  getSubdiscussions(): Thenable<Discussion[]>;
+  getSubdiscussions(): Thenable<DiscussionInterface[]>;
   //  Retourne une liste des sous discussions de la Discussion courante.
 
   /**
    * Sends the message newMessage to the discussion.
    * Returns the sent Message
    */
-  sendMessage(newMessage: NewMessage): Thenable<Message>;
+  sendMessage(newMessage: NewMessage): Thenable<MessageInterface>;
 }
 
 export interface GetMessagesOptions {
   maxMessages: number;
   afterDate?: Date;
-  filter?: (msg: Message) => boolean
+  filter?: (msg: MessageInterface) => boolean
 }
 
 export interface NewMessage {
@@ -105,4 +108,25 @@ export interface NewMessage {
   date?: Date;
 }
 
-export default Discussion;
+export default DiscussionInterface;
+
+
+//  /***************************************************************
+//  * GroupChat represents a mono-protocol and mono-account
+//  * Discussion. This allows us to keep the aspect of "group chat"
+//  * in the side of the protocol used by Palantiri.
+//  * The type alias prevent some misunderstandings.
+//  ***************************************************************/
+// export type GroupChat = Discussion;
+//
+// /***************************************************************
+//  * Subdiscussion represents a mono-protocol and mono-account
+//  * discussion involved in a multi-accounts and multi-protocols
+//  * Discussion. The attribute "since" allows us to correctly get
+//  * the messages from this discussions without losing the
+//  * meaning of the Discussion.
+//  ***************************************************************/
+// export type Subdiscussion = {since: Date, discussion: GroupChat};
+//
+// export default GroupChat;
+// Keep a discinct interface ? A common interface with two implementations works for the moment

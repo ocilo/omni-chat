@@ -9,6 +9,17 @@ import UserAccountInterface from "./interfaces/user-account";
 import {User} from "./user";
 import {ConnectionStrategy} from "./interfaces/app";
 
+export let app: AppInterface = {
+  useDriver: useDriver,
+  setActiveConnection: setActiveConnection,
+  getConnection: getConnection,
+  getOrCreateConnection: getOrCreateConnection,
+  getOrCreateApi: getOrCreateApi,
+  getUsers: getUsers,
+  addUser: addUser,
+  removeUser: removeUser
+};
+
 /**
  * The list of all the users using this app instance
  */
@@ -23,135 +34,118 @@ let connectionStrategies: {[driverName: string]:  ConnectionStrategy;} = {};
 /**
  * A collection/cache of currently open connections.
  */
-let activeConnections: {
+interface ActiveConnections {
   [driverName: string]: {
     [accountId: string]: palantiri.Connection;
   };
-} = {};
+}
+let activeConnections: ActiveConnections = {};
 
-export let app: AppInterface = {
-  /**
-   * Register a new driver with its data acquisition function
-   * @param driver
-   * @param strategy
-   * @returns {OChatApp}
-   */
-  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): this {
-    if(!driver || !driver.driver) {
-      throw new Incident("missing-driver-name", {driver: driver}, "Cannot register driver, no .driver attribute");
-    }
-    connectionStrategies[driver.driver] = strategy;
-    return this;
-  },
+/**
+ * Register a new driver with its data acquisition function
+ * @param driver
+ * @param strategy
+ * @returns {OChatApp}
+ */
+function useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): AppInterface {
+  if(!driver || !driver.driver) {
+    throw new Incident("missing-driver-name", {driver: driver}, "Cannot register driver, no .driver attribute");
+  }
+  connectionStrategies[driver.driver] = strategy;
+  return app;
+}
 
-  /**
-   * Adds this connection to the set of active connections.
-   * @param account
-   * @param connection
-   * @returns {OChatApp}
-   */
-  setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<this> {
-    return Bluebird.resolve(account.getPalantiriToken())
-      .then((token: palantiri.AccountToken) => {
-        if (token.driver !== connection.driver) {
-          throw new Incident("account-connection-mismatch", {account: account, connection: connection}, "The driver required by account does not match the one of connection");
-        }
-        if (!(token.driver in activeConnections)) {
-          activeConnections[token.driver] = {};
-        }
-        let driver = activeConnections[token.driver];
-        driver[token.id] = connection;
-        return this;
-      })
-      .thenReturn(this);
-  },
+/**
+ * Adds this connection to the set of active connections.
+ * @param account
+ * @param connection
+ * @returns {OChatApp}
+ */
+function setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<AppInterface> {
+  return Bluebird.resolve(account.getPalantiriToken())
+    .then((token: palantiri.AccountToken) => {
+      if (token.driver !== connection.driver) {
+        throw new Incident("account-connection-mismatch", {account: account, connection: connection}, "The driver required by account does not match the one of connection");
+      }
+      if (!(token.driver in activeConnections)) {
+        activeConnections[token.driver] = {};
+      }
+      let driver = activeConnections[token.driver];
+      driver[token.id] = connection;
+    })
+    .thenReturn(app);
+}
 
-  // TODO: optional argument to throw if not found
-  getConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
-    return Bluebird.resolve(account.getPalantiriToken())
-      .then((token: palantiri.AccountToken) => {
-        if (!(token.driver in activeConnections)) {
-          return null;
-        }
-        let driver = activeConnections[token.driver];
-        return driver[token.id] || null;
-      })
-  },
+// TODO: optional argument to throw if not found
+function getConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
+  return Bluebird.resolve(account.getPalantiriToken())
+    .then((token: palantiri.AccountToken) => {
+      if (!(token.driver in activeConnections)) {
+        return null;
+      }
+      let driver = activeConnections[token.driver];
+      return driver[token.id] || null;
+    });
+}
 
-  getOrCreateConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
-    return this.getConnection(account)
-      .then((connection: palantiri.Connection) => {
-        if (connection !== null) {
-          return connection;
-        }
-        return account.getPalantiriToken()
-          .then((token: palantiri.AccountToken) => {
-            if (!(token.driver in connectionStrategies)) {
-              return Bluebird.reject(new Incident("Unable to get connection"));
-            }
-            return Bluebird.resolve(connectionStrategies[token.driver](account))
-              .tap((connection) => this.setActiveConnection(account, connection));
-          });
-      });
-  },
+function getOrCreateConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
+  return getConnection(account)
+    .then((connection: palantiri.Connection) => {
+      if (connection !== null) {
+        return Bluebird.resolve(connection);
+      }
+      return account.getPalantiriToken()
+        .then((token: palantiri.AccountToken) => {
+          if (!(token.driver in connectionStrategies)) {
+            return Bluebird.reject(new Incident("Unable to get connection"));
+          }
+          return Bluebird.resolve(connectionStrategies[token.driver](account))
+            .tap((connection) => setActiveConnection(account, connection));
+        });
+    });
+}
 
-  /**
-   * get or create connection and api for account
-   * @param account
-   * @returns {Bluebird<R>}
-   */
-  getOrCreateApi (account: UserAccountInterface): Bluebird<palantiri.Api> {
-    return this.getOrCreateConnection(account).then((connection) => {
+/**
+ * get or create connection and api for account
+ * @param account
+ * @returns {Bluebird<R>}
+ */
+function getOrCreateApi (account: UserAccountInterface): Bluebird<palantiri.Api> {
+  return getOrCreateConnection(account)
+    .then((connection) => {
       return connection.connect();
     });
-  },
+}
 
-
-  /**
-   * Creates a new user and already attach it to this app.
-   * @param username
-   */
-  createUser (username: string): User {
-    let users = this.getUsers((user) => user.username === username);
-    if (users.length === 0) {
-      let user = new User(username); // TODO: remove this function, we no longer need it
-      this.addUser(user);
-      return user;
-    } else {
-      throw new Error("The user already exists");
-    }
-  },
-
-  getUsers(filter?: (user: UserInterface) => boolean): UserInterface[] {
-    if(filter) {
-      let okUsers: UserInterface[] = [];
-      for(let user of users) {
-        if(filter(user)) {
-          okUsers.push(user);
-        }
+function getUsers(filter?: (user: UserInterface) => boolean): UserInterface[] {
+  if(filter) {
+    let okUsers: UserInterface[] = [];
+    for(let user of users) {
+      if(filter(user)) {
+        okUsers.push(user);
       }
-      return okUsers;
     }
-    return users;
-  },
-
-  addUser(user: UserInterface): this {
-    if(users.indexOf(user) === -1) {
-      throw new Error("This user is already connected to this client.");
-    } else {
-      users.push(user);
-    }
-    return this;
-  },
-
-  removeUser(user: UserInterface): this {
-    if(users.indexOf(user) === -1) {
-      throw new Error("This user was not connected to this client.");
-    } else {
-      users.splice(0, 1, user);
-    }
-    return this;
+    return okUsers;
   }
-};
+  return users;
+}
+
+function addUser(user: UserInterface): AppInterface {
+  if(users.indexOf(user) === -1) {
+    throw new Error("This user is already connected to this client.");
+  } else {
+    users.push(user);
+  }
+  return app;
+}
+
+function removeUser(user: UserInterface): AppInterface {
+  if(users.indexOf(user) === -1) {
+    throw new Error("This user was not connected to this client.");
+  } else {
+    users.splice(0, 1, user);
+  }
+  return app;
+}
 
 export default app;

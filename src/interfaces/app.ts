@@ -1,50 +1,46 @@
 import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
-import {User} from "./user";
-import {ContactAccount} from "./contact-account";
-import {Discussion} from "./discussion";
-import {UserAccount} from "./user-account";
+import {UserInterface} from "./user";
+import {ContactAccountInterface} from "./contact-account";
+import {DiscussionInterface} from "./discussion";
+import {UserAccountInterface} from "./user-account";
 
 /***************************************************************
  * App is the entry point for the library.
  * It maintains the list of connected users.
  ***************************************************************/
-export type ConnectionStrategy = (account: UserAccount) => Thenable <palantiri.Connection>;
+export type ConnectionStrategy = (account: UserAccountInterface) => Thenable <palantiri.Connection>;
 
-export interface App {
+// Idea:
+// Rename it to "drivers-store" and only handle the palantiri-API acquisition (available drivers and active connections)
+
+export interface AppInterface {
   /**
    * Register a new driver with its data acquisition function
    */
-  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): this;
+  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): AppInterface;
 
   /**
    * Adds this connection to the set of active connections.
    */
-  setActiveConnection (account: UserAccount, connection: palantiri.Connection): Thenable<this>;
+  setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Thenable<AppInterface>;
 
   // TODO: optional argument to throw if not found
-  getConnection (account: UserAccount): Thenable<palantiri.Connection>;
+  getConnection (account: UserAccountInterface): Thenable<palantiri.Connection>;
 
-  getOrCreateConnection (account: UserAccount): Thenable<palantiri.Connection>;
+  getOrCreateConnection (account: UserAccountInterface): Thenable<palantiri.Connection>;
 
   /**
    * get or create connection and api for account
    */
-  getOrCreateApi (account: UserAccount): Thenable<palantiri.Api>;
+  getOrCreateApi (account: UserAccountInterface): Thenable<palantiri.Api>;
 
+  getUsers(filter?: (user: UserInterface) => boolean): UserInterface[];
 
-  /**
-   * Creates a new user and already attach it to this app.
-   * @param username
-   */
-  createUser (username: string): User;
+  addUser(user: UserInterface): AppInterface;
 
-  getUsers(filter?: (user: User) => boolean): User[];
-
-  addUser(user: User): this;
-
-  removeUser(user: User): this;
+  removeUser(user: UserInterface): AppInterface;
 
 }
 
-export default App;
+export default AppInterface;

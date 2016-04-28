@@ -2,10 +2,8 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import AppInterface from "./interfaces/app";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
-import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 import MessageInterface from "./interfaces/message";
 
@@ -34,10 +32,6 @@ export class UserAccount implements UserAccountInterface {
 
     this.username = accountData.username || null;
     this.data = accountData;
-  }
-
-  getUser(): Bluebird<UserInterface> {
-    return Bluebird.reject(new Incident("todo", "UserAccount:getUser is not implemented"));
   }
 
   getPalantiriToken(): Bluebird<palantiri.AccountToken> {
@@ -81,7 +75,7 @@ export class UserAccount implements UserAccountInterface {
         return api.getContacts()
       })
       .map((account: palantiri.Account) => {
-        return new ContactAccount(this, account);
+        return new ContactAccount(account);
       });
   }
 

@@ -1,10 +1,11 @@
+import {Thenable} from "bluebird";
+
 /**
- * Represents a message sent to the network (not a partial message)
+ * Represents a message sent to the network (this is not a partial message)
  */
-
-// TODO: add methods like "respond" and events like "delivered", "read", etc.
-export interface Message {
-
+// TODO: add methods like "respond" and events like "delivered", "read", etc. ?
+export interface MessageInterface {
+  getBody(): Thenable<string>;
 }
 
-export default Message;
+export default MessageInterface;
