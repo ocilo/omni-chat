@@ -6,9 +6,9 @@ import {DiscussionInterface} from "./discussion";
 
 export interface UserAccountInterface {
   /**
-   * Returns the palantiri token (driver + internal id) of this user-account
+   * Returns the global id (driver + internal id) of this user-account
    */
-  getPalantiriToken(): Thenable<palantiri.AccountToken>;
+  getGlobalId(): Thenable<palantiri.AccountGlobalId>;
 
   /*
    * Connect the current user's account, or retrieve an existing

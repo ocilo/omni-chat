@@ -129,8 +129,11 @@ export class User extends EventEmitter implements UserInterface {
         if (!driverNames) {
           return Bluebird.resolve(true);
         }
-        return account.getPalantiriToken()
-          .then(token => driverNames.indexOf(token.driver) >= 0);
+        return account.getGlobalId()
+          .then((globalId: palantiri.AccountGlobalId) => {
+            let parsed = palantiri.GlobalId.parse(globalId);
+            return parsed !== null && driverNames.indexOf(parsed.driverName) >= 0;
+          });
       });
   }
 

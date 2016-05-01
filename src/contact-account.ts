@@ -6,21 +6,24 @@ import ContactAccountInterface from "./interfaces/contact-account";
 
 export class ContactAccount implements ContactAccountInterface {
   /**
-   * A palantiri driver/id pair
+   * The palantiri infos
    */
-  token: palantiri.AccountToken = null;
+  accountData: palantiri.Account = null;
 
-  constructor (token: palantiri.AccountToken) {
-    this.token = token;
+  constructor (accountData: palantiri.Account) {
+    this.accountData = accountData;
   }
 
-  getPalantiriToken(): Bluebird<palantiri.AccountToken> {
-    return Bluebird.resolve(this.token);
+  getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
+    return Bluebird.resolve(palantiri.GlobalId.stringify(this.accountData));
   }
 
   getName(): Bluebird<string> {
-    // TODO: implement api.getContactInfo
-    return Bluebird.reject(new Incident("todo", "ontactAccount.getName is not implemented yet"));
+    return Bluebird.resolve(this.accountData.name);
+  }
+
+  getAvatarUrl(): Bluebird<string> {
+    return Bluebird.resolve(this.accountData.avatarUrl);
   }
 }
 

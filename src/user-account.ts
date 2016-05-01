@@ -34,8 +34,8 @@ export class UserAccount implements UserAccountInterface {
     this.data = accountData;
   }
 
-  getPalantiriToken(): Bluebird<palantiri.AccountToken> {
-    return Bluebird.resolve({driver: this.driver, id: this.id});
+  getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
+    return Bluebird.resolve(palantiri.GlobalId.stringify({driverName: this.driver, id: this.id}));
   }
 
   /*

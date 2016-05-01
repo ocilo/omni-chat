@@ -16,44 +16,37 @@ import {Message} from "./message";
  */
 export class SimpleDiscussion implements DiscussionInterface {
   private account: UserAccountInterface;
-  private palantiriDiscussion: palantiri.DiscussionToken;
+  private discussionData: palantiri.Discussion;
 
-  constructor (account: UserAccountInterface, palantiriDiscussion: palantiri.DiscussionToken) {
+  constructor (account: UserAccountInterface, discussionData: palantiri.Discussion) {
     this.account = account;
-    this.palantiriDiscussion = palantiriDiscussion;
+    this.discussionData = discussionData;
   }
 
   /**
    * Private: fetch the data about this discussion from the service
    * @returns {Thenable<palantiri.Discussion>}
    */
-  private getPalantiriDiscussion(): Bluebird<palantiri.Discussion> {
+  private getDiscussionInfo(): Bluebird<palantiri.Discussion> {
     return Bluebird.resolve(this.account.getOrCreateApi())
       .then((api: palantiri.Api) => {
         // TODO: fetch the real informations
-        // return api.getDiscussionInfo(this.palantiriDiscussion);
+        // return api.getDiscussionInfo(this.discussionReference);
 
-        // Temporary partial filler
-        return <palantiri.Discussion> <any> {
-          driver: this.palantiriDiscussion.driver,
-          id: this.palantiriDiscussion.id,
-          name: "simple-discussion",
-          description: "Description of discussion",
-          creationDate: new Date(),
-        }
+        return Bluebird.resolve(this.discussionData);
       });
   }
 
   getName(): Bluebird<string> {
-    return this.getPalantiriDiscussion().then(info => info.name);
+    return this.getDiscussionInfo().then(info => info.name);
   }
 
   getDescription(): Bluebird<string> {
-    return this.getPalantiriDiscussion().then(info => info.description);
+    return this.getDiscussionInfo().then(info => info.description);
   }
 
   getCreationDate(): Bluebird<Date> {
-    return this.getPalantiriDiscussion().then(info => info.creationDate);
+    return this.getDiscussionInfo().then(info => info.creationDate);
   }
 
   getLocalUserAccount(): Bluebird.Thenable<UserAccountInterface> {
@@ -61,7 +54,7 @@ export class SimpleDiscussion implements DiscussionInterface {
   }
 
   isHeterogeneous(): Bluebird<boolean> {
-    return Bluebird.resolve(false); // Tells that this discussion uses a single account for a single discussion
+    return Bluebird.resolve(false); // This implementation represents mono-service discussions!
   }
 
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
@@ -87,16 +80,16 @@ export class SimpleDiscussion implements DiscussionInterface {
   }
 
   getSubdiscussions(): Bluebird<DiscussionInterface[]> {
-    return Bluebird.resolve([]); // There is no sub-discussion
+    return Bluebird.resolve([]); // There is no sub-discussion in a simple discussion (maybe return null ?)
   }
 
   sendMessage(newMessage: NewMessage): Bluebird<Message> {
     return Bluebird.resolve(this.account.getOrCreateApi())
       .then((api: palantiri.Api) => {
-        return api.sendMessage(newMessage, this.palantiriDiscussion.id);
+        return api.sendMessage(newMessage, this.discussionData.id);
       })
       .then((message: palantiri.Message) => {
-        // TODO: create a SimpleMessage and Message class
+        // TODO: create a SimpleMessage and Message class to differenciate messages on simple-discussion and multi-driver discussions ?
         return new Message();
       });
   }

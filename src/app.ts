@@ -35,9 +35,7 @@ let connectionStrategies: {[driverName: string]:  ConnectionStrategy;} = {};
  * A collection/cache of currently open connections.
  */
 interface ActiveConnections {
-  [driverName: string]: {
-    [accountId: string]: palantiri.Connection;
-  };
+  [accountGlobalId: string]: palantiri.Connection;
 }
 let activeConnections: ActiveConnections = {};
 
@@ -62,29 +60,22 @@ function useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy
  * @returns {OChatApp}
  */
 function setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<AppInterface> {
-  return Bluebird.resolve(account.getPalantiriToken())
-    .then((token: palantiri.AccountToken) => {
-      if (token.driver !== connection.driver) {
+  return Bluebird.resolve(account.getGlobalId())
+    .then((globalId: palantiri.AccountGlobalId) => {
+      let parsed: palantiri.ParsedId = palantiri.GlobalId.parse(globalId);
+      if (parsed.driverName !== connection.driver) {
         throw new Incident("account-connection-mismatch", {account: account, connection: connection}, "The driver required by account does not match the one of connection");
       }
-      if (!(token.driver in activeConnections)) {
-        activeConnections[token.driver] = {};
-      }
-      let driver = activeConnections[token.driver];
-      driver[token.id] = connection;
+      activeConnections[globalId] = connection;
     })
     .thenReturn(app);
 }
 
 // TODO: optional argument to throw if not found
 function getConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
-  return Bluebird.resolve(account.getPalantiriToken())
-    .then((token: palantiri.AccountToken) => {
-      if (!(token.driver in activeConnections)) {
-        return null;
-      }
-      let driver = activeConnections[token.driver];
-      return driver[token.id] || null;
+  return Bluebird.resolve(account.getGlobalId())
+    .then((globalId: palantiri.AccountGlobalId) => {
+      return activeConnections[globalId] || null;
     });
 }
 
@@ -94,12 +85,13 @@ function getOrCreateConnection (account: UserAccountInterface): Bluebird<palanti
       if (connection !== null) {
         return Bluebird.resolve(connection);
       }
-      return account.getPalantiriToken()
-        .then((token: palantiri.AccountToken) => {
-          if (!(token.driver in connectionStrategies)) {
-            return Bluebird.reject(new Incident("Unable to get connection"));
+      return account.getGlobalId()
+        .then((globalId: palantiri.AccountGlobalId) => {
+          let parsed: palantiri.ParsedId = palantiri.GlobalId.parse(globalId);
+          if (!(parsed.driverName in connectionStrategies)) {
+            return Bluebird.reject(new Incident("Unable to get connection, no registered driver for "+parsed.driverName));
           }
-          return Bluebird.resolve(connectionStrategies[token.driver](account))
+          return Bluebird.resolve(connectionStrategies[parsed.driverName](account))
             .tap((connection) => setActiveConnection(account, connection));
         });
     });
