@@ -62,8 +62,8 @@ function useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy
 function setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<AppInterface> {
   return Bluebird.resolve(account.getGlobalId())
     .then((globalId: palantiri.AccountGlobalId) => {
-      let parsed: palantiri.ParsedId = palantiri.GlobalId.parse(globalId);
-      if (parsed.driverName !== connection.driver) {
+      let accountRef = palantiri.Id.asReference(globalId);
+      if (accountRef.driverName !== connection.driver) {
         throw new Incident("account-connection-mismatch", {account: account, connection: connection}, "The driver required by account does not match the one of connection");
       }
       activeConnections[globalId] = connection;
@@ -87,11 +87,11 @@ function getOrCreateConnection (account: UserAccountInterface): Bluebird<palanti
       }
       return account.getGlobalId()
         .then((globalId: palantiri.AccountGlobalId) => {
-          let parsed: palantiri.ParsedId = palantiri.GlobalId.parse(globalId);
-          if (!(parsed.driverName in connectionStrategies)) {
-            return Bluebird.reject(new Incident("Unable to get connection, no registered driver for "+parsed.driverName));
+          let accountRef = palantiri.Id.asReference(globalId);
+          if (!(accountRef.driverName in connectionStrategies)) {
+            return Bluebird.reject(new Incident("Unable to get connection, no registered driver for "+accountRef.driverName));
           }
-          return Bluebird.resolve(connectionStrategies[parsed.driverName](account))
+          return Bluebird.resolve(connectionStrategies[accountRef.driverName](account))
             .tap((connection) => setActiveConnection(account, connection));
         });
     });

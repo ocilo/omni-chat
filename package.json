@@ -20,14 +20,14 @@
     "facebook-chat-api": "^1.1.0",
     "incident": "^1.0.5",
     "lodash": "^4.0.0",
-    "palantiri-interfaces": "^0.3.0"
+    "palantiri-interfaces": "^0.3.1"
   },
   "devDependencies": {
     "chai": "^3.4.1",
     "gulp": "^3.9.0",
     "typescript": "^1.8.10",
     "via-build-tools": "^0.8.2",
-    "palantiri-driver-facebook": "^0.1.0"
+    "palantiri-driver-facebook": "^0.1.2"
   },
   "jspm": {
     "configFile": "systemjs.config.js",

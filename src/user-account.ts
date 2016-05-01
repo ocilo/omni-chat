@@ -12,7 +12,7 @@ import {SimpleDiscussion} from "./simple-discussion";
 import app from "./app";
 
 export interface UserAccountData {
-  driver: string;
+  driverName: string;
   id: string;
 
   username?: string;
@@ -27,7 +27,7 @@ export class UserAccount implements UserAccountInterface {
   data: UserAccountData;
 
   constructor (accountData: UserAccountData) {
-    this.driver = accountData.driver;
+    this.driver = accountData.driverName;
     this.id = accountData.id;
 
     this.username = accountData.username || null;
@@ -35,7 +35,7 @@ export class UserAccount implements UserAccountInterface {
   }
 
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.GlobalId.stringify({driverName: this.driver, id: this.id}));
+    return Bluebird.resolve(palantiri.Id.asGlobalId({driverName: this.driver, id: this.id}));
   }
 
   /*

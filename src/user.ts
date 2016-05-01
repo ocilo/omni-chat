@@ -131,8 +131,8 @@ export class User extends EventEmitter implements UserInterface {
         }
         return account.getGlobalId()
           .then((globalId: palantiri.AccountGlobalId) => {
-            let parsed = palantiri.GlobalId.parse(globalId);
-            return parsed !== null && driverNames.indexOf(parsed.driverName) >= 0;
+            let ref = palantiri.Id.parseGlobal(globalId);
+            return ref !== null && driverNames.indexOf(ref.driverName) >= 0;
           });
       });
   }

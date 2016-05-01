@@ -11,7 +11,7 @@ app.useDriver(<any> facebook.Connection, facebook.fromConsole);
 let user = new User("ochat.frif");
 
 let fbacc = new UserAccount({
-  driver: "facebook",
+  driverName: "facebook",
   id: "0000123456789", // a unique string identifying this account
   username: "ochat.frif"
 });

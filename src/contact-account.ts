@@ -15,7 +15,7 @@ export class ContactAccount implements ContactAccountInterface {
   }
 
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.GlobalId.stringify(this.accountData));
+    return Bluebird.resolve(palantiri.Id.asGlobalId(this.accountData));
   }
 
   getName(): Bluebird<string> {
