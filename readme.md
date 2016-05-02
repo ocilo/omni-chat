@@ -57,11 +57,11 @@ The entry point for an `omni-chat` application is called `App`.
 In order to use our Facebook driver, we need to register it on the `App`
 object.
 
-Each driver needs some driver-specific options in order to establish a
-connection: the most common example are credentials in order to login to
-an account. Registering a driver means linking a driver to
-`ConnectionProvider`: a function that takes care of acquiring the driver-
-specific options and return a `Connection`.
+Each driver needs some driver-specific options to establish a connection:
+the most common example are credentials for password-protected accounts.
+Registering a driver means linking a driver to `ConnectionProvider`: a
+function that takes care of acquiring the driver-specific options and
+return a `Connection`.
 
 ````typescript
 // App.useDriver(connection, connectionProvider)
