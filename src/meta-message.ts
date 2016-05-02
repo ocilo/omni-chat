@@ -21,7 +21,7 @@ export class MetaMessage implements MessageInterface {
       return Bluebird.reject(new Incident("empty-meta-message", "This meta-message is empty!"));
     }
     // TODO: for the moment we trust the first sub-message, the test should be stronger
-    return this.subMessages[0].getBody();
+    return Bluebird.resolve(this.subMessages[0].getBody());
   }
 }
 

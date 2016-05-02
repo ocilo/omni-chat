@@ -1,5 +1,6 @@
 import * as Bluebird from "bluebird";
 import Incident from "incident";
+import * as _ from "lodash";
 
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
@@ -8,12 +9,53 @@ import MessageInterface from "./interfaces/message";
 
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import MetaMessage from "./meta-message";
+import SimpleDiscussion from "./simple-discussion";
+import {utils} from "palantiri-interfaces";
+
+/**
+ * Traverse the tree of meta-discussions from `parent` and get a list of all the `SimpleDiscussion`
+ * @param parent
+ * @returns {Bluebird<SimpleDiscussion[]>}
+ */
+function findSimpleChildren(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
+  return Bluebird.resolve(parent.getSubdiscussions())
+    .filter<SimpleDiscussion>((discussion: DiscussionInterface) => {
+      return discussion instanceof SimpleDiscussion;
+    });
+}
+
+/**
+ * Traverse the tree of meta-discussions from `parent` and get a list of all the `SimpleDiscussion`
+ * @param parent
+ * @returns {Bluebird<SimpleDiscussion[]>}
+ */
+function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
+  return parent.getSubdiscussions()
+    .then((subs: DiscussionInterface[]) => {
+      let simpleChildren: SimpleDiscussion[] = [];
+      let descendantsPromises: Bluebird.Thenable<SimpleDiscussion[]>[] = [];
+      for(let sub of subs) {
+        if (sub instanceof SimpleDiscussion) {
+          simpleChildren.push(sub);
+        } else {
+          descendantsPromises.push(findSimpleDescendants(<MetaDiscussion> sub));
+        }
+      }
+      if (descendantsPromises.length === 0) {
+        return Bluebird.resolve(simpleChildren);
+      }
+      return Bluebird.all(descendantsPromises)
+        .then((simpleDescendants: SimpleDiscussion[][]) => {
+          return _.concat(simpleChildren, _.flatten(simpleDescendants));
+        })
+    });
+}
 
 export class MetaDiscussion implements DiscussionInterface {
   user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
-  subDiscussions: MetaDiscussion[];
+  subDiscussions: DiscussionInterface[];
 
   constructor (user: UserInterface) {
     this.user = user;
@@ -91,6 +133,52 @@ export class MetaDiscussion implements DiscussionInterface {
               this.subDiscussions.push(subDiscussion);
             }
           })
+      })
+      .thenReturn(this);
+  }
+
+  flatten(): Bluebird<this> {
+    return findSimpleDescendants(this)
+      .then(simpleDescendants => {
+        this.subDiscussions = simpleDescendants;
+        return this;
+      });
+  }
+
+  mergeSimpleDiscussions(): Bluebird<this> {
+    return findSimpleChildren(this)
+      .then((children: SimpleDiscussion[]) => {
+        let discussionsPerAccount: utils.Dictionary<SimpleDiscussion[]> = {};
+        return Bluebird
+          // get the user-account id
+          .map(children, (child: SimpleDiscussion) => {
+            child.getLocalUserAccount()
+              .then(userAccount => userAccount.getGlobalId())
+          })
+          // group by user-account
+          .then((userAccountIds) => {
+            let grouped = _.groupBy(children, (child: SimpleDiscussion, idx: number) => {
+                return userAccountIds[idx];
+              });
+
+            return _.pickBy(grouped, (discussions: SimpleDiscussion[]) => {
+                return discussions.length > 1;
+              });
+          })
+      })
+      .then((discussionsToMerge: utils.Dictionary<SimpleDiscussion[]>) => {
+        // We now have a map of AccountId -> SimpleDiscussion[]
+        // let discussionsToMerge: {
+        //   '["facebook", "0123456789"]': [
+        //     // SimpleDiscussionA
+        //     // SimpleDiscussionB
+        //     // SimpleDiscussionC
+        //   ],
+        //   '["skype", "9876543210"]': [
+        //     // SimpleDiscussionE
+        //     // SimpleDiscussionF
+        //   ]
+        // }
       })
       .thenReturn(this);
   }
