@@ -9,7 +9,7 @@ import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 import MessageInterface from "./interfaces/message";
 
-import {Discussion} from "./discussion";
+import {MetaDiscussion} from "./meta-discussion";
 
 export class User extends EventEmitter implements UserInterface {
   /**
@@ -85,21 +85,21 @@ export class User extends EventEmitter implements UserInterface {
     // return Bluebird.resolve(discussion);
   }
 
-	getAllDiscussions(filter?: (discussion: Discussion) => boolean): Bluebird.Thenable<Discussion[]> {
+	getAllDiscussions(filter?: (discussion: MetaDiscussion) => boolean): Bluebird.Thenable<MetaDiscussion[]> {
     return Bluebird.reject(new Incident("todo", "User:getAllDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO
 		// return Bluebird.resolve(discussions);
 	}
 
-	getHeterogeneousDiscussions(filter?: (discussion: Discussion) => boolean): Bluebird.Thenable<Discussion[]> {
+	getHeterogeneousDiscussions(filter?: (discussion: MetaDiscussion) => boolean): Bluebird.Thenable<MetaDiscussion[]> {
     return Bluebird.reject(new Incident("todo", "User:getHeterogeneousDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO : access db
 		// return Bluebird.resolve(discussions);
 	}
 
-  leaveDiscussion(discussion: Discussion): Bluebird.Thenable<User> {
+  leaveDiscussion(discussion: MetaDiscussion): Bluebird.Thenable<User> {
     return Bluebird.reject(new Incident("todo", "User:leaveDiscussion is not implemented"));
     // // TODO : two ways to implements this :
     // //        -> for each accounts, get the connection, then the api, then call leaveGroupChat().
@@ -107,7 +107,7 @@ export class User extends EventEmitter implements UserInterface {
 		// return Bluebird.resolve(this);
   }
 
-	sendMessage(msg: MessageInterface, discussion: Discussion, callback?: (err: Error) => any): Bluebird.Thenable<User> {
+	sendMessage(msg: MessageInterface, discussion: MetaDiscussion, callback?: (err: Error) => any): Bluebird.Thenable<User> {
     return Bluebird.reject(new Incident("todo", "User:sendMessage is not implemented"));
 		// let err: Error = null;
 		// for(let subdiscussion of discussion.subdiscussions) {

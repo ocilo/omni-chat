@@ -7,13 +7,13 @@ import UserInterface from "./interfaces/user";
 import MessageInterface from "./interfaces/message";
 
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
-import {Message} from "./message";
+import MetaMessage from "./meta-message";
 
-export class Discussion implements DiscussionInterface {
+export class MetaDiscussion implements DiscussionInterface {
   user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
-  subDiscussions: Discussion[];
+  subDiscussions: MetaDiscussion[];
 
   constructor (user: UserInterface) {
     this.user = user;
@@ -76,13 +76,16 @@ export class Discussion implements DiscussionInterface {
     return Bluebird.resolve(this.subDiscussions);
   }
 
-	addSubdiscussion(subDiscussion: Discussion): Bluebird<this> {
+	addSubdiscussion(subDiscussion: MetaDiscussion): Bluebird<this> {
     return Bluebird
       .try(() => {
         return subDiscussion.getUser()
           .then((user: UserInterface) => {
             if (this.user !== user) {
-              return Bluebird.reject(new Incident("mixed-users", {user: this.user, subUser: this.user}, "A discussions tree can only have one local user"))
+              return Bluebird.reject(new Incident("mixed-users", {
+                user: this.user,
+                subUser: this.user
+              }, "A discussions tree can only have one local user"))
             }
             if (this.subDiscussions.indexOf(subDiscussion) < 0) {
               this.subDiscussions.push(subDiscussion);
@@ -90,6 +93,7 @@ export class Discussion implements DiscussionInterface {
           })
       })
       .thenReturn(this);
+  }
 
 		// TODO : rework all of this. This is probably wrong now: we decided that we don't automatically resolve the account to use so the above implementation is easier (but maybe incomplete)
 		// if(this.subdiscussions.indexOf({since: undefined, discussion: subdiscuss}) === -1) {
@@ -175,9 +179,8 @@ export class Discussion implements DiscussionInterface {
 		// 	});
 		// }
 		// return Bluebird.resolve(this);
-	}
 
-  removeParticipants(contactAccount: ContactAccountInterface): Bluebird<Discussion> {
+  removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
     return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
   }
 
@@ -185,16 +188,15 @@ export class Discussion implements DiscussionInterface {
     return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
   }
 
-  sendMessage(newMessage: NewMessage): Bluebird<Message> {
+  sendMessage(newMessage: NewMessage): Bluebird<MetaMessage> {
     return this.getSubdiscussions()
       .map((discussion: DiscussionInterface) => {
         return discussion.sendMessage(newMessage);
       })
       .then((messages) => {
-        // TODO: merge the sub-messages
-        return new Message();
+        return new MetaMessage(messages);
       });
   }
 }
 
-export default Discussion;
+export default MetaDiscussion;

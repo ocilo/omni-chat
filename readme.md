@@ -161,7 +161,7 @@ Currently it does not support nested `Discussions` recursively.
 
 ### MetaDiscussions (cross-service discussions)
 
-One of the greatest features offered by `omni-chat` is that the support
+One of the greatest features offered by `omni-chat` is the support
 for cross-service discussions and messages.
 These discussions and messages spanning across multiple services are
 called `MetaDiscussion`s and `MetaMessage`s (as opposed to
@@ -173,7 +173,7 @@ A `SimpleDiscussion` is bound to a single `UserAccount`, but a
 `MetaDiscussion` can contain sub-discussions using various accounts.
 The restriction is that one `User` has to own every `UserAccount` involved.
 
-````
+````typescript
 let alice: omniChat.User;
 // ...
 
@@ -185,7 +185,8 @@ Bluebird.join(
     let fbDiscussion = facebookDiscussions[0]; // a SimpleDiscussion
     let skypeDiscussion = skypeDiscussions[0]; // another SimpleDiscussion
     
-    let crossDiscussion = new MetaDiscussion(alice); // Create a new meta-discussion, only alice's conversations can be used here
+    // Create a new meta-discussion, only alice's conversations can be used here
+    let crossDiscussion = new MetaDiscussion(alice);
     
     return Bluebird
       .all([
@@ -201,9 +202,16 @@ Bluebird.join(
         //
         // When using sendMessage or other methods, the message propagate across the whole sub-tree:
         
-        fbDiscussion.sendMessage({body: "fb-only message"}); // The result will be a SimpleMessage
-        skypeDiscussion.sendMessage({body: "skype-only message"}); // The result will be a SimpleMessage
-        crossDiscussion.sendMessage({body: "meta message: propagated to both fbDiscussion & skypeDiscussion"}); // The result will be a MetaMessage
+        fbDiscussion.sendMessage({body: "fb-only message"});
+        // The result will be a Bluebird<SimpleMessage>
+        
+        
+        skypeDiscussion.sendMessage({body: "skype-only message"});
+        // The result will be a Bluebird<SimpleMessage>
+        
+        
+        crossDiscussion.sendMessage({body: "meta message: propagated to both fbDiscussion & skypeDiscussion"});
+        // The result will be a Bluebird<MetaMessage>
       });
   }
 );
@@ -300,7 +308,7 @@ a `MetaDiscussion` has to also unify the `SimpleMessage`s into `MetaMessage`s.
 A `MetaMessage` is a tree of equivalent message. The message equivalence is defined as follow:
 
  - The messages have the same `body`
- - The difference of the `creationDate` is less than 5 minutes
+ - The difference between the `creationDate`s is lesser than 5 minutes
  - The authors are equivalent. The authors are equivalent if one of the following is true:
    - Both messages are `SimpleMessage`s and both `UserAccount`s are the same.
    - Both messages are `SimpleMessage`s and both `UserAccount`s are owned by the same `User`
