@@ -20,22 +20,14 @@ export interface UserAccountData {
 }
 
 export class UserAccount implements UserAccountInterface {
-  driver: string;
-  id: string;
+  accountData: palantiri.UserAccount;
 
-  username: string;
-  data: UserAccountData;
-
-  constructor (accountData: UserAccountData) {
-    this.driver = accountData.driverName;
-    this.id = accountData.id;
-
-    this.username = accountData.username || null;
-    this.data = accountData;
+  constructor (accountData: palantiri.UserAccount) {
+    this.accountData = accountData;
   }
 
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.Id.asGlobalId({driverName: this.driver, id: this.id}));
+    return Bluebird.resolve(palantiri.Id.asGlobalId(this.accountData));
   }
 
   /*
@@ -62,14 +54,10 @@ export class UserAccount implements UserAccountInterface {
    */
   sendMessage(msg: MessageInterface, discussion: DiscussionInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "UserAccount:sendMessage is not implemented"));
-    // return this.getOrCreateApi()
-    //   .then((api: palantiri.Api) => {
-    //     api.sendMessage(msg, discussion.id);
-    //   })
-    //   .thenReturn(this);
+    // Use discussion.sendMessage instead
   }
 
-  getContactAccounts(): Bluebird<ContactAccountInterface[]> {
+  getContactAccounts(): Bluebird<ContactAccount[]> {
     return Bluebird.resolve(this.getOrCreateApi())
       .then((api: palantiri.Api) => {
         return api.getContacts()
@@ -79,7 +67,7 @@ export class UserAccount implements UserAccountInterface {
       });
   }
 
-  getDiscussions(): Bluebird<DiscussionInterface[]> {
+  getDiscussions(): Bluebird<SimpleDiscussion[]> {
     return Bluebird.resolve(this.getOrCreateApi())
       .then((api: palantiri.Api) => {
         return api.getDiscussions()

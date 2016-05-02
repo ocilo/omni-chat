@@ -1,6 +1,7 @@
 import * as Bluebird from "bluebird";
 import Incident from "incident";
 import * as palantiri from "palantiri-interfaces";
+import {EventEmitter} from "events";
 
 import ContactAccountInterface from "./interfaces/contact-account";
 

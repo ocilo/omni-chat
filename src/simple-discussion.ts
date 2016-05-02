@@ -18,9 +18,9 @@ export class SimpleDiscussion implements DiscussionInterface {
   private account: UserAccountInterface;
   private discussionData: palantiri.Discussion;
 
-  constructor (account: UserAccountInterface, discussionData: palantiri.Discussion) {
+  constructor (account: UserAccountInterface, discussionData?: palantiri.Discussion) {
     this.account = account;
-    this.discussionData = discussionData;
+    this.discussionData = discussionData || null;
   }
 
   /**

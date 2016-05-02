@@ -9,7 +9,7 @@ import {UserAccountInterface} from "./user-account";
  * App is the entry point for the library.
  * It maintains the list of connected users.
  ***************************************************************/
-export type ConnectionStrategy = (account: UserAccountInterface) => Thenable <palantiri.Connection>;
+export type ConnectionStrategy = (account: UserAccountInterface) => palantiri.Connection | Thenable <palantiri.Connection>;
 
 // Idea:
 // Rename it to "drivers-store" and only handle the palantiri-API acquisition (available drivers and active connections)
