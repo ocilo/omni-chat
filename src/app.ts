@@ -5,13 +5,16 @@ import Incident from "incident";
 import AppInterface from "./interfaces/app";
 import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
-
-import {User} from "./user";
 import {ConnectionStrategy} from "./interfaces/app";
 
+/**
+ * We want the App object to be a static object,
+ * so that's a way to do it.
+ * Basically, App is just a global tool that some other components need.
+ */
 export let app: AppInterface = {
   useDriver: useDriver,
-  setActiveConnection: setActiveConnection,
+  addActiveConnection: addActiveConnection,
   getConnection: getConnection,
   getOrCreateConnection: getOrCreateConnection,
   getOrCreateApi: getOrCreateApi,
@@ -21,18 +24,18 @@ export let app: AppInterface = {
 };
 
 /**
- * The list of all the users using this app instance
+ * The list of all the users using this app.
  */
 let users: UserInterface[] = [];
 
 /**
- * The set of available drivers with the function to require the data needed to create th connection.
- * (This function can be an access to the database, a console prompt, a gui modal, a read from a config file, etc.)
+ * The map of available drivers with the function to require the data needed to create th connection.
+ * (This function can be an access to the database, a console prompt, a gui modal, a read from a config file, etc.).
  */
-let connectionStrategies: {[driverName: string]:  ConnectionStrategy;} = {};
+let connectionStrategies: {[driverName: string]: ConnectionStrategy;} = {};
 
 /**
- * A collection/cache of currently open connections.
+ * A map (cache) of currently open connections.
  */
 interface ActiveConnections {
   [accountGlobalId: string]: palantiri.Connection;
@@ -40,7 +43,7 @@ interface ActiveConnections {
 let activeConnections: ActiveConnections = {};
 
 /**
- * Register a new driver with its data acquisition function
+ * Register a new driver with its data acquisition function.
  * @param driver
  * @param strategy
  * @returns {OChatApp}
@@ -54,12 +57,12 @@ function useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy
 }
 
 /**
- * Adds this connection to the set of active connections.
+ * Add this connection to the set of active connections.
  * @param account
  * @param connection
  * @returns {OChatApp}
  */
-function setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<AppInterface> {
+function addActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Bluebird<AppInterface> {
   return Bluebird.resolve(account.getGlobalId())
     .then((globalId: palantiri.AccountGlobalId) => {
       let accountRef = palantiri.Id.asReference(globalId);
@@ -71,14 +74,26 @@ function setActiveConnection (account: UserAccountInterface, connection: palanti
     .thenReturn(app);
 }
 
+/**
+ * Look for a Connection for the given account.
+ * If no one exists, return a null reference.
+ * @param account
+ * @returns {Bluebird<palantiri.Connection>}
+ */
 // TODO: optional argument to throw if not found
 function getConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
   return Bluebird.resolve(account.getGlobalId())
     .then((globalId: palantiri.AccountGlobalId) => {
-      return activeConnections[globalId] || null;
+      return activeConnections[globalId] ? activeConnections[globalId] : null;
     });
 }
 
+/**
+ * Look for a Connection for the given account.
+ * If no one exists, try to instanciate one and then return it.
+ * @param account
+ * @returns {Bluebird<palantiri.Connection>}
+ */
 function getOrCreateConnection (account: UserAccountInterface): Bluebird<palantiri.Connection> {
   return getConnection(account)
     .then((connection: palantiri.Connection) => {
@@ -92,13 +107,15 @@ function getOrCreateConnection (account: UserAccountInterface): Bluebird<palanti
             return Bluebird.reject(new Incident("Unable to get connection, no registered driver for "+accountRef.driverName));
           }
           return Bluebird.resolve(connectionStrategies[accountRef.driverName](account))
-            .tap((connection) => setActiveConnection(account, connection));
+            .tap((connection) => addActiveConnection(account, connection));
         });
     });
 }
 
 /**
- * get or create connection and api for account
+ * Look for an Api for the given account.
+ * If the Account has no Connection, try to create one.
+ * If the Connection has no Api yet, try to create one then return it.
  * @param account
  * @returns {Bluebird<R>}
  */
@@ -109,6 +126,13 @@ function getOrCreateApi (account: UserAccountInterface): Bluebird<palantiri.Api>
     });
 }
 
+/**
+ * Return the list of connected Users.
+ * If filter is specified, return only the Users for chich
+ * filter returns true.
+ * @param filter
+ * @returns {UserInterface[]}
+ */
 function getUsers(filter?: (user: UserInterface) => boolean): UserInterface[] {
   if(filter) {
     let okUsers: UserInterface[] = [];
@@ -122,6 +146,9 @@ function getUsers(filter?: (user: UserInterface) => boolean): UserInterface[] {
   return users;
 }
 
+/**
+ * Add the User to the app.
+ */
 function addUser(user: UserInterface): AppInterface {
   if(users.indexOf(user) === -1) {
     throw new Error("This user is already connected to this client.");
@@ -131,6 +158,9 @@ function addUser(user: UserInterface): AppInterface {
   return app;
 }
 
+/**
+ * Remove the first User which matchs user from the app.
+ */
 function removeUser(user: UserInterface): AppInterface {
   if(users.indexOf(user) === -1) {
     throw new Error("This user was not connected to this client.");

@@ -1,8 +1,6 @@
 import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
 import {UserInterface} from "./user";
-import {ContactAccountInterface} from "./contact-account";
-import {DiscussionInterface} from "./discussion";
 import {UserAccountInterface} from "./user-account";
 
 /***************************************************************
@@ -21,26 +19,45 @@ export interface AppInterface {
   useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): AppInterface;
 
   /**
-   * Adds this connection to the set of active connections.
+   * Add this connection to the set of active connections.
    */
-  setActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Thenable<AppInterface>;
+  addActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Thenable<AppInterface>;
 
-  // TODO: optional argument to throw if not found
+	/**
+   * Look for a Connection for the given account.
+   * If no one exists, return a null reference.
+   */
   getConnection (account: UserAccountInterface): Thenable<palantiri.Connection>;
 
+	/**
+   * Look for a Connection for the given account.
+   * If no one exists, try to instanciate one and then return it.
+   */
   getOrCreateConnection (account: UserAccountInterface): Thenable<palantiri.Connection>;
 
   /**
-   * get or create connection and api for account
+   * Look for an Api for the given account.
+   * If the Account has no Connection, try to create one.
+   * If the Connection has no Api yet, try to create one then return it.
    */
   getOrCreateApi (account: UserAccountInterface): Thenable<palantiri.Api>;
 
+	/**
+   * Return the list of connected Users.
+   * If filter is specified, return only the Users for chich
+   * filter returns true.
+   */
   getUsers(filter?: (user: UserInterface) => boolean): UserInterface[];
 
+	/**
+   * Add the User to the app.
+   */
   addUser(user: UserInterface): AppInterface;
 
+	/**
+   * Remove the first User which matchs user from the app.
+   */
   removeUser(user: UserInterface): AppInterface;
-
 }
 
 export default AppInterface;

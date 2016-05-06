@@ -1,9 +1,9 @@
 {
   "dependencies": {
-    "bluebird": "registry:npm/bluebird#3.3.4+20160411163813",
+    "bluebird": "github:typed-typings/npm-bluebird",
+    "incident": "npm:incident",
     "lodash": "registry:npm/lodash#4.0.0+20160416211519",
-    "palantiri-interfaces": "npm:palantiri-interfaces",
-    "incident": "npm:incident"
+    "palantiri-interfaces": "npm:palantiri-interfaces"
   },
   "devDependencies": {
     "chai": "registry:npm/chai#3.5.0+20160415060238",
