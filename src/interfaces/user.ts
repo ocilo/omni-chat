@@ -12,7 +12,7 @@ import {MessageInterface} from "./message";
 export interface UserInterface extends UserEmitter {
   accounts: UserAccountInterface[];  //  La liste des comptes connus de l'utilisateur.
 
-  username: string;         //  Le nom complet de l'utilisateur.
+  globalUsername: string;            //  Le nom complet de l'utilisateur.
 
   getOrCreateDiscussion(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
   //  Permet de commencer une discussion avec un contact ou

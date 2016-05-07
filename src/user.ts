@@ -15,7 +15,7 @@ export class User extends EventEmitter implements UserInterface {
   /**
    * A human-readable name
    */
-  username: string;
+  globalUsername: string;
 
   /**
    * The list of accounts associated with this user
@@ -25,7 +25,7 @@ export class User extends EventEmitter implements UserInterface {
 
   constructor (username: string) {
     super();
-    this.username = username;
+    this.globalUsername = username;
   }
 
   getOrCreateDiscussion(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {

@@ -5,7 +5,6 @@ import Incident from "incident";
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
 import MessageInterface from "./interfaces/message";
-import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
