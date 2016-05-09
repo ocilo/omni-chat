@@ -6,7 +6,7 @@ import {ContactAccountInterface} from "./interfaces/contact-account";
 import Incident from "incident";
 
 /**
- * Represents a high-level message (wrap passive message objects in accessors)
+ * Represents a high-level message (wrap passive message objects in accessors).
  */
 export class SimpleMessage implements MessageInterface {
   messageData: palantiri.Message;
@@ -21,6 +21,14 @@ export class SimpleMessage implements MessageInterface {
 
   getAuthorAccount (): Bluebird<UserAccountInterface | ContactAccountInterface> {
     return Bluebird.reject(new Incident("todo", "SimpleMessage:getAuthorAccount is not implemented yet"));
+  }
+
+  isHeterogeneouslyDelivered(): boolean {
+    return false;
+  }
+
+  getLastEditingDate(): Bluebird<Date> {
+    return Bluebird.resolve(this.messageData.lastUpdated);
   }
 
   getCreationDate (): Bluebird<Date> {

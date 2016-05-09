@@ -1,4 +1,4 @@
-import app from "../app";
+import driversStore from "../drivers-store";
 import {User} from "../user";
 import {UserAccount} from "../user-account";
 
@@ -6,7 +6,7 @@ import UserAccountInterface from "../interfaces/user-account";
 
 import * as facebook from "./connections/facebook-cli";
 
-app.useDriver(<any> facebook.Connection, facebook.fromConsole);
+driversStore.useDriver(<any> facebook.Connection, facebook.fromConsole);
 
 let user = new User("ochat.frif");
 

@@ -1,4 +1,5 @@
-export {app} from "./app";
+export {App} from "./app";
+export {driversStore} from "./drivers-store";
 export {ContactAccount} from "./contact-account";
 export {MetaDiscussion} from "./meta-discussion";
 export {MetaMessage} from "./meta-message";
