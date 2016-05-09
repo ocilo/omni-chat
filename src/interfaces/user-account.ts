@@ -32,10 +32,10 @@ export interface UserAccountInterface {
   getDiscussions(): Thenable<DiscussionInterface[]>;
 
 	/**
-   * Returns a Discussion with the contact-account remoteContactAccount.
-   * @param remoteContactAccount
+   * Returns a Discussion with the contact-account(s) remoteContactAccounts.
+   * @param remoteContactAccounts
    */
-  getOrCreateDiscussion(remoteContactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
+  getOrCreateDiscussion(remoteContactAccounts: ContactAccountInterface[]): Thenable<DiscussionInterface>;
 }
 
 export default UserAccountInterface;
