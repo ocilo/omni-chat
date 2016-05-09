@@ -12,10 +12,11 @@ export interface MessageInterface {
   getBody(): Thenable<string>;
 
 	/**
-   * Return true only if this message is delivered through several protocols.
+   * Return true only if this message is delivered.
+   * For simple-messages, it means that the service acknowledged the reception of the message
+   * For meta-messages, it means that every sub-message was delivered
    */
-  // TODO : rename it ?
-  isHeterogeneouslyDelivered(): boolean;
+  isDelivered(): Thenable<boolean>;
 
 	/**
    * Return the date of last editing.

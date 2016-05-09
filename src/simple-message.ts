@@ -23,8 +23,8 @@ export class SimpleMessage implements MessageInterface {
     return Bluebird.reject(new Incident("todo", "SimpleMessage:getAuthorAccount is not implemented yet"));
   }
 
-  isHeterogeneouslyDelivered(): boolean {
-    return false;
+  isDelivered(): Bluebird<boolean> {
+    return Bluebird.reject(new Incident("todo", "SimpleMessage:isDelivered is not implemented yet"));
   }
 
   getLastEditingDate(): Bluebird<Date> {

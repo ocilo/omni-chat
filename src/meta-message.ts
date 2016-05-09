@@ -20,12 +20,19 @@ export class MetaMessage implements MessageInterface {
     if (this.subMessages.length < 1) {
       return Bluebird.reject(new Incident("empty-meta-message", "This meta-message is empty!"));
     }
-    // TODO: for the moment we trust the first sub-message, the test should be stronger
+    // TODO: for the moment we trust the first sub-message, the test should be stronger:
+    // what if there are differences between the simple messages ?
     return Bluebird.resolve(this.subMessages[0].getBody());
   }
 
-  isHeterogeneouslyDelivered(): boolean {
-    return true;
+  /**
+   * Returns true if every sub-message is delivered
+   * @returns {Bluebird<boolean>}
+   */
+  isDelivered(): Bluebird<boolean> {
+    return this.getSubMessages()
+      .map((subMsg: MessageInterface) => subMsg.isDelivered())
+      .reduce((acc: boolean, isDelivered: boolean) => acc && isDelivered, true);
   }
 
   getLastEditingDate(): Bluebird<Date> {
@@ -34,6 +41,15 @@ export class MetaMessage implements MessageInterface {
 
   getCreationDate(): Bluebird<Date> {
     return Bluebird.reject(new Incident("todo", "getCreationDate is not implemented yet"));;
+  }
+
+  // CLASS-SPECIFIC METHODS
+  /**
+   * Return the list of all the submessages constituting the
+   * current MetaMessage.
+   */
+  getSubMessages (): Bluebird<MessageInterface[]> {
+    return Bluebird.resolve(this.subMessages);
   }
 }
 

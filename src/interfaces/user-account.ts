@@ -17,7 +17,7 @@ export interface UserAccountInterface {
   getOrCreateConnection(): Thenable<palantiri.Connection>;
 
   /**
-   * A shortcut for getOrCreateConnection().connect().
+   * An alias for getOrCreateConnection().connect().
    */
   getOrCreateApi(): Thenable<palantiri.Api>;
 

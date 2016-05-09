@@ -76,10 +76,6 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(this.account);
   }
 
-  isHeterogeneous(): Bluebird<boolean> {
-    return Bluebird.resolve(false); // This implementation represents mono-service discussions!
-  }
-
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
     return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
 
@@ -103,10 +99,6 @@ export class SimpleDiscussion implements DiscussionInterface {
 
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));
-  }
-
-  getSubdiscussions(): Bluebird<DiscussionInterface[]> {
-    return Bluebird.resolve([]); // There is no sub-discussion in a simple discussion (maybe return null ?)
   }
 
   sendMessage(newMessage: NewMessage): Bluebird<SimpleMessage> {

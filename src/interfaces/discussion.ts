@@ -25,12 +25,6 @@ export interface DiscussionInterface {
   getDescription(): Thenable<string>;
 
 	/**
-   * Return true only if the current Discussion is
-   * multi-accounts and multi-protocols.
-   */
-  isHeterogeneous(): Thenable<boolean>;
-
-	/**
    * Return the creation date of the current Discussion.
    * This is very important for multi-accounts and multi-protocols Discussions.
    */
@@ -66,13 +60,6 @@ export interface DiscussionInterface {
    * @param contactAccount
    */
   removeParticipants(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
-
-	/**
-   * Return the list of all the subdiscussions constituting the
-   * current Discussion. Note that this is a mono-protcol and mono-account
-   * Discussion, it will return a list of one item.
-   */
-  getSubdiscussions(): Thenable<DiscussionInterface[]>;
 
   /**
    * Sends the message newMessage to the discussion.

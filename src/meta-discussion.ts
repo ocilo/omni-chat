@@ -18,7 +18,7 @@ import {utils} from "palantiri-interfaces";
  * @returns {Bluebird<SimpleDiscussion[]>}
  */
 function findSimpleChildren(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
-  return Bluebird.resolve(parent.getSubdiscussions())
+  return Bluebird.resolve(parent.getSubDiscussions())
     .filter<SimpleDiscussion>((discussion: DiscussionInterface) => {
       return discussion instanceof SimpleDiscussion;
     });
@@ -30,7 +30,7 @@ function findSimpleChildren(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]
  * @returns {Bluebird<SimpleDiscussion[]>}
  */
 function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
-  return parent.getSubdiscussions()
+  return parent.getSubDiscussions()
     .then((subs: DiscussionInterface[]) => {
       let simpleChildren: SimpleDiscussion[] = [];
       let descendantsPromises: Bluebird.Thenable<SimpleDiscussion[]>[] = [];
@@ -52,7 +52,7 @@ function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussio
 }
 
 export class MetaDiscussion implements DiscussionInterface {
-    user: UserInterface;
+  user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
   subDiscussions: DiscussionInterface[];
@@ -62,7 +62,7 @@ export class MetaDiscussion implements DiscussionInterface {
   }
 
   getName(): Bluebird<string> {
-    return Bluebird.resolve("Compound-discussion");
+    return Bluebird.resolve("MetaDiscussion");
   }
 
   getDescription(): Bluebird<string> {
@@ -70,18 +70,24 @@ export class MetaDiscussion implements DiscussionInterface {
   }
 
   /**
-   * Returns the oldest creation date
+   * Returns the oldest creation date or null if no creationDate was found
    * @returns {any}
    */
   getCreationDate(): Bluebird<Date> {
-    return Bluebird.resolve(this.getSubdiscussions())
-      .map((discussion: DiscussionInterface) => {
-        return discussion.getCreationDate();
-      })
-      .then((creationDates: Date[]) => {
-        // TODO: choose the oldest...
-        return new Date();
-      });
+    return Bluebird.resolve(this.getSubDiscussions())
+      .map((discussion: DiscussionInterface) => discussion.getCreationDate())
+      .reduce(
+        (accumulator: Date, date: Date) => {
+          if (accumulator === null) {
+            return date || null;
+          }
+          if (!date) {
+            return accumulator;
+          }
+          return date.getTime() < accumulator.getTime() ? date : accumulator;
+        },
+        null // Initialize accumulator with null
+      );
   }
 
   /**
@@ -109,12 +115,16 @@ export class MetaDiscussion implements DiscussionInterface {
     //   });
   }
 
+  // Returns a boolean indicating wether multiple userAccounts are used in the subtree or not
   isHeterogeneous(): Bluebird<boolean> {
-    return Bluebird.resolve(false); // Tells that this discussion uses a single account for a single discussion
+    return Bluebird.resolve(false);
   }
 
-
-  getSubdiscussions (): Bluebird<DiscussionInterface[]> {
+  /**
+   * Return the list of all the subdiscussions constituting the
+   * current MetaDiscussion.
+   */
+  getSubDiscussions (): Bluebird<DiscussionInterface[]> {
     return Bluebird.resolve(this.subDiscussions);
   }
 
@@ -271,7 +281,7 @@ export class MetaDiscussion implements DiscussionInterface {
   addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
     return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));;
   }
-  
+
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
     return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
   }
@@ -281,11 +291,11 @@ export class MetaDiscussion implements DiscussionInterface {
   }
 
   sendMessage(newMessage: NewMessage): Bluebird<MetaMessage> {
-    return this.getSubdiscussions()
+    return this.getSubDiscussions()
       .map((discussion: DiscussionInterface) => {
         return discussion.sendMessage(newMessage);
       })
-      .then((messages) => {
+      .then((messages: MessageInterface[]) => {
         return new MetaMessage(messages);
       });
   }
