@@ -14,7 +14,7 @@ export type ConnectionStrategy = (account: UserAccountInterface) => palantiri.Co
  * list of connections and drivers curently used.
  * It's mostly useful servor side, and is made to be static.
  */
-export interface DriversStore {
+export interface DriversStoreInterface {
   /**
    * Register a new driver with its data acquisition function
    */
@@ -45,4 +45,4 @@ export interface DriversStore {
   getOrCreateApi (account: UserAccountInterface): Thenable<palantiri.Api>;
 }
 
-export default DriversStore;
+export default DriversStoreInterface;
