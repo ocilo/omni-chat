@@ -52,7 +52,7 @@ function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussio
 }
 
 export class MetaDiscussion implements DiscussionInterface {
-  user: UserInterface;
+    user: UserInterface;
 
   // should be a Set, we should implement or import a Set class
   subDiscussions: DiscussionInterface[];
@@ -268,6 +268,10 @@ export class MetaDiscussion implements DiscussionInterface {
 		// }
 		// return Bluebird.resolve(this);
 
+  addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
+    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));;
+  }
+  
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
     return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
   }

@@ -11,15 +11,24 @@ import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import SimpleMessage from "./simple-message";
 
 /**
- * This class is a high-level wrapper for a palantiri discussion (mono-account, mono-driver) bound to a single account of a single user
+ * This class is a high-level wrapper for a palantiri discussion
+ * (mono-account, mono-driver) bound to a single account of a single user.
  */
 export class SimpleDiscussion implements DiscussionInterface {
+
+	/**
+   * The account of the user who uses this Discussion.
+   */
   private account: UserAccountInterface;
+
+	/**
+   * The low-level passive object representing the current Discussion.
+   */
   private discussionData: palantiri.Discussion;
 
   constructor (account: UserAccountInterface, discussionData?: palantiri.Discussion) {
     this.account = account;
-    this.discussionData = discussionData || null;
+    this.discussionData = discussionData ? discussionData : null;
   }
 
   /**
@@ -37,11 +46,26 @@ export class SimpleDiscussion implements DiscussionInterface {
   }
 
   getName(): Bluebird<string> {
-    return this.getDiscussionInfo().then(info => info.name);
+    return this.getDiscussionInfo().then(info => {
+      if(info.name) {
+        return info.name;
+      }
+      let name: string = "Discussion with ";
+      for(let i = 0; i<info.participants.length; i++) {
+        let part = info.participants[i];
+        name += part.name;
+        if(i != info.participants.length -1) {
+          name += ", ";
+        }
+      }
+      return name;
+    });
   }
 
   getDescription(): Bluebird<string> {
-    return this.getDiscussionInfo().then(info => info.description);
+    return this.getDiscussionInfo().then(info => {
+      return info.description ? info.description : this.getName();
+    });
   }
 
   getCreationDate(): Bluebird<Date> {
@@ -73,6 +97,9 @@ export class SimpleDiscussion implements DiscussionInterface {
     */
   }
 
+  addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
+    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:addParticipant is not implemented"));
+  }
 
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));

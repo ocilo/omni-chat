@@ -23,6 +23,18 @@ export class MetaMessage implements MessageInterface {
     // TODO: for the moment we trust the first sub-message, the test should be stronger
     return Bluebird.resolve(this.subMessages[0].getBody());
   }
+
+  isHeterogeneouslyDelivered(): boolean {
+    return true;
+  }
+
+  getLastEditingDate(): Bluebird<Date> {
+    return Bluebird.reject(new Incident("todo", "getLastEditingDate is not implemented yet"));;
+  }
+
+  getCreationDate(): Bluebird<Date> {
+    return Bluebird.reject(new Incident("todo", "getCreationDate is not implemented yet"));;
+  }
 }
 
 export default MetaMessage;

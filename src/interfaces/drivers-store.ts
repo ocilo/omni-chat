@@ -18,12 +18,12 @@ export interface DriversStoreInterface {
   /**
    * Register a new driver with its data acquisition function
    */
-  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): AppInterface;
+  useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy: ConnectionStrategy): Thenable<DriversStoreInterface>;
 
   /**
    * Add this connection to the set of active connections.
    */
-  addActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Thenable<AppInterface>;
+  addActiveConnection (account: UserAccountInterface, connection: palantiri.Connection): Thenable<DriversStoreInterface>;
 
   /**
    * Look for a Connection for the given account.

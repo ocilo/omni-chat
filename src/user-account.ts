@@ -2,21 +2,21 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
 
-import ContactAccountInterface from "./interfaces/contact-account";
-import DiscussionInterface from "./interfaces/discussion";
-import UserAccountInterface from "./interfaces/user-account";
-import MessageInterface from "./interfaces/message";
+import {ContactAccountInterface} from "./interfaces/contact-account";
+import {DiscussionInterface} from "./interfaces/discussion";
+import {UserAccountInterface} from "./interfaces/user-account";
+import {MessageInterface} from "./interfaces/message";
 
-import ContactAccount from "./contact-account";
+import {ContactAccount} from "./contact-account";
 import {SimpleDiscussion} from "./simple-discussion";
-import app from "./app";
+import {driversStore} from "./drivers-store";
 
 export interface UserAccountData {
   driverName: string;
   id: string;
 
   username?: string;
-  // email?: string;
+  email?: string;
 }
 
 export class UserAccount implements UserAccountInterface {
@@ -36,11 +36,11 @@ export class UserAccount implements UserAccountInterface {
    * but not the retrieved one.
    */
   getOrCreateConnection(): Bluebird<palantiri.Connection> {
-    return Bluebird.resolve(app.getOrCreateConnection(this));
+    return Bluebird.resolve(driversStore.getOrCreateConnection(this));
   }
 
   getOrCreateApi(): Bluebird<palantiri.Api> {
-    return Bluebird.resolve(app.getOrCreateApi(this));
+    return Bluebird.resolve(driversStore.getOrCreateApi(this));
   }
 
   /**
