@@ -9,6 +9,7 @@ import {MessageInterface} from "./message";
  * It allows you to acceed to yout own Accounts, acceed to your
  * own Contacts, create Discussions with them, and so on.
  ***************************************************************/
+// TODO: this needs to be reworked.
 export interface UserInterface extends UserEmitter {
   accounts: UserAccountInterface[];  //  La liste des comptes connus de l'utilisateur.
 

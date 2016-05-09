@@ -4,7 +4,6 @@ import * as palantiri from "palantiri-interfaces";
 /***************************************************************
  * ContactAccount represents a mono-protocol Contact, reachable
  * through one UserAccount.
- * The type alias prevent some misunderstandings.
  ***************************************************************/
 export interface ContactAccountInterface {
   /**
@@ -21,6 +20,8 @@ export interface ContactAccountInterface {
    * Returns a promise for an url to the avatar/profile picture or null if not available
    */
   getAvatarUrl(): Thenable<string>;
+
+  // TODO: maybe we can add other useful getters.
 }
 
 export default ContactAccountInterface;
