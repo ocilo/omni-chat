@@ -1,12 +1,5 @@
 import {AppInterface} from "./interfaces/app";
 import {UserInterface} from "./interfaces/user";
-/**
- * Return the list of connected Users.
- * If filter is specified, return only the Users for chich
- * filter returns true.
- * @param filter
- * @returns {UserInterface[]}
- */
 
 export class App implements AppInterface {
   /**
@@ -14,8 +7,10 @@ export class App implements AppInterface {
    */
   users: UserInterface[] = [];
 
-	/**
-   * Returns all the users of this app.
+  /**
+   * Return the list of connected Users.
+   * If filter is specified, return only the Users for chich
+   * filter returns true.
    * @param filter
    * @returns {UserInterface[]}
    */
@@ -36,7 +31,7 @@ export class App implements AppInterface {
    * Add the User to the app.
    */
   addUser(user: UserInterface): AppInterface {
-    if(this.users.indexOf(user) === -1) {
+    if(this.users.indexOf(user) !== -1) {
       throw new Error("This user is already connected to this client.");
     } else {
       this.users.push(user);
