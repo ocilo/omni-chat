@@ -1,15 +1,12 @@
 import * as Bluebird from "bluebird";
-import Incident from "incident";
 import * as palantiri from "palantiri-interfaces";
-import {EventEmitter} from "events";
-
 import ContactAccountInterface from "./interfaces/contact-account";
 
 export class ContactAccount implements ContactAccountInterface {
   /**
-   * The palantiri infos
+   * The palantiri infos.
    */
-  accountData: palantiri.Account = null;
+  protected accountData: palantiri.Account = null;
 
   constructor (accountData: palantiri.Account) {
     this.accountData = accountData;
