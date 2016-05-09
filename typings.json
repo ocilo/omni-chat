@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "bluebird": "github:typed-typings/npm-bluebird",
+    "bluebird": "github:typed-typings/npm-bluebird#e6c9ec15312495469b298e4a3e094ece30237415",
     "incident": "npm:incident",
     "lodash": "registry:npm/lodash#4.0.0+20160416211519",
     "palantiri-interfaces": "npm:palantiri-interfaces"
