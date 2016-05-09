@@ -48,6 +48,7 @@ function useDriver (driver: palantiri.Connection.Constructor<any, any>, strategy
 
 /**
  * Add this connection to the set of active connections.
+ * Note that this will replace an eventual existing connection.
  * @param account
  * @param connection
  * @returns {OChatApp}
