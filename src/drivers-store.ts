@@ -1,16 +1,14 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import Incident from "incident";
-
-import AppInterface from "./interfaces/app";
-import UserInterface from "./interfaces/user";
 import UserAccountInterface from "./interfaces/user-account";
 import {ConnectionStrategy, DriversStoreInterface} from "./interfaces/drivers-store";
 
 /**
  * We want the App object to be a static object,
  * so that's a way to do it.
- * Basically, App is just a global tool that some other components need.
+ * Basically, driversStore is just a global tool
+ * that some other components need.
  */
 export let driversStore: DriversStoreInterface = {
   useDriver: useDriver,
@@ -20,10 +18,8 @@ export let driversStore: DriversStoreInterface = {
   getOrCreateApi: getOrCreateApi,
 };
 
-
-
 /**
- * The map of available drivers with the function to require the data needed to create th connection.
+ * The map of available drivers with the function to require the data needed to create the connection.
  * (This function can be an access to the database, a console prompt, a gui modal, a read from a config file, etc.).
  */
 let connectionStrategies: {[driverName: string]: ConnectionStrategy;} = {};

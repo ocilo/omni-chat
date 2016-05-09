@@ -1,6 +1,5 @@
 import * as palantiri from "palantiri-interfaces";
 import {UserAccountInterface} from "./user-account";
-import {AppInterface} from "./app";
 import {Thenable} from "bluebird";
 
 /**
