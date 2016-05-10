@@ -39,25 +39,18 @@ export interface DiscussionInterface {
 
 	/**
    * Add a member to the current Discussion.
-   * Be careful, the behavior of this method will vary with implementations.
-   * And the state of the current Object may vary too.
-   * For example, trying to add an account using a different protocol that
-   * the one currently used by a mono-protocol Discussion will probably return
-   * an heterogeneous Discussion, so another implementation.
-   * TODO : well, that's dangerous, but i like that.
-   * @param contactAccount
+   * Be careful, the behavior of this method will vary with implementations :
+   * If this is sa single-protocol and single-account discussion,
+   * it will throw an error if the contact is unknown.
    */
   addParticipant(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
 
 	/**
    * Remove a member from the current Discussion.
    * This depends of your rights for the current Discussion.
-   * Be careful, the behavior of this method will vary with implementations.
-   * For example, trying to remove all accounts using one of two protocols
-   * used by the current multi-protocols Discussion will probably return
-   * an homogeneous Discussion, so another implementation.
-   * TODO : well, that's dangerous, but i like that.
-   * @param contactAccount
+   * Be careful, the behavior of this method will vary with implementations :
+   * If this is sa single-protocol and single-account discussion,
+   * it will throw an error if the contact is unknown.
    */
   removeParticipants(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
 
