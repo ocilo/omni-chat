@@ -106,12 +106,9 @@ export class SimpleDiscussion implements DiscussionInterface {
 
   /**
    * Add a member to the current Discussion.
-   * Be careful, the behavior of this method will vary with implementations.
-   * And the state of the current Object may vary too.
-   * For example, trying to add an account using a different protocol that
-   * the one currently used by a mono-protocol Discussion will probably return
-   * an heterogeneous Discussion, so another implementation.
-   * TODO : well, that's dangerous, but i like that.
+   * Be careful, the behavior of this method will vary with implementations :
+   * If this is sa single-protocol and single-account discussion,
+   * it will throw an error if the contact is unknown.
    */
   addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
     let contactID: palantiri.AccountGlobalId[] = [];
@@ -124,27 +121,34 @@ export class SimpleDiscussion implements DiscussionInterface {
         api.addMembersToDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
       })
       .thenReturn(this);
-    // TODO: handle errors
-    // TODO: handle the fact that this discussion can be transformed into a MetaDiscussion
+    // TODO: handle errors (not the right protocol or account for the contact)
   }
 
   /**
    * Remove a member from the current Discussion.
    * This depends of your rights for the current Discussion.
-   * Be careful, the behavior of this method will vary with implementations.
-   * For example, trying to remove all accounts using one of two protocols
-   * used by the current multi-protocols Discussion will probably return
-   * an homogeneous Discussion, so another implementation.
-   * TODO : well, that's dangerous, but i like that.
+   * Be careful, the behavior of this method will vary with implementations :
+   * If this is sa single-protocol and single-account discussion,
+   * it will throw an error if the contact is unknown.
    */
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<this> {
-    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:removeParticipants is not implemented"));
+    let contactID: palantiri.AccountGlobalId[] = [];
+    return Bluebird.resolve(contactAccount.getGlobalId())
+      .then((id: palantiri.AccountGlobalId) => {
+        contactID.push(id);
+        return this.account.getOrCreateApi();
+      })
+      .then((api: palantiri.Api) => {
+        api.removeMembersFromDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
+      })
+      .thenReturn(this);
+    // TODO: handle errors (not the right protocol or account for the contact)
   }
 
   /**
-   * Sends the message newMessage to the discussion.
-   * Returns then sent Message, completed with informations
-   * acquired after the sends.
+   * Sends the message newMessage to the current discussion.
+   * Returns then the sent Message, completed with informations
+   * acquired after the send.
    */
   sendMessage(newMessage: NewMessage): Bluebird<SimpleMessage> {
     return Bluebird.resolve(this.account.getOrCreateApi())
