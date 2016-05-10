@@ -12,14 +12,23 @@ export class ContactAccount implements ContactAccountInterface {
     this.accountData = accountData;
   }
 
+  /**
+   * Returns the global id (driver + internal id) of this contact-account.
+   */
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
     return Bluebird.resolve(palantiri.Id.asGlobalId(this.accountData));
   }
 
+  /**
+   * Returns a human-readable name for this contact-account.
+   */
   getName(): Bluebird<string> {
     return Bluebird.resolve(this.accountData.name);
   }
 
+  /**
+   * Returns a promise for an url to the avatar/profile picture or null if not available.
+   */
   getAvatarUrl(): Bluebird<string> {
     return Bluebird.resolve(this.accountData.avatarUrl);
   }

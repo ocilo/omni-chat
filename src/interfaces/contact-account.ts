@@ -7,17 +7,17 @@ import * as palantiri from "palantiri-interfaces";
  ***************************************************************/
 export interface ContactAccountInterface {
   /**
-   * Returns the global id (driver + internal id) of this contact-account
+   * Returns the global id (driver + internal id) of this contact-account.
    */
   getGlobalId(): Thenable<palantiri.AccountGlobalId>;
 
   /**
-   * Returns a human-readable name for this contact-account
+   * Returns a human-readable name for this contact-account.
    */
   getName(): Thenable<string>;
 
   /**
-   * Returns a promise for an url to the avatar/profile picture or null if not available
+   * Returns a promise for an url to the avatar/profile picture or null if not available.
    */
   getAvatarUrl(): Thenable<string>;
 
