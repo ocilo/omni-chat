@@ -55,9 +55,9 @@ export interface DiscussionInterface {
   removeParticipants(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
 
   /**
-   * Sends the message newMessage to the discussion.
-   * Returns then sent Message, completed with informations
-   * acquired after the sends.
+   * Sends the message newMessage to the current discussion.
+   * Returns then the sent Message, completed with informations
+   * acquired after the send.
    */
   sendMessage(newMessage: NewMessage): Thenable<MessageInterface>;
 }

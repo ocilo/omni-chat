@@ -1,6 +1,5 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
-import {Incident} from "incident";
 import {ContactAccountInterface} from "./interfaces/contact-account";
 import {DiscussionInterface} from "./interfaces/discussion";
 import {MessageInterface} from "./interfaces/message";
