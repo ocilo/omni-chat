@@ -74,20 +74,34 @@ export class SimpleDiscussion implements DiscussionInterface {
    * @param options
    */
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
-
-    // TODO: add .getMessages to palantiri api
-    /*
-      let palOptions: palantiri.Api.GetMessagesOptions;
-      palOptions = {
-        max: options.maxNumber,
-        etc.
-      };
-      return this.account.getOrCreateApi()
-        .then(api => api.getMessages(palOptions))
-        .map(...) // wrap the palantiri messages in a higher-level object
-        .filter(...);
-    */
+    return Bluebird.resolve(this.account.getOrCreateApi())
+      .then((api: palantiri.Api) => {
+        let palOptions: palantiri.Api.GetMessagesFromDiscussionOptions = null;
+        if(options) {
+          let palFilter = (msg: palantiri.Message): boolean => {
+            if(options.afterDate) {
+              if(msg.lastUpdated < options.afterDate) {
+                return false;
+              }
+            }
+            if(options.filter) {
+              let ocmsg = new SimpleMessage(msg);
+              ocmsg.setDelivered();
+              return options.filter(ocmsg);
+            }
+            return true;
+          };
+          palOptions = {
+            max: options.maxMessages,
+            filter: palFilter
+          };
+        }
+        return api.getMessagesFromDiscussion(this.discussionData, palOptions);
+      })
+      .map((message: palantiri.Message) => {
+        return new SimpleMessage(message).setDelivered();
+        // TODO : we need to find who is the author of this message
+      });
   }
 
   /**
