@@ -1,6 +1,5 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
-import Incident from "incident";
 import {ContactAccountInterface} from "./interfaces/contact-account";
 import {DiscussionInterface} from "./interfaces/discussion";
 import {UserAccountInterface} from "./interfaces/user-account";
@@ -72,12 +71,29 @@ export class UserAccount implements UserAccountInterface {
    * @param remoteContactAccounts
    */
   getOrCreateDiscussion(remoteContactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
-    return Bluebird.resolve(this.getOrCreateApi())
+    let participantsID: palantiri.AccountGlobalId[] = [];
+    return Bluebird
+      .map(remoteContactAccounts, (contact: ContactAccountInterface) => {
+        return contact.getGlobalId();
+      })
+      .then((ids: palantiri.AccountGlobalId[]): void => {
+        participantsID = ids;
+      })
+      .then(() => {
+        return this.getOrCreateApi()
+      })
       .then((api: palantiri.Api) => {
         return api.getDiscussions({
           max: 1,
           filter: (discuss: palantiri.Discussion): boolean => {
-            // TODO : only take discussion with the wanted contacts
+            if(discuss.participants.length !== participantsID.length) {
+              return false;
+            }
+            for(let part of discuss.participants) {
+              if(participantsID.indexOf(palantiri.Id.asGlobalId(part)) === -1) {
+                return false;
+              }
+            }
             return true;
           }
         });
@@ -89,9 +105,9 @@ export class UserAccount implements UserAccountInterface {
           for(let participant of remoteContactAccounts) {
             discuss.addParticipant(participant);
           }
-          // TODO(not) : maybe wanting to just add missing participants from a discussion which
-          //             already have some of the participants we are looking for is a bad idea,
-          //             since we don't know the meanings of the previous discussion and the new one.
+          // NOTE : maybe wanting to just add missing participants from a discussion which
+          //        already have some of the participants we are looking for is a bad idea,
+          //        since we don't know the meanings of the previous discussion and the new one.
         } else {
           discuss = new SimpleDiscussion(this, discussions[0]);
         }
