@@ -1,6 +1,6 @@
 {
   "name": "ochat",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Omni chat.",
   "main": "dist/node/main.js",
   "repository": {
