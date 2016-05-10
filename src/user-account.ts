@@ -74,18 +74,13 @@ export class UserAccount implements UserAccountInterface {
   getOrCreateDiscussion(remoteContactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
     return Bluebird.resolve(this.getOrCreateApi())
       .then((api: palantiri.Api) => {
-        return api.getContacts();
-      })
-      .then((contacts: palantiri.Account) => {
-        for(let wantedAccount of remoteContactAccounts) {
-          if(!(wantedAccount in contacts)) {
-            return Bluebird.reject(new Incident(wantedAccount, "This account is not part of the contacts."));
+        return api.getDiscussions({
+          max: 1,
+          filter: (discuss: palantiri.Discussion): boolean => {
+            // TODO : only take discussion with the wanted contacts
+            return true;
           }
-        }
-        return this.getOrCreateApi();
-      })
-      .then((api: palantiri.Api) => {
-        return api.getDiscussions();
+        });
       })
       .then((discussions: palantiri.Discussion[]) => {
         let discuss: SimpleDiscussion = null;
@@ -97,8 +92,6 @@ export class UserAccount implements UserAccountInterface {
           // TODO(not) : maybe wanting to just add missing participants from a discussion which
           //             already have some of the participants we are looking for is a bad idea,
           //             since we don't know the meanings of the previous discussion and the new one.
-        } else if(discussions.length !== 1) {
-          // TODO : and in this weird case ?
         } else {
           discuss = new SimpleDiscussion(this, discussions[0]);
         }
