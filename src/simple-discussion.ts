@@ -114,7 +114,18 @@ export class SimpleDiscussion implements DiscussionInterface {
    * TODO : well, that's dangerous, but i like that.
    */
   addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
-    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:addParticipant is not implemented"));
+    let contactID: palantiri.AccountGlobalId[] = [];
+    return Bluebird.resolve(contactAccount.getGlobalId())
+      .then((id: palantiri.AccountGlobalId) => {
+        contactID.push(id);
+        return this.account.getOrCreateApi();
+      })
+      .then((api: palantiri.Api) => {
+        api.addMembersToDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
+      })
+      .thenReturn(this);
+    // TODO: handle errors
+    // TODO: handle the fact that this discussion can be transformed into a MetaDiscussion
   }
 
   /**
