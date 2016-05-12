@@ -16,7 +16,7 @@ export class MetaMessage implements MessageInterface {
 	/**
    * The messages composing the current meta-message.
    */
-  subMessages: MessageInterface[];
+  protected subMessages: MessageInterface[];
 
   constructor(messages: MessageInterface[] = []) {
     this.subMessages = messages;

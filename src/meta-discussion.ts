@@ -64,13 +64,13 @@ export class MetaDiscussion implements DiscussionInterface {
 	/**
    * The user that is currently using this discussion.
    */
-  user: UserInterface;
+  protected user: UserInterface;
 
 	/**
    * The list of all the subdiscussions constituing
    * the current meta-discussion.
    */
-  subDiscussions: DiscussionInterface[];
+  protected subDiscussions: DiscussionInterface[];
 
   constructor (user: UserInterface, principalDiscussion?: DiscussionInterface, otherDiscussions?: DiscussionInterface[]) {
     this.user = user;
