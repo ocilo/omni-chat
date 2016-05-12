@@ -2,20 +2,30 @@ import MessageInterface from "./interfaces/message";
 import * as Bluebird from "bluebird";
 import Incident from "incident";
 
+/**
+ * TODO: doc.
+ */
 function areMessagesEquivalent(msg1: MessageInterface, msg2: MessageInterface): Bluebird<boolean> {
   return Bluebird.reject(new Incident("todo", "areMessagesEquivalent is not implemented yet"));
 }
 
 /**
- * Represents a high-level MetaMessage (cross-account message)
+ * Represents a high-level MetaMessage (cross-account message).
  */
 export class MetaMessage implements MessageInterface {
+	/**
+   * The messages composing the current meta-message.
+   */
   subMessages: MessageInterface[];
 
   constructor(messages: MessageInterface[] = []) {
     this.subMessages = messages;
   }
 
+  /* MessageInterface implementation */
+  /**
+   * Return the body of the current Message.
+   */
   getBody (): Bluebird<string> {
     if (this.subMessages.length < 1) {
       return Bluebird.reject(new Incident("empty-meta-message", "This meta-message is empty!"));
@@ -26,7 +36,7 @@ export class MetaMessage implements MessageInterface {
   }
 
   /**
-   * Returns true if every sub-message is delivered
+   * Returns true if every sub-message is delivered.
    * @returns {Bluebird<boolean>}
    */
   isDelivered(): Bluebird<boolean> {
@@ -35,15 +45,21 @@ export class MetaMessage implements MessageInterface {
       .reduce((acc: boolean, isDelivered: boolean) => acc && isDelivered, true);
   }
 
+  /**
+   * Return the date of last editing.
+   */
   getLastEditingDate(): Bluebird<Date> {
     return Bluebird.reject(new Incident("todo", "getLastEditingDate is not implemented yet"));;
   }
 
+  /**
+   * Return the date of the current Message creation.
+   */
   getCreationDate(): Bluebird<Date> {
     return Bluebird.reject(new Incident("todo", "getCreationDate is not implemented yet"));;
   }
 
-  // CLASS-SPECIFIC METHODS
+  /* Scpecific methods */
   /**
    * Return the list of all the submessages constituting the
    * current MetaMessage.
