@@ -17,10 +17,10 @@ import {utils} from "palantiri-interfaces";
  * @param parent
  * @returns {Bluebird<SimpleDiscussion[]>}
  */
-function findSimpleChildren(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
-  return Bluebird.resolve(parent.getSubDiscussions())
-    .filter<SimpleDiscussion>((discussion: DiscussionInterface) => {
-      return discussion instanceof SimpleDiscussion;
+function findSimpleChildren(parent: MetaDiscussion): Bluebird<Subdiscussion[]> {
+  return Bluebird.resolve(parent.getDatedSubdiscussions())
+    .filter<Subdiscussion>((discussion: Subdiscussion) => {
+      return discussion.subdiscussion instanceof SimpleDiscussion;
     });
 }
 
@@ -29,23 +29,23 @@ function findSimpleChildren(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]
  * @param parent
  * @returns {Bluebird<SimpleDiscussion[]>}
  */
-function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussion[]> {
-  return parent.getSubDiscussions()
-    .then((subs: DiscussionInterface[]) => {
-      let simpleChildren: SimpleDiscussion[] = [];
-      let descendantsPromises: Bluebird.Thenable<SimpleDiscussion[]>[] = [];
+function findSimpleDescendants(parent: MetaDiscussion): Bluebird<Subdiscussion[]> {
+  return parent.getDatedSubdiscussions()
+    .then((subs: Subdiscussion[]) => {
+      let simpleChildren: Subdiscussion[] = [];
+      let descendantsPromises: Bluebird.Thenable<Subdiscussion[]>[] = [];
       for(let sub of subs) {
-        if (sub instanceof SimpleDiscussion) {
+        if (sub.subdiscussion instanceof SimpleDiscussion) {
           simpleChildren.push(sub);
         } else {
-          descendantsPromises.push(findSimpleDescendants(<MetaDiscussion> sub));
+          descendantsPromises.push(findSimpleDescendants(<MetaDiscussion> sub.subdiscussion));
         }
       }
       if (descendantsPromises.length === 0) {
         return Bluebird.resolve(simpleChildren);
       }
       return Bluebird.all(descendantsPromises)
-        .then((simpleDescendants: SimpleDiscussion[][]) => {
+        .then((simpleDescendants: Subdiscussion[][]) => {
           return _.concat(simpleChildren, _.flatten(simpleDescendants));
         })
     });
@@ -177,23 +177,6 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   getUser(): Bluebird<UserInterface> {
     return Bluebird.resolve(this.user);
-
-    // return Bluebird.resolve(this.getSubdiscussions())
-    //   .map(discussion => discussion.getUser())
-    //   .then((users: UserInterface[]) => {
-    //     if (users.length === 0) {
-    //       return Bluebird.reject(new Incident("no-user", "This discussion has"))
-    //     }
-    //
-    //     users = _.uniq(users);
-    //
-    //     if (users.length > 1) {
-    //       console.warn("This discussion has to many users!");
-    //       return users[0]
-    //       return Bluebird.reject()
-    //     }
-    //     return
-    //   });
   }
 
 	/**
@@ -215,7 +198,12 @@ export class MetaDiscussion implements DiscussionInterface {
       for(let discuss of this.subDiscussions) {
         subdiscuss.push(discuss.subdiscussion);
       }
+      return subdiscuss;
     });
+  }
+
+  getDatedSubdiscussions(): Bluebird<Subdiscussion[]> {
+    return Bluebird.resolve(this.subDiscussions);
   }
 
 	/**
@@ -224,7 +212,25 @@ export class MetaDiscussion implements DiscussionInterface {
   // TODO: do we need to maintain different subdiscussion even if they are used
   //       by the same user-account and the same protocol ?
 	addSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
-    return Bluebird.reject(new Incident("todo", "MetaDiscussion:addSubdiscussion is not implemented"));
+    // For the moment, let just add a SimpleDiscussion.
+    return Bluebird
+      .try(() => {
+        if(subDiscussion instanceof MetaDiscussion) {
+          return Bluebird.reject(new Incident("todo", "MetaDiscussion:addSubdiscussion does not support adding a whole meta-discussino for the moment."));
+        }
+        // Let's deal with the simple discussions
+        // NOTE: the fact that subDiscussion.user is not used by an account of the current User is not supported yet,
+        //       but should not appear for the moment anyway.
+        return this.getSubDiscussions();
+      })
+      .then((subdiscuss: DiscussionInterface[]) => {
+        if(subdiscuss.indexOf(subDiscussion) !== -1) {
+          return Bluebird.reject(new Incident("Already existing", subDiscussion, "This subdiscussion already exists in the current meta-discussion."));
+        }
+        this.subDiscussions.push({subdiscussion: subDiscussion, added: new Date()});
+        // TODO: see the global todo at the beggining of this method.
+      })
+      .thenReturn(this);
     // return Bluebird
     //   .try(() => {
     //     if(subDiscussion instanceof MetaDiscussion) {
@@ -272,27 +278,29 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   mergeSimpleDiscussions(): Bluebird<this> {
     return findSimpleChildren(this)
-      .then((children: SimpleDiscussion[]) => {
-        let discussionsPerAccount: utils.Dictionary<SimpleDiscussion[]> = {};
+      .then((children: Subdiscussion[]) => {
+        let discussionsPerAccount: utils.Dictionary<Subdiscussion[]> = {};
         return Bluebird
           // get the user-account id
-          .map(children, (child: SimpleDiscussion) => {
-            child.getLocalUserAccount()
+          .map(children, (child: Subdiscussion) => {
+            let simpleChild: SimpleDiscussion = <SimpleDiscussion>child.subdiscussion;
+            simpleChild.getLocalUserAccount()
               .then(userAccount => userAccount.getGlobalId())
           })
           // group by user-account
+          // TODO: does it still work ?
           .then((userAccountIds) => {
-            let grouped = _.groupBy(children, (child: SimpleDiscussion, idx: number) => {
+            let grouped = _.groupBy(children, (child: Subdiscussion, idx: number) => {
                 return userAccountIds[idx];
               });
 
-            return _.pickBy(grouped, (discussions: SimpleDiscussion[]) => {
+            return _.pickBy(grouped, (discussions: Subdiscussion[]) => {
                 return discussions.length > 1;
               });
           })
       })
-      .then((discussionsToMerge: utils.Dictionary<SimpleDiscussion[]>) => {
-        // We now have a map of AccountId -> SimpleDiscussion[]
+      .then((discussionsToMerge: utils.Dictionary<Subdiscussion[]>) => {
+        // We now have a map of AccountId -> Subdiscussion[]
         // let discussionsToMerge: {
         //   '["facebook", "0123456789"]': [
         //     // SimpleDiscussionA
