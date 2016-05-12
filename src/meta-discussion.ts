@@ -70,7 +70,7 @@ export class MetaDiscussion implements DiscussionInterface {
    * The list of all the subdiscussions constituing
    * the current meta-discussion.
    */
-  protected subDiscussions: DiscussionInterface[];
+  protected subDiscussions: Subdiscussion[];
 
   constructor (user: UserInterface, principalDiscussion?: DiscussionInterface, otherDiscussions?: DiscussionInterface[]) {
     this.user = user;
@@ -131,7 +131,7 @@ export class MetaDiscussion implements DiscussionInterface {
    * @param options
    */
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
+    return Bluebird.reject(new Incident("todo", "MetaDiscussion:getMessages is not implemented"));
   }
 
   /**
@@ -151,7 +151,8 @@ export class MetaDiscussion implements DiscussionInterface {
    * This depends of your rights for the current Discussion.
    */
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
-    return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
+    return Bluebird.reject(new Incident("todo", "MetaDiscussion:removeParticipants is not implemented"));
+    // TODO: remove this "-s" (from interfaces too).
   }
 
   /**
@@ -209,7 +210,12 @@ export class MetaDiscussion implements DiscussionInterface {
    * current MetaDiscussion.
    */
   getSubDiscussions (): Bluebird<DiscussionInterface[]> {
-    return Bluebird.resolve(this.subDiscussions);
+    return Bluebird.try(() => {
+      let subdiscuss: DiscussionInterface[] = [];
+      for(let discuss of this.subDiscussions) {
+        subdiscuss.push(discuss.subdiscussion);
+      }
+    });
   }
 
 	/**
@@ -218,29 +224,35 @@ export class MetaDiscussion implements DiscussionInterface {
   // TODO: do we need to maintain different subdiscussion even if they are used
   //       by the same user-account and the same protocol ?
 	addSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
-    return Bluebird
-      .try(() => {
-        if(subDiscussion instanceof MetaDiscussion) {
-          return subDiscussion.getUser()
-            .then((user: UserInterface) => {
-              if (this.user !== user) {
-                return Bluebird.reject(new Incident("mixed-users", {
-                  user: this.user,
-                  subUser: this.user
-                }, "A discussions tree can only have one local user"))
-              }
-              if (this.subDiscussions.indexOf(subDiscussion) < 0) {
-                this.subDiscussions.push(subDiscussion);
-              }
-            })
-        } else {
-          // TODO
-          return Bluebird.resolve(this);
-        }
-
-      })
-      .thenReturn(this);
+    return Bluebird.reject(new Incident("todo", "MetaDiscussion:addSubdiscussion is not implemented"));
+    // return Bluebird
+    //   .try(() => {
+    //     if(subDiscussion instanceof MetaDiscussion) {
+    //       return subDiscussion.getUser()
+    //         .then((user: UserInterface) => {
+    //           if (this.user !== user) {
+    //             return Bluebird.reject(new Incident("mixed-users", {
+    //               user: this.user,
+    //               subUser: this.user
+    //             }, "A discussions tree can only have one local user"))
+    //           }
+    //           if (this.subDiscussions.indexOf(subDiscussion) < 0) {
+    //             this.subDiscussions.push(subDiscussion);
+    //           }
+    //         })
+    //     } else {
+    //       // TODO
+    //       return Bluebird.resolve(this);
+    //     }
+    //
+    //   })
+    //   .thenReturn(this);
   }
+
+  removeSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
+    return Bluebird.reject(new Incident("todo", "MetaDiscussion:removeSubdiscussion is not implemented"));
+  }
+
 
 	/**
    * TODO: doc.
@@ -380,6 +392,11 @@ export class MetaDiscussion implements DiscussionInterface {
 		// 	});
 		// }
 		// return Bluebird.resolve(this);
+}
+
+export interface Subdiscussion {
+  subdiscussion: DiscussionInterface;
+  added: Date;
 }
 
 export default MetaDiscussion;
