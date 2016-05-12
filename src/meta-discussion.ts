@@ -51,29 +51,64 @@ function findSimpleDescendants(parent: MetaDiscussion): Bluebird<SimpleDiscussio
     });
 }
 
+/**
+ * This class represents a multi-accounts and multi-protocols discussion.
+ */
 export class MetaDiscussion implements DiscussionInterface {
+  // TODO: we need to find a way to get the messages from a meta-discussion
+  //       that prevent the discussion's semantic from being screwed up by
+  //       messages from a freshly added discussion.
+  //       A solution is to associate each subdiscussion to its date of
+  //       integration in the meta-discussion.
+
+	/**
+   * The user that is currently using this discussion.
+   */
   user: UserInterface;
 
-  // should be a Set, we should implement or import a Set class
+	/**
+   * The list of all the subdiscussions constituing
+   * the current meta-discussion.
+   */
   subDiscussions: DiscussionInterface[];
 
-  constructor (user: UserInterface) {
+  constructor (user: UserInterface, principalDiscussion?: DiscussionInterface, otherDiscussions?: DiscussionInterface[]) {
     this.user = user;
+    this.subDiscussions = [];
+    if(principalDiscussion) {
+      this.addSubdiscussion(principalDiscussion);
+    }
+    if(otherDiscussions) {
+      for(let discuss of otherDiscussions) {
+        this.addSubdiscussion(discuss);
+      }
+    }
   }
 
+  /* DiscussionInterface implementation */
+  /**
+   * Return the name of the Discussion, if it exists.
+   * If not, we will generate it.
+   */
+  // TODO: be more precise. Use the first discussion as reference ?
   getName(): Bluebird<string> {
     return Bluebird.resolve("MetaDiscussion");
   }
 
+  /**
+   * Return a string which represents the Discussion.
+   */
+  // TODO: be more precise.
   getDescription(): Bluebird<string> {
     return Bluebird.resolve("This is a discussion containing some sub-discussions");
   }
 
   /**
-   * Returns the oldest creation date or null if no creationDate was found
-   * @returns {any}
+   * Returns the date when the current discussion received a new
+   * discussion using another protocol or another single-protocol account.
    */
   getCreationDate(): Bluebird<Date> {
+    // TODO: rework this.
     return Bluebird.resolve(this.getSubDiscussions())
       .map((discussion: DiscussionInterface) => discussion.getCreationDate())
       .reduce(
@@ -91,7 +126,52 @@ export class MetaDiscussion implements DiscussionInterface {
   }
 
   /**
-   * The user associated to the local accounts of this discussion
+   * Return all the message of the current Discussion,
+   * accordingly to the options parameter.
+   * @param options
+   */
+  getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
+    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
+  }
+
+  /**
+   * Add a member to the current Discussion.
+   * If no subduscission exists for this contact,
+   * it will be created.
+   */
+  // TODO: use the ghost discussion thing, or directly send a message
+  //       to tell the contact that he was added to a meta-discussion
+  //       from omni-chat ?
+  addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
+    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));;
+  }
+
+  /**
+   * Remove a member from the current Discussion.
+   * This depends of your rights for the current Discussion.
+   */
+  removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
+    return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
+  }
+
+  /**
+   * Sends the message newMessage to the current discussion.
+   * Returns then the sent Message, completed with informations
+   * acquired after the send.
+   */
+  sendMessage(newMessage: NewMessage): Bluebird<MetaMessage> {
+    return this.getSubDiscussions()
+      .map((discussion: DiscussionInterface) => {
+        return discussion.sendMessage(newMessage);
+      })
+      .then((messages: MessageInterface[]) => {
+        return new MetaMessage(messages);
+      });
+  }
+
+  /* Scpecific methods */
+  /**
+   * The user associated to the local accounts of this discussion.
    * @returns {Bluebird<UserInterface>}
    */
   getUser(): Bluebird<UserInterface> {
@@ -115,8 +195,12 @@ export class MetaDiscussion implements DiscussionInterface {
     //   });
   }
 
-  // Returns a boolean indicating wether multiple userAccounts are used in the subtree or not
+	/**
+   * Returns a boolean indicating wether multiple userAccounts
+   * are used in the subtree or not.
+   */
   isHeterogeneous(): Bluebird<boolean> {
+    // TODO
     return Bluebird.resolve(false);
   }
 
@@ -128,25 +212,40 @@ export class MetaDiscussion implements DiscussionInterface {
     return Bluebird.resolve(this.subDiscussions);
   }
 
-	addSubdiscussion(subDiscussion: MetaDiscussion): Bluebird<this> {
+	/**
+   * Add a whole subdiscussion to the current meta-discussion.
+   */
+  // TODO: do we need to maintain different subdiscussion even if they are used
+  //       by the same user-account and the same protocol ?
+	addSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
     return Bluebird
       .try(() => {
-        return subDiscussion.getUser()
-          .then((user: UserInterface) => {
-            if (this.user !== user) {
-              return Bluebird.reject(new Incident("mixed-users", {
-                user: this.user,
-                subUser: this.user
-              }, "A discussions tree can only have one local user"))
-            }
-            if (this.subDiscussions.indexOf(subDiscussion) < 0) {
-              this.subDiscussions.push(subDiscussion);
-            }
-          })
+        if(subDiscussion instanceof MetaDiscussion) {
+          return subDiscussion.getUser()
+            .then((user: UserInterface) => {
+              if (this.user !== user) {
+                return Bluebird.reject(new Incident("mixed-users", {
+                  user: this.user,
+                  subUser: this.user
+                }, "A discussions tree can only have one local user"))
+              }
+              if (this.subDiscussions.indexOf(subDiscussion) < 0) {
+                this.subDiscussions.push(subDiscussion);
+              }
+            })
+        } else {
+          // TODO
+          return Bluebird.resolve(this);
+        }
+
       })
       .thenReturn(this);
   }
 
+	/**
+   * TODO: doc.
+   * @returns {Bluebird<MetaDiscussion>}
+   */
   flatten(): Bluebird<this> {
     return findSimpleDescendants(this)
       .then(simpleDescendants => {
@@ -155,6 +254,10 @@ export class MetaDiscussion implements DiscussionInterface {
       });
   }
 
+	/**
+   * TODO: doc.
+   * @returns {Bluebird<MetaDiscussion>}
+   */
   mergeSimpleDiscussions(): Bluebird<this> {
     return findSimpleChildren(this)
       .then((children: SimpleDiscussion[]) => {
@@ -277,28 +380,6 @@ export class MetaDiscussion implements DiscussionInterface {
 		// 	});
 		// }
 		// return Bluebird.resolve(this);
-
-  addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
-    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));;
-  }
-
-  removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
-    return Bluebird.reject(new Incident("todo", "Discussion:removeParticipants is not implemented"));
-  }
-
-  getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Bluebird.reject(new Incident("todo", "SimpleDiscussion:getMessages is not implemented"));
-  }
-
-  sendMessage(newMessage: NewMessage): Bluebird<MetaMessage> {
-    return this.getSubDiscussions()
-      .map((discussion: DiscussionInterface) => {
-        return discussion.sendMessage(newMessage);
-      })
-      .then((messages: MessageInterface[]) => {
-        return new MetaMessage(messages);
-      });
-  }
 }
 
 export default MetaDiscussion;
