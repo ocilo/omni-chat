@@ -2,7 +2,7 @@ import * as Bluebird from "bluebird";
 import {Incident} from "incident";
 import * as palantiri from "palantiri-interfaces";
 import {ContactAccountInterface} from "./interfaces/contact-account";
-import {DiscussionInterface} from "./interfaces/discussion";
+import {DiscussionInterface, GetParticipantsOptions} from "./interfaces/discussion";
 import {UserInterface} from "./interfaces/user";
 import {MessageInterface} from "./interfaces/message";
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
@@ -79,6 +79,15 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
     return Bluebird.reject(new Incident("todo", "MetaDiscussion:getMessages is not implemented"));
+  }
+
+  /**
+   * Return all the participants of the current Discussion,
+   * accordingly to the options parameter.
+   * @param options
+   */
+  getParticipants(options?: GetParticipantsOptions): Bluebird.Thenable<ContactAccountInterface[]> {
+    return Bluebird.reject(new Incident("todo", "MetaDiscussion:getParticipants is not implemented"));
   }
 
   /**
@@ -193,22 +202,59 @@ export class MetaDiscussion implements DiscussionInterface {
 
 	/**
    * Add a whole subdiscussion to the current meta-discussion.
+   * If this subdiscussion can be merged with an existing one,
+   * it will be merged.
    */
-  // TODO: do we need to maintain different subdiscussion even if they are used
-  //       by the same user-account and the same protocol ?
 	addSubdiscussion(subDiscussion: SimpleDiscussion): Bluebird<MetaDiscussion> {
+    let protocols: string[] = [];
+    let userAccountIDs: palantiri.AccountGlobalId[] = [];
+    let subdiscussions: SimpleDiscussion[] = [];
+    let id: palantiri.AccountGlobalId = null;
+    let protocol: string = null;
     return Bluebird
       .try(() => {
+        return subDiscussion.getProtocol()
+          .then((p: string) => {
+            protocol = p;
+            return subDiscussion.getUserAccountGlobalID();
+          })
+          .then((localId: palantiri.AccountGlobalId) => {
+            id = localId;
+            return;
+          });
+      })
+      .then(() => {
         // NOTE: the fact that subDiscussion.user is not used by an account of the current User is not supported yet,
         //       but should not appear for the moment anyway.
         return this.getSubDiscussions();
       })
-      .then((subdiscuss: DiscussionInterface[]) => {
-        if(subdiscuss.indexOf(subDiscussion) !== -1) {
+      .map((subdiscuss: SimpleDiscussion) => {
+        subdiscussions.push(subdiscuss);
+        return subdiscuss.getProtocol();
+      })
+      .then((p: string[]) => {
+        protocols = p;
+        return subdiscussions;
+      })
+      .map((subdiscuss: SimpleDiscussion) => {
+        return subdiscuss.getUserAccountGlobalID();
+      })
+      .then((ids: palantiri.AccountGlobalId[]) => {
+        userAccountIDs = ids;
+        if(subdiscussions.indexOf(subDiscussion) !== -1) {
           return Bluebird.reject(new Incident("Already existing", subDiscussion, "This subdiscussion already exists in the current meta-discussion."));
         }
-        this.subDiscussions.push({subdiscussion: subDiscussion, added: new Date(), removed: null});
-        // TODO: see the global todo at the beggining of this method.
+        let found: boolean = false;
+        for(let i: number = 0; i < protocols.length; i++) {
+          if(protocols[i] === protocol && userAccountIDs[i] === id && !this.subDiscussions[i].removed) {
+            this.subDiscussions[i].subdiscussion.merge(subDiscussion);
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
+          this.subDiscussions.push({subdiscussion: subDiscussion, added: new Date(), removed: null});
+        }
       })
       .thenReturn(this);
   }
