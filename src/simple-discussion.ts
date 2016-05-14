@@ -6,6 +6,7 @@ import {MessageInterface} from "./interfaces/message";
 import {UserAccountInterface} from "./interfaces/user-account";
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {SimpleMessage} from "./simple-message";
+import {UserAccount} from "./user-account";
 
 /**
  * This class is a high-level wrapper for a palantiri discussion
@@ -13,18 +14,12 @@ import {SimpleMessage} from "./simple-message";
  */
 export class SimpleDiscussion implements DiscussionInterface {
 	/**
-   * The account of the user who uses this Discussion.
-   */
-  private account: UserAccountInterface;
-
-	/**
    * The low-level passive object representing the current Discussion.
    */
   private discussionData: palantiri.Discussion;
 
-  constructor (account: UserAccountInterface, discussionData?: palantiri.Discussion) {
-    this.account = account;
-    this.discussionData = discussionData ? discussionData : null;
+  constructor (discussionData: palantiri.Discussion) {
+    this.discussionData = discussionData;
   }
 
   /* DiscussionInterface implementation */
@@ -73,7 +68,7 @@ export class SimpleDiscussion implements DiscussionInterface {
    * @param options
    */
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Bluebird.resolve(this.account.getOrCreateApi())
+    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
       .then((api: palantiri.Api) => {
         let palOptions: palantiri.Api.GetMessagesFromDiscussionOptions = null;
         if(options) {
@@ -114,7 +109,7 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(contactAccount.getGlobalId())
       .then((id: palantiri.AccountGlobalId) => {
         contactID.push(id);
-        return this.account.getOrCreateApi();
+        return (new UserAccount(this.discussionData.owner)).getOrCreateApi();
       })
       .then((api: palantiri.Api) => {
         api.addMembersToDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
@@ -135,7 +130,7 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(contactAccount.getGlobalId())
       .then((id: palantiri.AccountGlobalId) => {
         contactID.push(id);
-        return this.account.getOrCreateApi();
+        return (new UserAccount(this.discussionData.owner)).getOrCreateApi();
       })
       .then((api: palantiri.Api) => {
         api.removeMembersFromDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
@@ -150,7 +145,7 @@ export class SimpleDiscussion implements DiscussionInterface {
    * acquired after the send.
    */
   sendMessage(newMessage: NewMessage): Bluebird<SimpleMessage> {
-    return Bluebird.resolve(this.account.getOrCreateApi())
+    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
       .then((api: palantiri.Api) => {
         return api.sendMessage(newMessage, this.discussionData.id);
       })
@@ -164,7 +159,18 @@ export class SimpleDiscussion implements DiscussionInterface {
    * Return the user-account that is used to communicate in the current Discussion.
    */
   getLocalUserAccount(): Bluebird.Thenable<UserAccountInterface> {
-    return Bluebird.resolve(this.account);
+    return Bluebird.resolve(new UserAccount(this.discussionData.owner));
+  }
+
+	/**
+   * Return the protocol used by this discussion.
+   * @returns {Bluebird<string>}
+   */
+  getProtocol(): Bluebird.Thenable<string> {
+    return Bluebird.try( () => {
+      let globalid = palantiri.Id.asGlobalId(this.discussionData);
+      return globalid.split(":",2)[0];  // The syntax is "protocol:localID"
+    })
   }
 
   /**
@@ -172,7 +178,7 @@ export class SimpleDiscussion implements DiscussionInterface {
    * @returns {Thenable<palantiri.Discussion>}
    */
   private getDiscussionInfo(): Bluebird<palantiri.Discussion> {
-    return Bluebird.resolve(this.account.getOrCreateApi())
+    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
       .then((api: palantiri.Api) => {
         // TODO: fetch the real informations
         // return api.getDiscussionInfo(this.discussionReference);

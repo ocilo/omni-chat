@@ -62,7 +62,7 @@ export class UserAccount implements UserAccountInterface {
         return api.getDiscussions()
       })
       .map((discussion: palantiri.Discussion) => {
-        return new SimpleDiscussion(this, discussion);
+        return new SimpleDiscussion(discussion);
       });
   }
 
@@ -72,6 +72,7 @@ export class UserAccount implements UserAccountInterface {
    */
   getOrCreateDiscussion(remoteContactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
     let participantsID: palantiri.AccountGlobalId[] = [];
+    let theapi: palantiri.Api = null;
     return Bluebird
       .map(remoteContactAccounts, (contact: ContactAccountInterface) => {
         return contact.getGlobalId();
@@ -83,6 +84,7 @@ export class UserAccount implements UserAccountInterface {
         return this.getOrCreateApi()
       })
       .then((api: palantiri.Api) => {
+        theapi = api;
         return api.getDiscussions({
           max: 1,
           filter: (discuss: palantiri.Discussion): boolean => {
@@ -101,7 +103,8 @@ export class UserAccount implements UserAccountInterface {
       .then((discussions: palantiri.Discussion[]) => {
         let discuss: SimpleDiscussion = null;
         if(!discussions || discussions.length === 0) {
-          discuss = new SimpleDiscussion(this);
+          //discuss = new SimpleDiscussion(this);
+          // TODO: we have to create the discussion by our own (just wait the new palantiri.Api)
           for(let participant of remoteContactAccounts) {
             discuss.addParticipant(participant);
           }
@@ -109,7 +112,7 @@ export class UserAccount implements UserAccountInterface {
           //        already have some of the participants we are looking for is a bad idea,
           //        since we don't know the meanings of the previous discussion and the new one.
         } else {
-          discuss = new SimpleDiscussion(this, discussions[0]);
+          discuss = new SimpleDiscussion(discussions[0]);
         }
         return discuss;
       });
