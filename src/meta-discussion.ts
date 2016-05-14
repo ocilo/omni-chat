@@ -1,6 +1,5 @@
 import * as Bluebird from "bluebird";
 import Incident from "incident";
-import * as _ from "lodash";
 
 import ContactAccountInterface from "./interfaces/contact-account";
 import DiscussionInterface from "./interfaces/discussion";
@@ -10,57 +9,11 @@ import MessageInterface from "./interfaces/message";
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import MetaMessage from "./meta-message";
 import SimpleDiscussion from "./simple-discussion";
-import {utils} from "palantiri-interfaces";
-
-/**
- * Traverse the tree of meta-discussions from `parent` and get a list of all the `SimpleDiscussion`
- * @param parent
- * @returns {Bluebird<SimpleDiscussion[]>}
- */
-function findSimpleChildren(parent: MetaDiscussion): Bluebird<Subdiscussion[]> {
-  return Bluebird.resolve(parent.getDatedSubdiscussions())
-    .filter<Subdiscussion>((discussion: Subdiscussion) => {
-      return discussion.subdiscussion instanceof SimpleDiscussion;
-    });
-}
-
-/**
- * Traverse the tree of meta-discussions from `parent` and get a list of all the `SimpleDiscussion`
- * @param parent
- * @returns {Bluebird<SimpleDiscussion[]>}
- */
-function findSimpleDescendants(parent: MetaDiscussion): Bluebird<Subdiscussion[]> {
-  return parent.getDatedSubdiscussions()
-    .then((subs: Subdiscussion[]) => {
-      let simpleChildren: Subdiscussion[] = [];
-      let descendantsPromises: Bluebird.Thenable<Subdiscussion[]>[] = [];
-      for(let sub of subs) {
-        if (sub.subdiscussion instanceof SimpleDiscussion) {
-          simpleChildren.push(sub);
-        } else {
-          descendantsPromises.push(findSimpleDescendants(<MetaDiscussion> sub.subdiscussion));
-        }
-      }
-      if (descendantsPromises.length === 0) {
-        return Bluebird.resolve(simpleChildren);
-      }
-      return Bluebird.all(descendantsPromises)
-        .then((simpleDescendants: Subdiscussion[][]) => {
-          return _.concat(simpleChildren, _.flatten(simpleDescendants));
-        })
-    });
-}
 
 /**
  * This class represents a multi-accounts and multi-protocols discussion.
  */
 export class MetaDiscussion implements DiscussionInterface {
-  // TODO: we need to find a way to get the messages from a meta-discussion
-  //       that prevent the discussion's semantic from being screwed up by
-  //       messages from a freshly added discussion.
-  //       A solution is to associate each subdiscussion to its date of
-  //       integration in the meta-discussion.
-
 	/**
    * The user that is currently using this discussion.
    */
@@ -72,16 +25,12 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   protected subDiscussions: Subdiscussion[];
 
-  constructor (user: UserInterface, principalDiscussion?: DiscussionInterface, otherDiscussions?: DiscussionInterface[]) {
+  constructor (user: UserInterface, subdiscusions?: Subdiscussion[]) {
     this.user = user;
-    this.subDiscussions = [];
-    if(principalDiscussion) {
-      this.addSubdiscussion(principalDiscussion);
-    }
-    if(otherDiscussions) {
-      for(let discuss of otherDiscussions) {
-        this.addSubdiscussion(discuss);
-      }
+    if(subdiscusions) {
+      this.subDiscussions = subdiscusions;
+    } else {
+      this.subDiscussions = [];
     }
   }
 
@@ -108,9 +57,8 @@ export class MetaDiscussion implements DiscussionInterface {
    * discussion using another protocol or another single-protocol account.
    */
   getCreationDate(): Bluebird<Date> {
-    // TODO: rework this.
-    return Bluebird.resolve(this.getSubDiscussions())
-      .map((discussion: DiscussionInterface) => discussion.getCreationDate())
+    return Bluebird.resolve(this.getDatedSubdiscussions())
+      .map((subdiscussion: Subdiscussion) => subdiscussion.added)
       .reduce(
         (accumulator: Date, date: Date) => {
           if (accumulator === null) {
@@ -143,7 +91,7 @@ export class MetaDiscussion implements DiscussionInterface {
   //       to tell the contact that he was added to a meta-discussion
   //       from omni-chat ?
   addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
-    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));;
+    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));
   }
 
   /**
@@ -189,12 +137,12 @@ export class MetaDiscussion implements DiscussionInterface {
   }
 
   /**
-   * Return the list of all the subdiscussions constituting the
+   * Return the list of all the simple-discussions constituting the
    * current MetaDiscussion.
    */
-  getSubDiscussions (): Bluebird<DiscussionInterface[]> {
+  getSubDiscussions (): Bluebird<SimpleDiscussion[]> {
     return Bluebird.try(() => {
-      let subdiscuss: DiscussionInterface[] = [];
+      let subdiscuss: SimpleDiscussion[] = [];
       for(let discuss of this.subDiscussions) {
         subdiscuss.push(discuss.subdiscussion);
       }
@@ -202,6 +150,10 @@ export class MetaDiscussion implements DiscussionInterface {
     });
   }
 
+  /**
+   * Return the list of all the simple-discussions constituting the
+   * current MetaDiscussion, with their date of adding and removing.
+   */
   getDatedSubdiscussions(): Bluebird<Subdiscussion[]> {
     return Bluebird.resolve(this.subDiscussions);
   }
@@ -211,14 +163,10 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   // TODO: do we need to maintain different subdiscussion even if they are used
   //       by the same user-account and the same protocol ?
-	addSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
+	addSubdiscussion(subDiscussion: SimpleDiscussion): Bluebird<MetaDiscussion> {
     // For the moment, let just add a SimpleDiscussion.
     return Bluebird
       .try(() => {
-        if(subDiscussion instanceof MetaDiscussion) {
-          return Bluebird.reject(new Incident("todo", "MetaDiscussion:addSubdiscussion does not support adding a whole meta-discussino for the moment."));
-        }
-        // Let's deal with the simple discussions
         // NOTE: the fact that subDiscussion.user is not used by an account of the current User is not supported yet,
         //       but should not appear for the moment anyway.
         return this.getSubDiscussions();
@@ -227,7 +175,7 @@ export class MetaDiscussion implements DiscussionInterface {
         if(subdiscuss.indexOf(subDiscussion) !== -1) {
           return Bluebird.reject(new Incident("Already existing", subDiscussion, "This subdiscussion already exists in the current meta-discussion."));
         }
-        this.subDiscussions.push({subdiscussion: subDiscussion, added: new Date()});
+        this.subDiscussions.push({subdiscussion: subDiscussion, added: new Date(), removed: null});
         // TODO: see the global todo at the beggining of this method.
       })
       .thenReturn(this);
@@ -255,156 +203,18 @@ export class MetaDiscussion implements DiscussionInterface {
     //   .thenReturn(this);
   }
 
-  removeSubdiscussion(subDiscussion: DiscussionInterface): Bluebird<MetaDiscussion> {
+  removeSubdiscussion(subDiscussion: SimpleDiscussion): Bluebird<MetaDiscussion> {
     return Bluebird.reject(new Incident("todo", "MetaDiscussion:removeSubdiscussion is not implemented"));
   }
-
-
-	/**
-   * TODO: doc.
-   * @returns {Bluebird<MetaDiscussion>}
-   */
-  flatten(): Bluebird<this> {
-    return findSimpleDescendants(this)
-      .then(simpleDescendants => {
-        this.subDiscussions = simpleDescendants;
-        return this;
-      });
-  }
-
-	/**
-   * TODO: doc.
-   * @returns {Bluebird<MetaDiscussion>}
-   */
-  mergeSimpleDiscussions(): Bluebird<this> {
-    return findSimpleChildren(this)
-      .then((children: Subdiscussion[]) => {
-        let discussionsPerAccount: utils.Dictionary<Subdiscussion[]> = {};
-        return Bluebird
-          // get the user-account id
-          .map(children, (child: Subdiscussion) => {
-            let simpleChild: SimpleDiscussion = <SimpleDiscussion>child.subdiscussion;
-            simpleChild.getLocalUserAccount()
-              .then(userAccount => userAccount.getGlobalId())
-          })
-          // group by user-account
-          // TODO: does it still work ?
-          .then((userAccountIds) => {
-            let grouped = _.groupBy(children, (child: Subdiscussion, idx: number) => {
-                return userAccountIds[idx];
-              });
-
-            return _.pickBy(grouped, (discussions: Subdiscussion[]) => {
-                return discussions.length > 1;
-              });
-          })
-      })
-      .then((discussionsToMerge: utils.Dictionary<Subdiscussion[]>) => {
-        // We now have a map of AccountId -> Subdiscussion[]
-        // let discussionsToMerge: {
-        //   '["facebook", "0123456789"]': [
-        //     // SimpleDiscussionA
-        //     // SimpleDiscussionB
-        //     // SimpleDiscussionC
-        //   ],
-        //   '["skype", "9876543210"]': [
-        //     // SimpleDiscussionE
-        //     // SimpleDiscussionF
-        //   ]
-        // }
-      })
-      .thenReturn(this);
-  }
-
-		// TODO : rework all of this. This is probably wrong now: we decided that we don't automatically resolve the account to use so the above implementation is easier (but maybe incomplete)
-		// if(this.subdiscussions.indexOf({since: undefined, discussion: subdiscuss}) === -1) {
-		// 	let param: string[] = [subdiscuss.protocol];
-		// 	this.owner.getAccounts(param).then((ownerAccounts) => {
-		// 		let compatibleSubdiscussions: GroupChat[] = [];
-		// 		for(let subdiscussion of this.subdiscussions) {
-		// 			if(subdiscussion.discussion.protocol === subdiscuss.protocol) {
-		// 				compatibleSubdiscussions.push(subdiscuss);
-		// 			}
-		// 		}
-		// 		let gotIt: boolean = false;
-		// 		for(let compatibleParticipant of compatibleSubdiscussions) {
-		// 			for(let ownerAccount of ownerAccounts) {
-		// 				if(ownerAccount.hasContactAccount(compatibleParticipant.participants[0])) {
-		// 					// Ok, we have determined which one of the user's accounts
-		// 					// owns the current compatible participant.
-		// 					// Now if it owns the ContactAccounts that we want to add
-		// 					// to this discussion too, we win.
-		// 					if(ownerAccount.hasContactAccount(subdiscuss.participants[0])) {
-		// 						// That's it, we win !
-		// 						// TODO : well, almost. We need to check if every member is accessible,
-		// 						//        or it could lead to some problems.
-		// 						ownerAccount.getOrCreateConnection()
-		// 							.then((co) => {
-		// 								return co.getConnectedApi();
-		// 							})
-		// 							.then((api) => {
-		// 								api.addMembersToDiscussion(subdiscuss.participants, compatibleParticipant, (err) => {
-		// 									if(!err) {
-		// 										compatibleParticipant.addParticipants(subdiscuss.participants);
-		// 									}
-		// 								});
-		// 							});
-		// 						gotIt = true;
-		// 						break;
-		// 					}
-		// 				}
-		// 			}
-		// 			if(gotIt) {
-		// 				break;
-		// 			}
-		// 		}
-		// 		// In the case where we still not have been able to add these participants,
-		// 		// there is two solutions :
-		// 		if(!gotIt) {
-		// 			let currentDate = new Date();
-		// 			if(compatibleSubdiscussions.length === 0) {
-		// 				// First, we are trying to add accounts using a protocol which is
-		// 				// not in this discussion yet. We just have to add these participants
-		// 				// to this discussion, which will become heterogeneous.
-		// 				this.subdiscussions.push({since: currentDate, discussion: subdiscuss});
-		// 				this.heterogeneous = true;
-		// 			} else {
-		// 				// Second, we are trying to add accounts from an UserAccount which has
-		// 				// no current contacts in this discussion. We just have to add them.
-		// 				this.subdiscussions.push({since: currentDate, discussion: subdiscuss});
-		// 			}
-		// 			let that = this;
-		// 			subdiscuss.owner.connection.on("msgRcv", (msg: Message) => {
-		// 				let sender = msg.author;
-		// 				let foundSender: boolean = false;
-		// 				for(let subdiscussion of that.subdiscussions) {
-		// 					if(!foundSender) {
-		// 						for(let contact of subdiscussion.discussion.participants) {
-		// 							if(sender === contact) {
-		// 								foundSender = true;
-		// 								break;
-		// 							}
-		// 						}
-		// 					}
-		// 					if(!foundSender) {
-		// 						subdiscussion.discussion.owner.sendMessage(msg, subdiscussion.discussion);
-		// 					}
-		// 				}
-		// 			});
-		// 			// TODO : but how the new participants will know that they are in this discussion ?
-		// 			//        For the moment, they won't know until we send a message to them.
-		// 			//        I don't think that it is a real problem.
-		// 			//        If it is, we coud just auto-send a message to them.
-     //      // TODO: add palantiri.Api.sendInvitation(accountId, discussionId)
-		// 		}
-		// 	});
-		// }
-		// return Bluebird.resolve(this);
 }
 
+/**
+ * This represents a subdiscussion in a meta-discussion.
+ */
 export interface Subdiscussion {
-  subdiscussion: DiscussionInterface;
+  subdiscussion: SimpleDiscussion;
   added: Date;
+  removed: Date;
 }
 
 export default MetaDiscussion;
