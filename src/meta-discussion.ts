@@ -1,14 +1,13 @@
 import * as Bluebird from "bluebird";
-import Incident from "incident";
-
-import ContactAccountInterface from "./interfaces/contact-account";
-import DiscussionInterface from "./interfaces/discussion";
-import UserInterface from "./interfaces/user";
-import MessageInterface from "./interfaces/message";
-
+import {Incident} from "incident";
+import * as palantiri from "palantiri-interfaces";
+import {ContactAccountInterface} from "./interfaces/contact-account";
+import {DiscussionInterface} from "./interfaces/discussion";
+import {UserInterface} from "./interfaces/user";
+import {MessageInterface} from "./interfaces/message";
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
-import MetaMessage from "./meta-message";
-import SimpleDiscussion from "./simple-discussion";
+import {MetaMessage} from "./meta-message";
+import {SimpleDiscussion} from "./simple-discussion";
 
 /**
  * This class represents a multi-accounts and multi-protocols discussion.
@@ -132,8 +131,42 @@ export class MetaDiscussion implements DiscussionInterface {
    * are used in the subtree or not.
    */
   isHeterogeneous(): Bluebird<boolean> {
-    // TODO
-    return Bluebird.resolve(false);
+    if(!this.subDiscussions || this.subDiscussions.length === 0) {
+      return Bluebird.resolve(false);
+    }
+    let heterogeneous: boolean = false;
+    let protocols: string[] = [];
+    let userAccountIDs: palantiri.AccountGlobalId[] = [];
+    return Bluebird
+      .resolve(this.getSubDiscussions())
+      .map((subdiscussion: SimpleDiscussion) => {
+        return subdiscussion.getProtocol()
+      })
+      .then((p: string[]) => {
+        protocols = p;
+        return this.getSubDiscussions();
+      })
+      .map((subdiscussion: SimpleDiscussion) => {
+        return subdiscussion.getUserAccountGlobalID();
+      })
+      .then((ids: palantiri.AccountGlobalId[]) => {
+        userAccountIDs = ids;
+        for(let protocol of protocols) {
+          if(protocol !== protocols[0]) {
+            heterogeneous = true;
+            break;
+          }
+        }
+        if(!heterogeneous) {
+          for(let id of userAccountIDs) {
+            if(id !== userAccountIDs[0]) {
+              heterogeneous = true;
+              break;
+            }
+          }
+        }
+        return heterogeneous;
+      });
   }
 
   /**
