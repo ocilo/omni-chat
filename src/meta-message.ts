@@ -67,6 +67,19 @@ export class MetaMessage implements MessageInterface {
   getSubMessages (): Bluebird<MessageInterface[]> {
     return Bluebird.resolve(this.subMessages);
   }
+
+  /**
+   * Add the submessages of the given meta-message to the current one.
+   */
+  // TODO: be carreful about the duplicated messages ?
+  protected merge(message: MetaMessage): Bluebird.Thenable<MetaMessage> {
+    return Bluebird.try(() => {
+      for(let msg of message.subMessages) {
+        this.subMessages.push(msg);
+      }
+      return this;
+    });
+  }
 }
 
 export default MetaMessage;
