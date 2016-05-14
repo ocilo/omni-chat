@@ -172,7 +172,6 @@ export class SimpleDiscussion implements DiscussionInterface {
 
 	/**
    * Return the protocol used by this discussion.
-   * @returns {Bluebird<string>}
    */
   getProtocol(): Bluebird.Thenable<string> {
     return Bluebird.try( () => {
@@ -181,9 +180,14 @@ export class SimpleDiscussion implements DiscussionInterface {
     })
   }
 
+  isTheSameAs(simpleDiscussion: SimpleDiscussion): Bluebird.Thenable<boolean> {
+    return Bluebird.resolve(
+      palantiri.Id.asGlobalId(this.discussionData) === palantiri.Id.asGlobalId(simpleDiscussion.discussionData)
+    );
+  }
+
   /**
    * Private: fetch the data about this discussion from the service
-   * @returns {Thenable<palantiri.Discussion>}
    */
   private getDiscussionInfo(): Bluebird<palantiri.Discussion> {
     return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())

@@ -197,7 +197,6 @@ export class MetaDiscussion implements DiscussionInterface {
   // TODO: do we need to maintain different subdiscussion even if they are used
   //       by the same user-account and the same protocol ?
 	addSubdiscussion(subDiscussion: SimpleDiscussion): Bluebird<MetaDiscussion> {
-    // For the moment, let just add a SimpleDiscussion.
     return Bluebird
       .try(() => {
         // NOTE: the fact that subDiscussion.user is not used by an account of the current User is not supported yet,
@@ -212,32 +211,34 @@ export class MetaDiscussion implements DiscussionInterface {
         // TODO: see the global todo at the beggining of this method.
       })
       .thenReturn(this);
-    // return Bluebird
-    //   .try(() => {
-    //     if(subDiscussion instanceof MetaDiscussion) {
-    //       return subDiscussion.getUser()
-    //         .then((user: UserInterface) => {
-    //           if (this.user !== user) {
-    //             return Bluebird.reject(new Incident("mixed-users", {
-    //               user: this.user,
-    //               subUser: this.user
-    //             }, "A discussions tree can only have one local user"))
-    //           }
-    //           if (this.subDiscussions.indexOf(subDiscussion) < 0) {
-    //             this.subDiscussions.push(subDiscussion);
-    //           }
-    //         })
-    //     } else {
-    //       // TODO
-    //       return Bluebird.resolve(this);
-    //     }
-    //
-    //   })
-    //   .thenReturn(this);
   }
 
   removeSubdiscussion(subDiscussion: SimpleDiscussion): Bluebird<MetaDiscussion> {
-    return Bluebird.reject(new Incident("todo", "MetaDiscussion:removeSubdiscussion is not implemented"));
+    return Bluebird
+      .try(() => {
+        if(this.subDiscussions.length === 0) {
+          return Bluebird.reject(new Incident("Empty meta-discussion", "This meta-discussion has no subdiscussion for the moment."));
+        }
+        return this.getDatedSubdiscussions();
+      })
+      .map((subdiscuss: Subdiscussion) => {
+        return subDiscussion.isTheSameAs(subdiscuss.subdiscussion);
+      })
+      .then((sames: boolean[]) => {
+        let found: boolean = false;
+        for(let i: number; i = 0; i++) {
+          let same = sames[i];
+          if(same && !this.subDiscussions[i].removed) {
+            this.subDiscussions[i].removed = new Date();
+            found = true;
+            break;
+          }
+        }
+        if(!found) {
+          return Bluebird.reject(new Incident("No such discussion", subDiscussion, "This subdiscussion does not exist or was already removed."));
+        }
+        return this;
+      });
   }
 }
 
