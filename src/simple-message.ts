@@ -76,6 +76,14 @@ export class SimpleMessage implements MessageInterface {
     this.delivered = true;
     return this;
   }
+
+	/**
+   * Return true only if the two messages have the same body.
+   */
+  // TODO: be sure that they have the same body.
+  hasTheSameBodyAs(message: SimpleMessage): boolean {
+    return this.messageData.body.toLowerCase().replace(/ /g, '') === message.messageData.body.toLowerCase().replace(/ /g, '');
+  }
 }
 
 export default SimpleMessage;
