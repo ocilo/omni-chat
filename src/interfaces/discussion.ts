@@ -38,6 +38,13 @@ export interface DiscussionInterface {
   getMessages(options?: GetMessagesOptions): Thenable<MessageInterface[]>;
 
 	/**
+   * Return all the participants of the current Discussion,
+   * accordingly to the options parameter.
+   * @param options
+   */
+  getParticipants(options?: GetParticipantsOptions): Thenable<ContactAccountInterface[]>;
+
+	/**
    * Add a member to the current Discussion.
    * Be careful, the behavior of this method will vary with implementations :
    * If this is sa single-protocol and single-account discussion,
@@ -70,6 +77,15 @@ export interface GetMessagesOptions {
   maxMessages: number;
   afterDate?: Date;
   filter?: (msg: MessageInterface) => boolean
+}
+
+/**
+ * A passive object that represents the possible options
+ * when we want to acquire the participants from a Discussion.
+ */
+export interface GetParticipantsOptions {
+  maxParticipants?: number;
+  filter?: (part: ContactAccountInterface) => boolean;
 }
 
 /**
