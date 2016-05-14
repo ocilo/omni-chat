@@ -1,12 +1,14 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
+import * as _ from "lodash";
 import {ContactAccountInterface} from "./interfaces/contact-account";
-import {DiscussionInterface} from "./interfaces/discussion";
+import {DiscussionInterface, GetParticipantsOptions} from "./interfaces/discussion";
+import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {MessageInterface} from "./interfaces/message";
 import {UserAccountInterface} from "./interfaces/user-account";
-import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {SimpleMessage} from "./simple-message";
 import {UserAccount} from "./user-account";
+import {ContactAccount} from "./contact-account";
 
 /**
  * This class is a high-level wrapper for a palantiri discussion
@@ -99,6 +101,21 @@ export class SimpleDiscussion implements DiscussionInterface {
   }
 
   /**
+   * Return all the participants of the current Discussion,
+   * accordingly to the options parameter.
+   * @param options
+   */
+  getParticipants(options?: GetParticipantsOptions): Bluebird.Thenable<ContactAccountInterface[]> {
+    return Bluebird.try(() => {
+      let participants: ContactAccountInterface[] = [];
+      for(let part of this.discussionData.participants) {
+        participants.push(new ContactAccount(part));
+      }
+      return participants;
+    });
+  }
+
+  /**
    * Add a member to the current Discussion.
    * Be careful, the behavior of this method will vary with implementations :
    * If this is sa single-protocol and single-account discussion,
@@ -180,10 +197,41 @@ export class SimpleDiscussion implements DiscussionInterface {
     })
   }
 
+	/**
+   * Return true only if the current discussion and the one given as parameter
+   * have the same globalID.
+   */
   isTheSameAs(simpleDiscussion: SimpleDiscussion): Bluebird.Thenable<boolean> {
     return Bluebird.resolve(
       palantiri.Id.asGlobalId(this.discussionData) === palantiri.Id.asGlobalId(simpleDiscussion.discussionData)
     );
+  }
+
+	/**
+   * Add the discussion given in parameter to the current one.
+   * This adds the members of the given discussion to those of the current.
+   * If a member is already in the current discussion, he won't be added.
+   * It returns the current discussion to chain calls.
+   */
+  merge(discuss: SimpleDiscussion): Bluebird.Thenable<SimpleDiscussion> {
+    let toAddParts: ContactAccountInterface[] = [];
+    let thisParts: ContactAccountInterface[] = [];
+    return Bluebird
+      .resolve(discuss.getParticipants())
+      .then((parts: ContactAccountInterface[]) => {
+        toAddParts = parts;
+        return this.getParticipants();
+      })
+      .then((parts: ContactAccountInterface[]) => {
+        thisParts = parts;
+        return Bluebird.all(_.map(toAddParts, (contact: ContactAccountInterface) => {
+          if(thisParts.indexOf(contact) === -1) {
+            return this.addParticipant(contact);
+          }
+          return this;
+        }));
+      })
+      .thenReturn(this);
   }
 
   /**
