@@ -85,21 +85,21 @@ export class User extends EventEmitter implements UserInterface {
     // return Bluebird.resolve(discussion);
   }
 
-	getAllDiscussions(filter?: (discussion: MetaDiscussion) => boolean): Bluebird.Thenable<MetaDiscussion[]> {
+	getAllDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]> {
     return Bluebird.reject(new Incident("todo", "User:getAllDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO
 		// return Bluebird.resolve(discussions);
 	}
 
-	getHeterogeneousDiscussions(filter?: (discussion: MetaDiscussion) => boolean): Bluebird.Thenable<MetaDiscussion[]> {
+	getHeterogeneousDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]> {
     return Bluebird.reject(new Incident("todo", "User:getHeterogeneousDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO : access db
 		// return Bluebird.resolve(discussions);
 	}
 
-  leaveDiscussion(discussion: MetaDiscussion): Bluebird.Thenable<User> {
+  leaveDiscussion(discussion: DiscussionInterface): Bluebird<UserInterface> {
     return Bluebird.reject(new Incident("todo", "User:leaveDiscussion is not implemented"));
     // // TODO : two ways to implements this :
     // //        -> for each accounts, get the connection, then the api, then call leaveGroupChat().
@@ -107,7 +107,7 @@ export class User extends EventEmitter implements UserInterface {
 		// return Bluebird.resolve(this);
   }
 
-	sendMessage(msg: MessageInterface, discussion: MetaDiscussion, callback?: (err: Error) => any): Bluebird.Thenable<User> {
+	sendMessage(msg: MessageInterface, discussion: DiscussionInterface, callback?: (err: Error) => any): Bluebird<UserInterface> {
     return Bluebird.reject(new Incident("todo", "User:sendMessage is not implemented"));
 		// let err: Error = null;
 		// for(let subdiscussion of discussion.subdiscussions) {
@@ -148,7 +148,7 @@ export class User extends EventEmitter implements UserInterface {
       });
   }
 
-  removeAccount(account: UserAccountInterface): Bluebird.Thenable<this> {
+  removeAccount(account: UserAccountInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "User:removeAccount is not implemented"));
     // let index: number = this.accounts.indexOf(account);
     // let err: Error = null;

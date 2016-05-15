@@ -1,4 +1,4 @@
-import {Thenable} from "bluebird";
+import * as Bluebird from "bluebird";
 import {DiscussionInterface} from "./discussion";
 import {ContactAccountInterface} from "./contact-account";
 import {UserAccountInterface} from "./user-account";
@@ -15,12 +15,12 @@ export interface UserInterface extends UserEmitter {
 
   globalUsername: string;            //  Le nom complet de l'utilisateur.
 
-  getOrCreateDiscussion(contactAccount: ContactAccountInterface): Thenable<DiscussionInterface>;
+  getOrCreateDiscussion(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface>;
   //  Permet de commencer une discussion avec un contact ou
 	//  de recuperer une discussion existante, sur un compte
 	//  utilisant un protocol specifique.
 
-	getAllDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Thenable<DiscussionInterface[]>;
+	getAllDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]>;
 	//  Permet de recuperer toutes les Discussions de l'utilisateur :
 	//  Celles pour chacun de ces comptes.
 	//  Celles heterogenes.
@@ -28,7 +28,7 @@ export interface UserInterface extends UserEmitter {
 	//  lesquelles "filter" retourne vrai.
 
   // TODO: rename cross-local-account discussions as "meta-discussions" and normalize it everywhere ?
-	getHeterogeneousDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Thenable<DiscussionInterface[]>;
+	getHeterogeneousDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]>;
 	//  Retourne toutes les Discussions de l'utilisateur courant
 	//  qui sont heterogenes.
 	//  Cette methode est plus rapide que d'appeler getAllDiscussions
@@ -36,11 +36,11 @@ export interface UserInterface extends UserEmitter {
 	//  Si "filter" est precise, ne retourne que les Discussions pour
 	//  lesquelles "filter" retourne vrai.
 
-	leaveDiscussion(discussion: DiscussionInterface): Thenable<UserInterface>;
+	leaveDiscussion(discussion: DiscussionInterface): Bluebird<UserInterface>;
 	//  Permet de quitter la Discussion "discussion" et de ne plus
 	//  recevoir les notifications associées.
 
-	sendMessage(msg: MessageInterface, discussion: DiscussionInterface): Thenable<UserInterface>;
+	sendMessage(msg: MessageInterface, discussion: DiscussionInterface): Bluebird<UserInterface>;
 	//  Envoie le Message "msg" dans la Discussion "discussion".
 	//  Si un des participants a la Discussion ne peut pas recevoir
 	//  le Message, "err" sera non nul.
@@ -48,16 +48,16 @@ export interface UserInterface extends UserEmitter {
 	//  meme si le protocole utilise par le compte ne supporte pas
 	//  le type de Message.
 
-  getAccounts(protocols?: string[]): Thenable<UserAccountInterface[]>;
+  getAccounts(protocols?: string[]): Bluebird<UserAccountInterface[]>;
   //  Retourne la liste des comptes de l'utilisateurs.
   //  Si "protocol" est precise, ne retourne que la lite des
   //  comptes de l'utilisateur courant qui utilise le
   //  protocole "protocol".
 
-  addAccount(account: UserAccountInterface): Thenable<UserInterface>;
+  addAccount(account: UserAccountInterface): Bluebird<UserInterface>;
   //  Ajoute un compte a l'utilisateur courant.
 
-  removeAccount(account: UserAccountInterface): Thenable<UserInterface>;
+  removeAccount(account: UserAccountInterface): Bluebird<UserInterface>;
   //  Supprime un compte de l'utilisateur courant.
 }
 
