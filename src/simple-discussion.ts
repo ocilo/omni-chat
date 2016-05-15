@@ -222,19 +222,26 @@ export class SimpleDiscussion implements DiscussionInterface {
    * It returns the current discussion to chain calls.
    */
   merge(discuss: SimpleDiscussion): Bluebird.Thenable<SimpleDiscussion> {
-    let toAddParts: ContactAccountInterface[] = [];
-    let thisParts: ContactAccountInterface[] = [];
+    let toAdd: {contact: ContactAccountInterface, id: palantiri.AccountGlobalId}[] = [];
     return Bluebird
       .resolve(discuss.getParticipants())
-      .then((parts: ContactAccountInterface[]) => {
-        toAddParts = parts;
+      .map((part: ContactAccountInterface) => {
+        return part.getGlobalId()
+          .then((id: palantiri.AccountGlobalId) => {
+            return {contact: part, id: id};
+          });
+      })
+      .then((contacts: {contact: ContactAccountInterface, id: palantiri.AccountGlobalId}[]) => {
+        toAdd = contacts;
         return this.getParticipants();
       })
-      .then((parts: ContactAccountInterface[]) => {
-        thisParts = parts;
-        return Bluebird.all(_.map(toAddParts, (contact: ContactAccountInterface) => {
-          if(thisParts.indexOf(contact) === -1) {
-            return this.addParticipant(contact);
+      .map((part: ContactAccountInterface) => {
+        return part.getGlobalId();
+      })
+      .then((ids: palantiri.AccountGlobalId[]) => {
+        return Bluebird.all(_.map(toAdd, (contact: {contact: ContactAccountInterface, id: palantiri.AccountGlobalId}) => {
+          if(ids.indexOf(contact.id) === -1) {
+            return this.addParticipant(contact.contact);
           }
           return this;
         }));
