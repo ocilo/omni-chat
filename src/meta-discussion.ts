@@ -370,8 +370,10 @@ export class MetaDiscussion implements DiscussionInterface {
     let protocols: string[] = [];
     let userAccountIDs: palantiri.AccountGlobalId[] = [];
     let subdiscussions: SimpleDiscussion[] = [];
-    let id: palantiri.AccountGlobalId = null;
+    let subdiscussionsIDs: palantiri.DiscussionGlobalId[] = [];
+    let accountID: palantiri.AccountGlobalId = null;
     let protocol: string = null;
+    let subdiscussID: palantiri.DiscussionGlobalId = null;
     return Bluebird
       .try(() => {
         return subDiscussion.getProtocol()
@@ -380,8 +382,11 @@ export class MetaDiscussion implements DiscussionInterface {
             return subDiscussion.getUserAccountGlobalID();
           })
           .then((localId: palantiri.AccountGlobalId) => {
-            id = localId;
-            return;
+            accountID = localId;
+            return subDiscussion.getGlobalID();
+          })
+          .then((globalId: palantiri.DiscussionGlobalId) => {
+            subdiscussID = globalId;
           });
       })
       .then(() => {
@@ -398,16 +403,25 @@ export class MetaDiscussion implements DiscussionInterface {
         return subdiscussions;
       })
       .map((subdiscuss: SimpleDiscussion) => {
+        return subdiscuss.getGlobalID();
+      })
+      .then((ids: palantiri.DiscussionGlobalId[]) => {
+        subdiscussionsIDs = ids;
+        return subdiscussions;
+      })
+      .map((subdiscuss: SimpleDiscussion) => {
         return subdiscuss.getUserAccountGlobalID();
       })
       .then((ids: palantiri.AccountGlobalId[]) => {
         userAccountIDs = ids;
-        if(subdiscussions.indexOf(subDiscussion) !== -1) {
-          return Bluebird.reject(new Incident("Already existing", subDiscussion, "This subdiscussion already exists in the current meta-discussion."));
+        for(let subdiscussionID of subdiscussionsIDs) {
+          if(subdiscussionID === subdiscussID) {
+            return Bluebird.reject(new Incident("Already existing", subDiscussion, "This subdiscussion already exists in the current meta-discussion."));
+          }
         }
         let found: boolean = false;
         for(let i: number = 0; i < protocols.length; i++) {
-          if(protocols[i] === protocol && userAccountIDs[i] === id && !this.subDiscussions[i].removed) {
+          if(protocols[i] === protocol && userAccountIDs[i] === accountID && !this.subDiscussions[i].removed) {
             this.subDiscussions[i].subdiscussion.merge(subDiscussion);
             found = true;
             break;
