@@ -187,6 +187,14 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(palantiri.Id.asGlobalId(this.discussionData.owner));
   }
 
+  /**
+   * Return the global ID of the low-level discussion that is used
+   * in the current Discussion.
+   */
+  getGlobalID(): Bluebird.Thenable<palantiri.DiscussionGlobalId> {
+    return Bluebird.resolve(palantiri.Id.asGlobalId(this.discussionData));
+  }
+
 	/**
    * Return the protocol used by this discussion.
    */
