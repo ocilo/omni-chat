@@ -105,7 +105,7 @@ export class SimpleDiscussion implements DiscussionInterface {
    * accordingly to the options parameter.
    * @param options
    */
-  getParticipants(options?: GetParticipantsOptions): Bluebird.Thenable<ContactAccountInterface[]> {
+  getParticipants(options?: GetParticipantsOptions): Bluebird<ContactAccountInterface[]> {
     return Bluebird.try(() => {
       let participants: ContactAccountInterface[] = [];
       for(let part of this.discussionData.participants) {
