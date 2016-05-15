@@ -156,7 +156,30 @@ export class MetaDiscussion implements DiscussionInterface {
    * @param options
    */
   getParticipants(options?: GetParticipantsOptions): Bluebird.Thenable<ContactAccountInterface[]> {
-    return Bluebird.reject(new Incident("todo", "MetaDiscussion:getParticipants is not implemented"));
+    let part: ContactAccountInterface[] = [];
+    let counter: number = 0;
+    return Bluebird
+      .resolve(this.getSubDiscussions())
+      .then((subdiscuss: SimpleDiscussion[]) => {
+        return Bluebird.all(_.map(subdiscuss, (discuss: SimpleDiscussion) => {
+          return discuss.getParticipants(options)
+            .then((parts: ContactAccountInterface[]) => {
+              if(options && options.maxParticipants) {
+                if(counter + parts.length < options.maxParticipants) {
+                  _.concat(part, parts);
+                  counter += parts.length;
+                } else if (counter !== options.maxParticipants) {
+                  _.concat(part, parts.slice(0, options.maxParticipants - counter));
+                  counter += options.maxParticipants - counter;
+                }
+              } else {
+                _.concat(part, parts);
+                counter += parts.length;  // Not useful in fact, but anyway.
+              }
+            })
+        }))
+      })
+      .thenReturn(part);
   }
 
   /**
