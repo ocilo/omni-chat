@@ -11,6 +11,9 @@ import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {MetaMessage} from "./meta-message";
 import {SimpleDiscussion} from "./simple-discussion";
 import {SimpleMessage} from "./simple-message";
+import {UserAccount} from "./user-account";
+import {ContactAccount} from "./contact-account";
+import {UserAccountInterface} from "../build/node/interfaces/user-account";
 
 /**
  * This class represents a multi-accounts and multi-protocols discussion.
@@ -190,8 +193,74 @@ export class MetaDiscussion implements DiscussionInterface {
   // TODO: use the ghost discussion thing, or directly send a message
   //       to tell the contact that he was added to a meta-discussion
   //       from omni-chat ?
-  addParticipant(contactAccount:ContactAccountInterface): Bluebird<DiscussionInterface> {
-    return Bluebird.reject(new Incident("todo", "Discussion:addParticipant is not implemented"));
+  addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
+    return Bluebird
+      .resolve(this.getSubDiscussions())
+      .then((subdiscuss: SimpleDiscussion[]) => {
+        return Bluebird
+          .all(_.map(subdiscuss, (discuss: SimpleDiscussion) => {
+            return discuss.getLocalUserAccount()
+              .then((userAccount: UserAccount) => {
+                return userAccount.getOrCreateApi()
+                  .then((api: palantiri.Api) => {
+                    return api.getContacts();
+                  })
+                  .map((contact: palantiri.Account) => {
+                    return new ContactAccount(contact);
+                  })
+                  .then((contacts: ContactAccount[]) => {
+                    return {discuss: discuss, owner: userAccount, ok: (contacts.indexOf(<ContactAccount>contactAccount)===-1 ? false:true)}
+                  });
+              });
+          }))
+          .then((fullDiscuss: {discuss: SimpleDiscussion, owner: UserAccount, ok: boolean}[]) => {
+            for(let discuss of fullDiscuss) {
+              if(discuss.ok) {
+                return discuss.discuss.addParticipant(contactAccount);
+              }
+            }
+            // We have not found a subdiscussion that can welcome the contact.
+            // We must create a whole new subdiscussion.
+            return this.getUser()
+              .then((user: UserInterface) => {
+                return user.getAccounts()
+                  .map((account: UserAccountInterface) => {
+                    return {user: user, account: account};
+                  });
+              })
+              .then((accounts: {user: UserInterface, account: UserAccountInterface}[]) => {
+                return Bluebird
+                  .all(_.map(accounts, (account: {user: UserInterface, account: UserAccountInterface}) => {
+                    return account.account.getContactAccounts()
+                      .then((contacts: ContactAccountInterface[]) => {
+                        return {user: account.user, account: account.account, ok: (contacts.indexOf(contactAccount) ===-1 ? false:true)};
+                      });
+                  }))
+                  .then((fullAccounts: {user: UserInterface, account: UserAccountInterface, ok: boolean}[]) => {
+                    for(let account of fullAccounts) {
+                      if(account.ok) {
+                        let id: palantiri.AccountGlobalId = null;
+                        return account.account.getGlobalId()
+                          .then((globalID: palantiri.AccountGlobalId) => {
+                            id = globalID;
+                            return account.account.getOrCreateApi()
+                          })
+                          .then((api: palantiri.Api) => {
+                            return api.createDiscussion([id]);
+                          })
+                          .then((discuss: palantiri.Discussion) => {
+                            this.subDiscussions.push({subdiscussion: new SimpleDiscussion(discuss), added: new Date(), removed: null});
+                          })
+                      }
+                    }
+                    // oups, that's not a known contact...
+                    return Bluebird.reject(new Incident("Unknown contact", contactAccount, "This contact is unknown."));
+                  })
+              })
+              .thenReturn(this);
+          });
+      })
+      .thenReturn(this);
   }
 
   /**
