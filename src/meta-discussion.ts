@@ -193,6 +193,8 @@ export class MetaDiscussion implements DiscussionInterface {
   // TODO: use the ghost discussion thing, or directly send a message
   //       to tell the contact that he was added to a meta-discussion
   //       from omni-chat ?
+  // TODO: do not use indexOf (it compares references)
+  // TODO: flatten it
   addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
     return Bluebird
       .resolve(this.getSubDiscussions())
@@ -201,10 +203,7 @@ export class MetaDiscussion implements DiscussionInterface {
           .all(_.map(subdiscuss, (discuss: SimpleDiscussion) => {
             return discuss.getLocalUserAccount()
               .then((userAccount: UserAccount) => {
-                return userAccount.getOrCreateApi()
-                  .then((api: palantiri.Api) => {
-                    return api.getContacts();
-                  })
+                return userAccount.getContactAccounts()
                   .map((contact: palantiri.Account) => {
                     return new ContactAccount(contact);
                   })
@@ -268,7 +267,32 @@ export class MetaDiscussion implements DiscussionInterface {
    * This depends of your rights for the current Discussion.
    */
   removeParticipants(contactAccount: ContactAccountInterface): Bluebird<MetaDiscussion> {
-    return Bluebird.reject(new Incident("todo", "MetaDiscussion:removeParticipants is not implemented"));
+    let contactID: palantiri.AccountGlobalId = null;
+    return Bluebird
+      .resolve(contactAccount.getGlobalId())
+      .then((id: palantiri.AccountGlobalId) => {
+        contactID = id;
+        return this.getSubDiscussions();
+      })
+      .map((subdiscuss: SimpleDiscussion) => {
+        return subdiscuss.getParticipants()
+          .map((part: ContactAccountInterface) => {
+            return part.getGlobalId();
+          })
+          .then((ids: palantiri.AccountGlobalId[]) => {
+            return {subdiscuss: subdiscuss, membersIDs: ids};
+          });
+      })
+      .then((memberedSubdiscussions: {subdiscuss: SimpleDiscussion, membersIDs: palantiri.AccountGlobalId[]}[]) => {
+        for(let discuss of memberedSubdiscussions) {
+          if(discuss.membersIDs.indexOf(contactID) !== -1) {
+            return discuss.subdiscuss.removeParticipants(contactAccount)
+              .thenReturn(this);
+          }
+        }
+        // TODO: reject ?
+        return this;
+      });
     // TODO: remove this "-s" (from interfaces too).
   }
 
