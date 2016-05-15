@@ -36,6 +36,12 @@ export interface UserAccountInterface {
    * @param remoteContactAccounts
    */
   getOrCreateDiscussion(remoteContactAccounts: ContactAccountInterface[]): Thenable<DiscussionInterface>;
+
+  /**
+   * Return true only if the current account has the given contact
+   * in he list of his contacts.
+   */
+  hasContact(contactAccount: ContactAccountInterface): Thenable<boolean>;
 }
 
 export default UserAccountInterface;

@@ -121,6 +121,21 @@ export class UserAccount implements UserAccountInterface {
         });
       });
   }
+
+	/**
+   * Return true only if the current account has the given contact
+   * in he list of his contacts.
+   */
+  hasContact(contactAccount: ContactAccountInterface): Bluebird<boolean> {
+    return Bluebird.join(
+      contactAccount.getGlobalId(),
+      this.getContactAccounts().map((contact: ContactAccountInterface) => contact.getGlobalId()),
+      (contactId, contactsList) => {
+        return contactsList.indexOf(contactId) >= 0;
+      }
+    );
+  }
+
 }
 
 export default UserAccount;
