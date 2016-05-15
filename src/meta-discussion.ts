@@ -190,74 +190,79 @@ export class MetaDiscussion implements DiscussionInterface {
    * If no subduscission exists for this contact,
    * it will be created.
    */
-  // TODO: use the ghost discussion thing, or directly send a message
-  //       to tell the contact that he was added to a meta-discussion
-  //       from omni-chat ?
-  // TODO: do not use indexOf (it compares references)
   // TODO: flatten it
   addParticipant(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
-    return Bluebird
-      .resolve(this.getSubDiscussions())
-      .then((subdiscuss: SimpleDiscussion[]) => {
+    let userAccounts: {user: UserInterface, account: UserAccountInterface}[] = [];
+    return this.getDiscussionsCompatibleWithContact(contactAccount)
+      .then((discussions: SimpleDiscussion[]) => {
+        if (discussions.length > 0) { // we can add the account to existing discussions
+          return discussions[0].addParticipant(contactAccount);
+        }
+        return this;
+      })
+      .then(() => {
+        return this.getUser()
+          .then((user: UserInterface) => {
+            return user.getAccounts()
+              .map((account: UserAccountInterface) => {
+                return {user: user, account: account};
+              });
+          })
+      })
+      // We have not found a subdiscussion that can welcome the contact.
+      // We must create a whole new subdiscussion.
+      .then((accounts: {user: UserInterface, account: UserAccountInterface}[]) => {
+        // Here we have all the accounts of the user, associated with the user
+        userAccounts = accounts;
+        return contactAccount.getGlobalId();
+      })
+      .then((id: palantiri.AccountGlobalId) => {
         return Bluebird
-          .all(_.map(subdiscuss, (discuss: SimpleDiscussion) => {
-            return discuss.getLocalUserAccount()
-              .then((userAccount: UserAccount) => {
-                return userAccount.getContactAccounts()
-                  .map((contact: palantiri.Account) => {
-                    return new ContactAccount(contact);
+          .all(_.map(userAccounts, (account: {user: UserInterface, account: UserAccountInterface}) => {
+            return Bluebird.resolve(account.account.getContactAccounts())
+              .map((contact: ContactAccountInterface) => {
+                return contact.getGlobalId()
+                  .then((id: palantiri.AccountGlobalId) => {
+                    return {contact: contact, id: id};
                   })
-                  .then((contacts: ContactAccount[]) => {
-                    return {discuss: discuss, owner: userAccount, ok: (contacts.indexOf(<ContactAccount>contactAccount)===-1 ? false:true)}
-                  });
+              })
+              // Here we have all the contacts, each associated to its ID.
+              .then((contacts: {contact: ContactAccountInterface, id: palantiri.AccountGlobalId}[]) => {
+                return Bluebird.resolve(contacts)
+                  .map((contact: {contact: ContactAccountInterface, id: palantiri.AccountGlobalId}) => {
+                    return contact.id;
+                  })
+                  .then((ids: palantiri.AccountGlobalId[]) => {
+                    return {user: account.user, account: account.account, ok: (ids.indexOf(id) === -1 ? false:true)};;
+                  })
               });
           }))
-          .then((fullDiscuss: {discuss: SimpleDiscussion, owner: UserAccount, ok: boolean}[]) => {
-            for(let discuss of fullDiscuss) {
-              if(discuss.ok) {
-                return discuss.discuss.addParticipant(contactAccount);
+          // Here we have a map that gives to us all user accounts, each associated to its ID
+          // and a boolean telling us weither or not the user account own the contact we want to
+          // add to the current discussion.
+          .then((fullAccounts: {user: UserInterface, account: UserAccountInterface, ok: boolean}[]) => {
+            for(let account of fullAccounts) {
+              if(account.ok) {
+                // Wonderful ! We found an user account wich owns the contact we want to add
+                // to the current discussion. Let's just create a discussion,
+                // and add it to the subdiscussions of the current meta discussion.
+                let id: palantiri.AccountGlobalId = null;
+                return account.account.getGlobalId()
+                  .then((globalID: palantiri.AccountGlobalId) => {
+                    id = globalID;
+                    return account.account.getOrCreateApi()
+                  })
+                  .then((api: palantiri.Api) => {
+                    return api.createDiscussion([id]);
+                  })
+                  .then((discuss: palantiri.Discussion) => {
+                    this.subDiscussions.push({subdiscussion: new SimpleDiscussion(discuss), added: new Date(), removed: null});
+                  })
               }
             }
-            // We have not found a subdiscussion that can welcome the contact.
-            // We must create a whole new subdiscussion.
-            return this.getUser()
-              .then((user: UserInterface) => {
-                return user.getAccounts()
-                  .map((account: UserAccountInterface) => {
-                    return {user: user, account: account};
-                  });
-              })
-              .then((accounts: {user: UserInterface, account: UserAccountInterface}[]) => {
-                return Bluebird
-                  .all(_.map(accounts, (account: {user: UserInterface, account: UserAccountInterface}) => {
-                    return account.account.getContactAccounts()
-                      .then((contacts: ContactAccountInterface[]) => {
-                        return {user: account.user, account: account.account, ok: (contacts.indexOf(contactAccount) ===-1 ? false:true)};
-                      });
-                  }))
-                  .then((fullAccounts: {user: UserInterface, account: UserAccountInterface, ok: boolean}[]) => {
-                    for(let account of fullAccounts) {
-                      if(account.ok) {
-                        let id: palantiri.AccountGlobalId = null;
-                        return account.account.getGlobalId()
-                          .then((globalID: palantiri.AccountGlobalId) => {
-                            id = globalID;
-                            return account.account.getOrCreateApi()
-                          })
-                          .then((api: palantiri.Api) => {
-                            return api.createDiscussion([id]);
-                          })
-                          .then((discuss: palantiri.Discussion) => {
-                            this.subDiscussions.push({subdiscussion: new SimpleDiscussion(discuss), added: new Date(), removed: null});
-                          })
-                      }
-                    }
-                    // oups, that's not a known contact...
-                    return Bluebird.reject(new Incident("Unknown contact", contactAccount, "This contact is unknown."));
-                  })
-              })
-              .thenReturn(this);
-          });
+            // Oups, that's not a known contact...
+            return Bluebird.reject(new Incident("Unknown contact", contactAccount, "This contact is unknown."));
+          })
       })
       .thenReturn(this);
   }
