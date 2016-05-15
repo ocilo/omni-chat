@@ -485,6 +485,17 @@ export class MetaDiscussion implements DiscussionInterface {
         return this;
       });
   }
+
+	/**
+   * Return the discussions were the given contact can be added.
+   */
+  protected getDiscussionsCompatibleWithContact (contactAccount: ContactAccountInterface): Bluebird<SimpleDiscussion[]> {
+    return this.getSubDiscussions()
+      .filter((discu: SimpleDiscussion) => {
+        return discu.getLocalUserAccount().then(acc => acc.hasContact(contactAccount));
+      });
+  }
+
 }
 
 /**
