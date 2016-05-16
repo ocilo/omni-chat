@@ -154,6 +154,7 @@ export class User extends EventEmitter implements UserInterface {
    */
   getAllMetaDiscussions(options?: GetDiscussionsOptions): Bluebird<MetaDiscussion[]> {
     return Bluebird.reject(new Incident("todo", "User:getAllMetaDiscussions is not implemented"));
+    // TODO: we need database acces for this one.
   }
 
   /**
@@ -161,11 +162,15 @@ export class User extends EventEmitter implements UserInterface {
    * the current user from receiving future notifications.
    */
   leaveDiscussion(discussion: DiscussionInterface): Bluebird<UserInterface> {
-    return Bluebird.reject(new Incident("todo", "User:leaveDiscussion is not implemented"));
-    // // TODO : two ways to implements this :
-    // //        -> for each accounts, get the connection, then the api, then call leaveGroupChat().
-    // //        -> just emit and event and connections will catch it and do what they need to do.
-		// return Bluebird.resolve(this);
+    return Bluebird.try(() => {
+      if(discussion instanceof SimpleDiscussion) {
+        return this.leaveSimpleDiscussion(<SimpleDiscussion>discussion);
+      } else if (discussion instanceof MetaDiscussion) {
+        return this.leaveMetaDiscussion(<MetaDiscussion>discussion);
+      } else {
+        return Bluebird.reject(new Incident("Malformed Discussion", discussion, "This discussion has an unknown type."));
+      }
+    })
   }
 
   /**
@@ -219,6 +224,66 @@ export class User extends EventEmitter implements UserInterface {
     //   callback(err, this.accounts);
     // }
     // return Bluebird.resolve(this);
+  }
+
+  /* Protected methods */
+	/**
+   * Leave a simple-discussion.
+   */
+  protected leaveSimpleDiscussion(discussion: SimpleDiscussion): Bluebird.Thenable<User> {
+    let discussAccount : UserAccountInterface = null;
+    let discussAccountID : palantiri.AccountGlobalId = null;
+    return Bluebird
+      .resolve(discussion.getLocalUserAccount())
+      .then((account: UserAccountInterface) => {
+        discussAccount = account;
+        return discussAccount.getGlobalId();
+      })
+      .then((id: palantiri.AccountGlobalId) => {
+        discussAccountID = id;
+        return this.getAccountsIDs();
+      })
+      .then((ids: palantiri.AccountGlobalId[]) => {
+        if(ids.indexOf(discussAccountID) !== -1) {
+          return discussAccount.getOrCreateApi()
+            .then((api: palantiri.Api) => {
+              return api.leaveDiscussion(discussAccountID);
+            });
+        } else {
+          return Bluebird.reject(new Incident("Bad owner", discussion, "The owner of this discussion is not a know account of the current user."));
+        }
+      })
+      .thenReturn(this);
+  }
+
+  /**
+   * Leave a meta-discussion.
+   */
+  protected leaveMetaDiscussion(discussion: MetaDiscussion): Bluebird.Thenable<User> {
+    // TODO: we will probably need to erase the meta discussion from the database.
+    return Bluebird
+      .resolve(discussion.getSubDiscussions())
+      .then((discuss: SimpleDiscussion[]) => {
+        return Bluebird
+          .all(_.map(discuss, (subdiscuss: SimpleDiscussion) => {
+            return this.leaveSimpleDiscussion(subdiscuss);
+          }));
+      })
+      .thenReturn(this);
+  }
+
+	/**
+   * Return all the global IDs of the accounts of the current user.
+   */
+  protected getAccountsIDs(): Bluebird.Thenable<palantiri.AccountGlobalId[]> {
+    return Bluebird
+      .resolve(this.getAccounts())
+      .then((accounts: UserAccountInterface[]) => {
+        return Bluebird
+          .all(_.map(accounts, (account: UserAccountInterface) => {
+            return account.getGlobalId();
+          }));
+      });
   }
 }
 
