@@ -18,40 +18,43 @@ let fbacc = new UserAccount({
   driverData: null
 });
 
-user.addAccount(fbacc);
-
-// app.getUsers().then(users => users[0]).then(user =>
-user
-  .getAccounts()
-  .then((accounts: UserAccountInterface[]) => {
-    console.log("Registered accounts: ");
-    for(let account of accounts) {
-      console.log(account);
-    }
-    let localAccount = accounts[0];
-    // normally, localAccount === fbacc
-
-    return localAccount.getDiscussions()
-      .then(discussions => {
-        console.log("Found discussions: ");
-        for(let discussion of discussions) {
-          console.log(discussion);
+user.addAccount(fbacc)
+  .then((user) => {
+    // app.getUsers().then(users => users[0]).then(user =>
+    user
+      .getAccounts()
+      .then((accounts: UserAccountInterface[]) => {
+        console.log("Registered accounts: ");
+        for(let account of accounts) {
+          console.log(account);
         }
-        let msg = {body: "Hello!"};
-        return discussions[0].sendMessage(msg);
-      });
+        let localAccount = accounts[0];
+        // normally, localAccount === fbacc
 
-    // return localAccount.getContactAccounts()
-    //   .then(contactAccounts => {
-    //     console.log("Contacts found for first account: " + accounts.join(", "));
-    //     return contactAccounts[0];
-    //   })
-    //   .then(contactAccount => {
-    //     return localAccount.getOrCreateDiscussion(contactAccount)
-    //   })
-    //   .then(discussions => {
-    //     console.log("Found discussions: " + discussions.join(", "));
-    //     let msg = {body: "Hello!"};
-    //     // return discussion.sendMessage(msg);
-    //   });
+        return localAccount.getDiscussions()
+          .then(discussions => {
+            console.log("Found discussions: ");
+            for(let discussion of discussions) {
+              console.log(discussion);
+            }
+            let msg = {body: "Hello!"};
+            return discussions[0].sendMessage(msg);
+          });
+
+        // return localAccount.getContactAccounts()
+        //   .then(contactAccounts => {
+        //     console.log("Contacts found for first account: " + accounts.join(", "));
+        //     return contactAccounts[0];
+        //   })
+        //   .then(contactAccount => {
+        //     return localAccount.getOrCreateDiscussion(contactAccount)
+        //   })
+        //   .then(discussions => {
+        //     console.log("Found discussions: " + discussions.join(", "));
+        //     let msg = {body: "Hello!"};
+        //     // return discussion.sendMessage(msg);
+        //   });
+      });
   });
+
+
