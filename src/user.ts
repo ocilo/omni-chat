@@ -34,64 +34,61 @@ export class User extends EventEmitter implements UserInterface {
    * given in parameters, or create one if none exists.
    */
   getOrCreateDiscussion(contactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
-    return Bluebird.reject(new Incident("todo", "User:getOrCreateDiscussion is not implemented"));
-    // TODO: find is the discussion is heterogeneous or not
-    // TODO: then call the good method accordingly
-    // TODO: then identify if the discussion exists
-    // TODO: if yes : win. If not: create one
-    // let discussion: DiscussionInterface = new Discussion(this.app, this); // The discussion we are looking for
-    // let that = this;
-    // let ownerAccount: UserAccountInterface = undefined;
-    // for(let account of this.accounts) {
-    //   if(account.hasContactAccount(contactAccount)) {
-    //     ownerAccount = account;
-    //     account.getDiscussions(1, (disc): boolean => {
-    //       let contains: boolean = false;
-    //       disc.getParticipants()
-    //         .then((part) => {
-    //           for(let participant of part) {
-    //             if(participant === contactAccount) {
-    //               contains = true;
-    //             }
-    //           }
-    //           contains = false;
-    //         });
-    //       return contains;
-    //     })
-    //       .then((discussions) => {
-    //       if(discussions && discussions.length !== 0) {
-    //         discussion.creationDate = discussions[0].creationDate;
-    //         discussion.name = discussions[0].name;
-    //         discussion.description = discussions[0].description;
-    //         discussion.addSubdiscussion(discussions[0]);
-    //       } else {
-    //         discussion.creationDate = new Date();
-    //         discussion.name = "Discussion with " + contactAccount.fullname;
-    //         discussion.description = "Discussion with " + contactAccount.fullname;
-    //         // TODO : fix what's under this comment. It comes from export and type alias.
-    //         let subdisc: GroupChat = <GroupChat> {
-    //           protocol: contactAccount.protocol,
-    //           localDiscussionID: undefined,
-    //           creationDate: new Date(),
-    //           name: undefined,
-    //           description: undefined,
-    //           isPrivate: true,
-    //           participants: [contactAccount],
-    //           owner: ownerAccount,
-    //           authorizations: undefined,
-    //           settings: undefined
-    //         };
-    //         // TODO : for the moment, the contact has no clue that we started a Discussion with him.
-    //         //        is that a problem ?
-    //         discussion.addSubdiscussion(subdisc);
-    //       }
-    //         discussion.heterogeneous = false;
-    //         discussion.owner = that;
-    //     });
-    //     break;
-    //   }
-    // }
-    // return Bluebird.resolve(discussion);
+    let contactsIDs: palantiri.AccountGlobalId[] = [];
+    let rightUser: UserAccountInterface = null;
+    let heterogeneous: boolean = false;
+    return Bluebird
+      .map(contactAccounts, (contact: ContactAccountInterface) => {
+        return contact.getGlobalId();
+      })
+      .then((ids: palantiri.AccountGlobalId[]) => {
+        contactsIDs = ids;
+        return this.getAccounts();
+      })
+      .then((userAccounts: UserAccountInterface[]) => {
+        return Bluebird
+          .map(userAccounts, (account: UserAccountInterface) => {
+            return account.getContactAccounts()
+              .then((contactAccounts: ContactAccountInterface[]) => {
+                return Bluebird.map(contactAccounts, (contact: ContactAccountInterface) => {
+                  return contact.getGlobalId();
+                });
+              })
+              .then((ids: palantiri.AccountGlobalId[]) => {
+                return {user: account, contactsIDs: ids};
+              });
+          });
+      })
+      .then((fullUserAccounts: {user: UserAccountInterface, contactsIDs: palantiri.AccountGlobalId[]}[]) => {
+        for(let userAccount of fullUserAccounts) {
+          for(let contactID of contactsIDs) {
+            if(userAccount.contactsIDs.indexOf(contactID) > 0) {
+              if(rightUser && rightUser !== userAccount.user) {
+                heterogeneous = true;
+                break;
+              } else {
+                rightUser = userAccount.user;
+              }
+            }
+          }
+          if(heterogeneous) {
+            break;
+          }
+        }
+        if(!rightUser) {
+          return Bluebird.reject(new Incident("One of the contacts is unknown by the current user."));
+        }
+      })
+      // That's it : now we know if the discussion is heterogeneous or not.
+      // We just have to get one, or to create one if it does not exist.
+      .then(() => {
+        if(heterogeneous) {
+          // TODO: access database and get the meta-discussions
+          //       then get the right one or create it
+        } else {
+          return rightUser.getOrCreateDiscussion(contactAccounts);
+        }
+      });
   }
 
   /**
