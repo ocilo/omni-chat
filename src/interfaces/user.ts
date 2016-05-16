@@ -13,6 +13,11 @@ import {SimpleDiscussion} from "../simple-discussion";
  ***************************************************************/
 export interface UserInterface extends UserEmitter {
 	/**
+   * Return the global name of this user.
+   */
+  getName(): Bluebird.Thenable<string>;
+
+  /**
    * Get an existing discussion with exactly all the contact accounts
    * given in parameters, or create one if none exists.
    */

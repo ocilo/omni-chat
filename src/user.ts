@@ -30,6 +30,12 @@ export class User extends EventEmitter implements UserInterface {
   }
 
   /**
+   * Return the global name of this user.
+   */
+  getName(): Bluebird.Thenable<string> {
+    return Bluebird.resolve(this.globalUsername);
+  }
+  /**
    * Get an existing discussion with exactly all the contact accounts
    * given in parameters, or create one if none exists.
    */
