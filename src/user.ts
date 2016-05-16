@@ -196,15 +196,22 @@ export class User extends EventEmitter implements UserInterface {
    * Add an account to the current user.
    * If the account already exists, the return promise will be rejected.
    */
-  addAccount(account: UserAccountInterface): Bluebird<this> {
+  addAccount(account: UserAccountInterface): Bluebird<User> {
+    let ids: palantiri.AccountGlobalId[] = [];
     return Bluebird
-      .try(() => {
-        let index = this.accounts.indexOf(account);
-        if (index < 0) {
+      .resolve(this.getAccountsIDs())
+      .then((accountIDs: palantiri.AccountGlobalId[]) => {
+        ids = accountIDs;
+        return account.getGlobalId();
+      })
+      .then((id: palantiri.AccountGlobalId) => {
+        if(ids.indexOf(id) === -1) {
           this.accounts.push(account);
+        } else {
+          return Bluebird.reject(new Incident("Already existing account", account, "This account is already know by the current user."));
         }
-        return this;
-      });
+      })
+      .thenReturn(this);
   }
 
   /**
