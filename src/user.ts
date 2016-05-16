@@ -120,10 +120,32 @@ export class User extends EventEmitter implements UserInterface {
    * or those accordingly to the options parameter.
    */
   getAllSimpleDiscussions(options?: GetDiscussionsOptions): Bluebird<SimpleDiscussion[]> {
-    return Bluebird.reject(new Incident("todo", "User:getAllSimpleDiscussions is not implemented"));
-		// let discussions: Discussion[] = []; // The discussions we are looking for
-		// // TODO : access db
-		// return Bluebird.resolve(discussions);
+    let discussions: SimpleDiscussion[] = [];
+    return Bluebird.all(_.map(this.accounts, (account: UserAccountInterface) => {
+      let counter: number = 0;
+      return Bluebird.resolve(account.getDiscussions())
+        .filter((discuss: DiscussionInterface) => {
+          if(options) {
+            let boolReturn: boolean = true;
+            if(options.filter) {
+              boolReturn = options.filter(discuss);
+            }
+            if(options.max && boolReturn) {
+              counter++;
+              if(counter > options.max) {
+                boolReturn = false;
+              }
+            }
+            return boolReturn;
+          } else {
+            return true;
+          }
+        })
+        .then((discuss: DiscussionInterface[]) => {
+          _.concat(discussions, <SimpleDiscussion[]>discuss);
+        });
+    }))
+    .thenReturn(discussions);
 	}
 
   /**
