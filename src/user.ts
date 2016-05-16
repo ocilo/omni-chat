@@ -1,34 +1,38 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import {EventEmitter} from "events";
-import Incident from "incident";
+import {Incident} from "incident";
 
-import ContactAccountInterface from "./interfaces/contact-account";
-import DiscussionInterface from "./interfaces/discussion";
-import UserInterface from "./interfaces/user";
-import UserAccountInterface from "./interfaces/user-account";
-import MessageInterface from "./interfaces/message";
-
+import {UserInterface} from "./interfaces/user";
+import {UserAccountInterface} from "./interfaces/user-account";
+import {ContactAccountInterface} from "./interfaces/contact-account";
+import {DiscussionInterface} from "./interfaces/discussion";
+import {SimpleDiscussion} from "./simple-discussion";
 import {MetaDiscussion} from "./meta-discussion";
+import {GetDiscussionsOptions} from "./interfaces/user";
 
 export class User extends EventEmitter implements UserInterface {
   /**
-   * A human-readable name
+   * A human-readable name.
    */
-  globalUsername: string;
+  protected globalUsername: string;
 
   /**
-   * The list of accounts associated with this user
-   * @type {Array}
+   * The list of accounts associated with this user.
    */
-  accounts: UserAccountInterface[] = [];
+  protected accounts: UserAccountInterface[];
 
   constructor (username: string) {
     super();
     this.globalUsername = username;
+    this.accounts = [];
   }
 
-  getOrCreateDiscussion(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface> {
+  /**
+   * Get an existing discussion with exactly all the contact accounts
+   * given in parameters, or create one if none exists.
+   */
+  getOrCreateDiscussion(contactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
     return Bluebird.reject(new Incident("todo", "User:getOrCreateDiscussion is not implemented"));
     // let discussion: DiscussionInterface = new Discussion(this.app, this); // The discussion we are looking for
     // let that = this;
@@ -85,20 +89,43 @@ export class User extends EventEmitter implements UserInterface {
     // return Bluebird.resolve(discussion);
   }
 
-	getAllDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]> {
+  /**
+   * Return all the discussions of the current user :
+   * the meta discussions,
+   * the simple ones,
+   * accordingly to the options given.
+   */
+	getAllDiscussions(options?: GetDiscussionsOptions): Bluebird<DiscussionInterface[]> {
     return Bluebird.reject(new Incident("todo", "User:getAllDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO
 		// return Bluebird.resolve(discussions);
 	}
 
-	getHeterogeneousDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]> {
-    return Bluebird.reject(new Incident("todo", "User:getHeterogeneousDiscussions is not implemented"));
+
+  /**
+   * Return all the simple-discussions for the current user,
+   * or those accordingly to the options parameter.
+   */
+  getAllSimpleDiscussions(options?: GetDiscussionsOptions): Bluebird<SimpleDiscussion[]> {
+    return Bluebird.reject(new Incident("todo", "User:getAllSimpleDiscussions is not implemented"));
 		// let discussions: Discussion[] = []; // The discussions we are looking for
 		// // TODO : access db
 		// return Bluebird.resolve(discussions);
 	}
 
+  /**
+   * Return all the meta-discussions for the current user,
+   * or those accordingly to the options parameter.
+   */
+  getAllMetaDiscussions(options?: GetDiscussionsOptions): Bluebird<MetaDiscussion[]> {
+    return Bluebird.reject(new Incident("todo", "User:getAllMetaDiscussions is not implemented"));
+  }
+
+  /**
+   * Leave the discussion given in parameter, and manage to prevent
+   * the current user from receiving future notifications.
+   */
   leaveDiscussion(discussion: DiscussionInterface): Bluebird<UserInterface> {
     return Bluebird.reject(new Incident("todo", "User:leaveDiscussion is not implemented"));
     // // TODO : two ways to implements this :
@@ -107,22 +134,11 @@ export class User extends EventEmitter implements UserInterface {
 		// return Bluebird.resolve(this);
   }
 
-	sendMessage(msg: MessageInterface, discussion: DiscussionInterface, callback?: (err: Error) => any): Bluebird<UserInterface> {
-    return Bluebird.reject(new Incident("todo", "User:sendMessage is not implemented"));
-		// let err: Error = null;
-		// for(let subdiscussion of discussion.subdiscussions) {
-		// 	subdiscussion.discussion.owner.sendMessage(msg, subdiscussion.discussion, (error) => {
-		// 		if(error) {
-		// 			err = error;
-		// 		}
-		// 	});
-		// }
-		// if(callback) {
-		// 	callback(err);
-		// }
-		// return Bluebird.resolve(this);
-	}
-
+  /**
+   * Return all the acccounts of the current user.
+   * If protocols is precised, it returns only the accounts
+   * matching the protocols given.
+   */
   getAccounts(driverNames?: string[]): Bluebird<UserAccountInterface[]> {
     return Bluebird.resolve(this.accounts)
       .filter((account: UserAccountInterface) => {
@@ -137,6 +153,10 @@ export class User extends EventEmitter implements UserInterface {
       });
   }
 
+  /**
+   * Add an account to the current user.
+   * If the account already exists, the return promise will be rejected.
+   */
   addAccount(account: UserAccountInterface): Bluebird<this> {
     return Bluebird
       .try(() => {
@@ -148,6 +168,10 @@ export class User extends EventEmitter implements UserInterface {
       });
   }
 
+  /**
+   * Remove an account to the current user.
+   * If the account does not already exist, the return promise will be rejected.
+   */
   removeAccount(account: UserAccountInterface): Bluebird<this> {
     return Bluebird.reject(new Incident("todo", "User:removeAccount is not implemented"));
     // let index: number = this.accounts.indexOf(account);
