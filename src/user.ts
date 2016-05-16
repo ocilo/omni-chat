@@ -1,5 +1,6 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
+import * as _ from "lodash";
 import {EventEmitter} from "events";
 import {Incident} from "incident";
 
@@ -34,6 +35,10 @@ export class User extends EventEmitter implements UserInterface {
    */
   getOrCreateDiscussion(contactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface> {
     return Bluebird.reject(new Incident("todo", "User:getOrCreateDiscussion is not implemented"));
+    // TODO: find is the discussion is heterogeneous or not
+    // TODO: then call the good method accordingly
+    // TODO: then identify if the discussion exists
+    // TODO: if yes : win. If not: create one
     // let discussion: DiscussionInterface = new Discussion(this.app, this); // The discussion we are looking for
     // let that = this;
     // let ownerAccount: UserAccountInterface = undefined;
@@ -96,10 +101,17 @@ export class User extends EventEmitter implements UserInterface {
    * accordingly to the options given.
    */
 	getAllDiscussions(options?: GetDiscussionsOptions): Bluebird<DiscussionInterface[]> {
-    return Bluebird.reject(new Incident("todo", "User:getAllDiscussions is not implemented"));
-		// let discussions: Discussion[] = []; // The discussions we are looking for
-		// // TODO
-		// return Bluebird.resolve(discussions);
+    let discussions: DiscussionInterface[] = [];
+    return Bluebird
+      .resolve(this.getAllSimpleDiscussions(options))
+      .then((simpleDiscussions: SimpleDiscussion[]) => {
+        discussions = simpleDiscussions;
+        return this.getAllMetaDiscussions(options);
+      })
+      .then((metaDiscussions: MetaDiscussion[]) => {
+        _.concat(discussions, metaDiscussions);
+        return discussions;
+      })
 	}
 
 
