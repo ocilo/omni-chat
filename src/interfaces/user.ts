@@ -3,65 +3,77 @@ import {DiscussionInterface} from "./discussion";
 import {ContactAccountInterface} from "./contact-account";
 import {UserAccountInterface} from "./user-account";
 import {MessageInterface} from "./message";
+import {MetaDiscussion} from "../meta-discussion";
+import {SimpleDiscussion} from "../simple-discussion";
 
 /***************************************************************
  * User is the representation of someone connected with OmniChat.
  * It allows you to acceed to yout own Accounts, acceed to your
  * own Contacts, create Discussions with them, and so on.
  ***************************************************************/
-// TODO: this needs to be reworked.
 export interface UserInterface extends UserEmitter {
-  accounts: UserAccountInterface[];  //  La liste des comptes connus de l'utilisateur.
+	/**
+   * Get an existing discussion with exactly all the contact accounts
+   * given in parameters, or create one if none exists.
+   */
+  getOrCreateDiscussion(contactAccounts: ContactAccountInterface[]): Bluebird<DiscussionInterface>;
 
-  globalUsername: string;            //  Le nom complet de l'utilisateur.
+	/**
+   * Return all the discussions of the current user :
+   * the meta discussions,
+   * the simple ones,
+   * accordingly to the options given.
+   */
+	getAllDiscussions(options?: GetDiscussionsOptions): Bluebird<DiscussionInterface[]>;
 
-  getOrCreateDiscussion(contactAccount: ContactAccountInterface): Bluebird<DiscussionInterface>;
-  //  Permet de commencer une discussion avec un contact ou
-	//  de recuperer une discussion existante, sur un compte
-	//  utilisant un protocol specifique.
+  /**
+   * Return all the simple-discussions for the current user,
+   * or those accordingly to the options parameter.
+   */
+  getAllSimpleDiscussions(options?: GetDiscussionsOptions): Bluebird<SimpleDiscussion[]>;
 
-	getAllDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]>;
-	//  Permet de recuperer toutes les Discussions de l'utilisateur :
-	//  Celles pour chacun de ces comptes.
-	//  Celles heterogenes.
-	//  Si "filter" est precise, ne retourne que les Discussions pour
-	//  lesquelles "filter" retourne vrai.
+	/**
+   * Return all the meta-discussions for the current user,
+   * or those accordingly to the options parameter.
+   */
+  getAllMetaDiscussions(options?: GetDiscussionsOptions): Bluebird<MetaDiscussion[]>;
 
-  // TODO: rename cross-local-account discussions as "meta-discussions" and normalize it everywhere ?
-	getHeterogeneousDiscussions(filter?: (discussion: DiscussionInterface) => boolean): Bluebird<DiscussionInterface[]>;
-	//  Retourne toutes les Discussions de l'utilisateur courant
-	//  qui sont heterogenes.
-	//  Cette methode est plus rapide que d'appeler getAllDiscussions
-	//  et de filtrer les Discussions heterogenes.
-	//  Si "filter" est precise, ne retourne que les Discussions pour
-	//  lesquelles "filter" retourne vrai.
-
+	/**
+   * Leave the discussion given in parameter, and manage to prevent
+   * the current user from receiving future notifications.
+   */
 	leaveDiscussion(discussion: DiscussionInterface): Bluebird<UserInterface>;
-	//  Permet de quitter la Discussion "discussion" et de ne plus
-	//  recevoir les notifications associées.
 
-	sendMessage(msg: MessageInterface, discussion: DiscussionInterface): Bluebird<UserInterface>;
-	//  Envoie le Message "msg" dans la Discussion "discussion".
-	//  Si un des participants a la Discussion ne peut pas recevoir
-	//  le Message, "err" sera non nul.
-	//  A noter qu'un message textuel sera toujours envoye,
-	//  meme si le protocole utilise par le compte ne supporte pas
-	//  le type de Message.
-
+	/**
+   * Return all the acccounts of the current user.
+   * If protocols is precised, it returns only the accounts
+   * matching the protocols given.
+   */
   getAccounts(protocols?: string[]): Bluebird<UserAccountInterface[]>;
-  //  Retourne la liste des comptes de l'utilisateurs.
-  //  Si "protocol" est precise, ne retourne que la lite des
-  //  comptes de l'utilisateur courant qui utilise le
-  //  protocole "protocol".
 
+	/**
+   * Add an account to the current user.
+   * If the account already exists, the return promise will be rejected.
+   */
   addAccount(account: UserAccountInterface): Bluebird<UserInterface>;
-  //  Ajoute un compte a l'utilisateur courant.
 
+  /**
+   * Remove an account to the current user.
+   * If the account does not already exist, the return promise will be rejected.
+   */
   removeAccount(account: UserAccountInterface): Bluebird<UserInterface>;
-  //  Supprime un compte de l'utilisateur courant.
 }
 
 /**
+ * The options for querying the discussions.
+ */
+export interface GetDiscussionsOptions {
+  max?: number;
+  filter?: (discussion: DiscussionInterface) => boolean;
+}
+
+/**
+ * TODO: doc
  * TODO: add other events
  */
 export interface UserEmitter extends NodeJS.EventEmitter {
@@ -78,6 +90,9 @@ export interface UserEmitter extends NodeJS.EventEmitter {
   emit(event: string, ...args: any[]): boolean;
 }
 
+/**
+ * TODO: doc
+ */
 export interface MessageEvent {
   // userAccount: UserAccountInterface,
   discussion: DiscussionInterface,
