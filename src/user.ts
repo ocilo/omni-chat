@@ -208,7 +208,7 @@ export class User extends EventEmitter implements UserInterface {
         if(ids.indexOf(id) === -1) {
           this.accounts.push(account);
         } else {
-          return Bluebird.reject(new Incident("Already existing account", account, "This account is already know by the current user."));
+          return Bluebird.reject(new Incident("Already existing account", account, "This account is already known by the current user."));
         }
       })
       .thenReturn(this);
@@ -219,18 +219,21 @@ export class User extends EventEmitter implements UserInterface {
    * If the account does not already exist, the return promise will be rejected.
    */
   removeAccount(account: UserAccountInterface): Bluebird<this> {
-    return Bluebird.reject(new Incident("todo", "User:removeAccount is not implemented"));
-    // let index: number = this.accounts.indexOf(account);
-    // let err: Error = null;
-    // if(index === -1) {
-    //   this.accounts.splice(0, 1, account);
-    // } else {
-    //   err = new Error("This account does not exist.");
-    // }
-    // if(callback) {
-    //   callback(err, this.accounts);
-    // }
-    // return Bluebird.resolve(this);
+    let ids: palantiri.AccountGlobalId[] = [];
+    return Bluebird
+      .resolve(this.getAccountsIDs())
+      .then((accountIDs: palantiri.AccountGlobalId[]) => {
+        ids = accountIDs;
+        return account.getGlobalId();
+      })
+      .then((id: palantiri.AccountGlobalId) => {
+        if(ids.indexOf(id) === -1) {
+          return Bluebird.reject(new Incident("Unknown account", account, "This account is unknown by the current user."));
+        } else {
+          this.accounts.splice(ids.indexOf(id), 1);
+        }
+      })
+      .thenReturn(this);
   }
 
   /* Protected methods */
