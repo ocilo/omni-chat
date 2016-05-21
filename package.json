@@ -17,7 +17,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.0",
-    "incident": "^1.0.5",
+    "incident": "^1.0.6",
     "lodash": "^4.12.0",
     "palantiri-interfaces": "^0.3.4"
   },
