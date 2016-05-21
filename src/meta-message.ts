@@ -1,6 +1,6 @@
 import MessageInterface from "./interfaces/message";
 import * as Bluebird from "bluebird";
-import Incident from "incident";
+import {Incident} from "incident";
 
 /**
  * TODO: doc.

@@ -1,6 +1,6 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
-import Incident from "incident";
+import {Incident} from "incident";
 import UserAccountInterface from "./interfaces/user-account";
 import {ConnectionStrategy, DriversStoreInterface} from "./interfaces/drivers-store";
 
