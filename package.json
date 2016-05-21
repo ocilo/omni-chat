@@ -1,5 +1,5 @@
 {
-  "name": "ochat",
+  "name": "omni-chat",
   "version": "0.5.2",
   "description": "Omni chat.",
   "main": "dist/node/main.js",
