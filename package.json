@@ -19,20 +19,13 @@
     "bluebird": "^3.4.0",
     "incident": "^1.0.5",
     "lodash": "^4.12.0",
-    "palantiri-interfaces": "^0.3.3"
+    "palantiri-interfaces": "^0.3.4"
   },
   "devDependencies": {
     "chai": "^3.4.1",
     "gulp": "^3.9.0",
-    "palantiri-driver-facebook": "^0.1.4",
+    "palantiri-driver-facebook": "^0.1.5",
     "typescript": "^1.9.0-dev.20160521-1.0",
     "via-build-tools": "^0.9.0"
-  },
-  "jspm": {
-    "configFile": "systemjs.config.js",
-    "dependencies": {
-      "lodash": "npm:lodash@^4.0.0"
-    },
-    "devDependencies": {}
   }
 }
