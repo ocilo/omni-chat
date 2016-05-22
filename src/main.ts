@@ -8,14 +8,29 @@ export {SimpleDiscussion} from "./simple-discussion";
 export {User} from "./user";
 export {UserAccount} from "./user-account";
 
-import * as interfaces from "./interfaces/index";
+import * as appInterface from "./interfaces/app";
+import * as contactAccountInterface from "./interfaces/contact-account";
+import * as discussionInterface from "./interfaces/discussion";
+import * as driverStoreInterface from "./interfaces/drivers-store";
+import * as messageInterface from "./interfaces/message";
+import * as userInterface from "./interfaces/user";
+import * as userAccountInterface from "./interfaces/user-account";
 
 export namespace interfaces {
-  export type AppInterface = interfaces.AppInterface;
-  export type ContactAccountInterface = interfaces.ContactAccountInterface;
-  export type DiscussionInterface = interfaces.DiscussionInterface;
-  export type DriversStoreInterface = interfaces.DriversStoreInterface;
-  export type MessageInterface = interfaces.MessageInterface;
-  export type UserInterface = interfaces.UserInterface;
-  export type UserAccountInterface = interfaces.UserAccountInterface;
+  export type App = appInterface.AppInterface;
+  export type ContactAccount = contactAccountInterface.ContactAccountInterface;
+  export type Discussion = discussionInterface.DiscussionInterface;
+  export namespace Discussion {
+    export type GetMessagesOptions = discussionInterface.GetMessagesOptions;
+    export type GetParticipantsOptions = discussionInterface.GetParticipantsOptions;
+    export type NewMessage = discussionInterface.NewMessage;
+  }
+  export type DriversStore = driverStoreInterface.DriversStoreInterface;
+  export type Message = messageInterface.MessageInterface;
+  export type User = userInterface.UserInterface;
+  export namespace User {
+    export type GetDiscussionsOptions = userInterface.GetDiscussionsOptions;
+    export type MessageEvent = userInterface.MessageEvent;
+  }
+  export type UserAccount = userAccountInterface.UserAccountInterface;
 }
