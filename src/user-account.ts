@@ -28,6 +28,14 @@ export class UserAccount implements UserAccountInterface {
     return palantiri.Id.asGlobalId(this.accountData);
   }
 
+  getName(): Bluebird<string> {
+    return Bluebird.resolve(this.accountData.name);
+  }
+
+  getAvatarUrl(): Bluebird<string> {
+    return Bluebird.resolve(this.accountData.avatarUrl);
+  }
+
   /**
    * Connect the current user's account, or retrieve an existing
    * connection. The created connection will already be turned on,

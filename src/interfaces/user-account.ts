@@ -14,6 +14,10 @@ export interface UserAccountInterface {
    */
   getGlobalIdSync(): palantiri.AccountGlobalId;
 
+  getName(): Thenable<string>;
+
+  getAvatarUrl(): Thenable<string>;
+
   /**
    * Connect the current user's account, or retrieve an existing
    * connection. The created connection will already be turned on,
