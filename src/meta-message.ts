@@ -1,6 +1,8 @@
 import MessageInterface from "./interfaces/message";
 import * as Bluebird from "bluebird";
 import {Incident} from "incident";
+import * as palantiri from "palantiri-interfaces";
+import {v4 as uuid} from "node-uuid";
 
 /**
  * TODO: doc.
@@ -18,8 +20,19 @@ export class MetaMessage implements MessageInterface {
    */
   protected subMessages: MessageInterface[];
 
+  protected id: string;
+
   constructor(messages: MessageInterface[] = []) {
+    this.id = uuid();
     this.subMessages = messages;
+  }
+
+  getGlobalId(): Bluebird<palantiri.MessageGlobalId> {
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.MessageGlobalId {
+    return palantiri.Id.asGlobalId({driverName: "_meta", id: this.id});
   }
 
   /* MessageInterface implementation */

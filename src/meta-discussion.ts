@@ -2,6 +2,7 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import * as _ from "lodash";
 import {Incident} from "incident";
+import {v4 as uuid} from "node-uuid";
 
 import {ContactAccountInterface} from "./interfaces/contact-account";
 import {DiscussionInterface, GetParticipantsOptions} from "./interfaces/discussion";
@@ -30,13 +31,24 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   protected subDiscussions: Subdiscussion[];
 
+  protected id: string;
+
   constructor (user: UserInterface, subdiscusions?: Subdiscussion[]) {
+    this.id = uuid();
     this.user = user;
     if(subdiscusions) {
       this.subDiscussions = subdiscusions;
     } else {
       this.subDiscussions = [];
     }
+  }
+
+  getGlobalId(): Bluebird<palantiri.DiscussionGlobalId> {
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.DiscussionGlobalId {
+    return palantiri.Id.asGlobalId({driverName: "_meta", id: this.id});
   }
 
   /* DiscussionInterface implementation */

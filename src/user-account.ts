@@ -21,7 +21,11 @@ export class UserAccount implements UserAccountInterface {
    * Returns the global id (driver + internal id) of this user-account.
    */
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.Id.asGlobalId(this.accountData));
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.AccountGlobalId {
+    return palantiri.Id.asGlobalId(this.accountData);
   }
 
   /**

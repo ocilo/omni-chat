@@ -10,6 +10,11 @@ export interface UserAccountInterface {
   getGlobalId(): Thenable<palantiri.AccountGlobalId>;
 
   /**
+   * Synchronous version of getGlobalId
+   */
+  getGlobalIdSync(): palantiri.AccountGlobalId;
+
+  /**
    * Connect the current user's account, or retrieve an existing
    * connection. The created connection will already be turned on,
    * but not the retrieved one.

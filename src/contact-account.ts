@@ -16,7 +16,11 @@ export class ContactAccount implements ContactAccountInterface {
    * Returns the global id (driver + internal id) of this contact-account.
    */
   getGlobalId(): Bluebird<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.Id.asGlobalId(this.accountData));
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.AccountGlobalId {
+    return palantiri.Id.asGlobalId(this.accountData);
   }
 
   /**

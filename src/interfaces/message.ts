@@ -1,3 +1,4 @@
+import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
 
 /**
@@ -6,6 +7,16 @@ import {Thenable} from "bluebird";
 // TODO: add methods like "respond()" and events like "delivered", "read", etc. ?
 // TODO: add methods like getSubmessages() and so on to looks like DiscussionInterface ?
 export interface MessageInterface {
+  /**
+   * Returns a global id for this message
+   */
+  getGlobalId(): Thenable<palantiri.MessageGlobalId>;
+
+  /**
+   * Synchronous version of getGlobalId
+   */
+  getGlobalIdSync(): palantiri.MessageGlobalId;
+
 	/**
    * Return the body of the current Message.
    */

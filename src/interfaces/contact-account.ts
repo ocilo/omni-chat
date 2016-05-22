@@ -10,6 +10,11 @@ export interface ContactAccountInterface {
    * Returns the global id (driver + internal id) of this contact-account.
    */
   getGlobalId(): Thenable<palantiri.AccountGlobalId>;
+  
+  /**
+   * Synchronous version of getGlobalId
+   */
+  getGlobalIdSync(): palantiri.AccountGlobalId;
 
   /**
    * Returns a human-readable name for this contact-account.

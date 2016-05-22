@@ -30,6 +30,14 @@ export class SimpleMessage implements MessageInterface {
     this.delivered = false;
   }
 
+  getGlobalId(): Bluebird<palantiri.MessageGlobalId> {
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.MessageGlobalId {
+    return palantiri.Id.asGlobalId(this.messageData);
+  }
+
   /* MessageInterface implementation*/
   /**
    * Return the body of the current Message.

@@ -1,3 +1,4 @@
+import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
 import {ContactAccountInterface} from "./contact-account";
 import {MessageInterface} from "./message";
@@ -12,6 +13,15 @@ import {MessageInterface} from "./message";
  * multi-accounts and multi-protocols.
  ***************************************************************/
 export interface DiscussionInterface {
+  /**
+   * Returns a global id for this discussion
+   */
+  getGlobalId(): Thenable<palantiri.MessageGlobalId>;
+
+  /**
+   * Synchronous version of getGlobalId
+   */
+  getGlobalIdSync(): palantiri.MessageGlobalId;
 
 	/**
    * Return the name of the Discussion, if it exists.

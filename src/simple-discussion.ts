@@ -24,6 +24,14 @@ export class SimpleDiscussion implements DiscussionInterface {
     this.discussionData = discussionData;
   }
 
+  getGlobalId(): Bluebird<palantiri.DiscussionGlobalId> {
+    return Bluebird.try(() => {return this.getGlobalIdSync()});
+  }
+
+  getGlobalIdSync(): palantiri.DiscussionGlobalId {
+    return palantiri.Id.asGlobalId(this.discussionData);
+  }
+
   /* DiscussionInterface implementation */
   /**
    * Return the name of the Discussion, if it exists.
