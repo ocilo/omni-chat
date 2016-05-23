@@ -24,14 +24,24 @@ export class UserAccount implements UserAccountInterface {
     return Bluebird.try(() => {return this.getGlobalIdSync()});
   }
 
+	/**
+	 * Synchronous version of getGlobalId.
+	 */
   getGlobalIdSync(): palantiri.AccountGlobalId {
     return palantiri.Id.asGlobalId(this.accountData);
   }
 
+	/**
+	 * Returns the name of the user for the current account.
+	 */
   getName(): Bluebird<string> {
     return Bluebird.resolve(this.accountData.name);
   }
 
+	/**
+	 * Returns the url for the avatar of the current user account,
+	 * if it has one.
+	 */
   getAvatarUrl(): Bluebird<string> {
     return Bluebird.resolve(this.accountData.avatarUrl);
   }

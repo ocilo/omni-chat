@@ -10,12 +10,19 @@ export interface UserAccountInterface {
   getGlobalId(): Thenable<palantiri.AccountGlobalId>;
 
   /**
-   * Synchronous version of getGlobalId
+   * Synchronous version of getGlobalId.
    */
   getGlobalIdSync(): palantiri.AccountGlobalId;
 
+	/**
+	 * Returns the name of the user for the current account.
+	 */
   getName(): Thenable<string>;
 
+	/**
+	 * Returns the url for the avatar of the current user account,
+	 * if it has one.
+	 */
   getAvatarUrl(): Thenable<string>;
 
   /**
