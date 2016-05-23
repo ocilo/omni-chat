@@ -91,6 +91,14 @@ export class User extends EventEmitter implements UserInterface {
         if(heterogeneous) {
           // TODO: access database and get the meta-discussions
           //       then get the right one or create it
+	        // Let's say we haven't found it
+	        return Bluebird.try(() => {
+		        let discussion: DiscussionInterface = new MetaDiscussion(this);
+		        return Bluebird.all(_.map(contactAccounts, (contactAccount: ContactAccountInterface) => {
+			        return discussion.addParticipant(contactAccount);
+		        }))
+			      .thenReturn(discussion);
+	        })
         } else {
           return rightUser.getOrCreateDiscussion(contactAccounts);
         }
