@@ -68,7 +68,7 @@ export class User extends EventEmitter implements UserInterface {
       .then((fullUserAccounts: {user: UserAccountInterface, contactsIDs: palantiri.AccountGlobalId[]}[]) => {
         for(let userAccount of fullUserAccounts) {
           for(let contactID of contactsIDs) {
-            if(userAccount.contactsIDs.indexOf(contactID) > 0) {
+            if(userAccount.contactsIDs.indexOf(contactID) >= 0) {
               if(rightUser && rightUser !== userAccount.user) {
                 heterogeneous = true;
                 break;
