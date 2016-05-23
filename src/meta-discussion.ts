@@ -262,14 +262,15 @@ export class MetaDiscussion implements DiscussionInterface {
                 return account.account.getGlobalId()
                   .then((globalID: palantiri.AccountGlobalId) => {
                     id = globalID;
-                    return account.account.getOrCreateApi()
-                  })
-                  .then((api: palantiri.Api) => {
-                    return api.createDiscussion([id]);
-                  })
-                  .then((discuss: palantiri.Discussion) => {
-                    this.subDiscussions.push({subdiscussion: new SimpleDiscussion(discuss), added: new Date(), removed: null});
-                  })
+                    return account.account
+                      .getOrCreateApi()
+                      .then((api: palantiri.Api) => {
+                        return api.createDiscussion([id]);
+                      })
+                      .then((discuss: palantiri.Discussion) => {
+                        this.subDiscussions.push({subdiscussion: new SimpleDiscussion(account.account, discuss), added: new Date(), removed: null});
+                      })
+                  });
               }
             }
             // Oups, that's not a known contact...

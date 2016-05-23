@@ -20,7 +20,10 @@ export class SimpleDiscussion implements DiscussionInterface {
    */
   private discussionData: palantiri.Discussion;
 
-  constructor (discussionData: palantiri.Discussion) {
+  private localUserAccount: UserAccountInterface;
+
+  constructor (localUserAccount: UserAccountInterface, discussionData: palantiri.Discussion) {
+    this.localUserAccount = localUserAccount;
     this.discussionData = discussionData;
   }
 
@@ -261,7 +264,10 @@ export class SimpleDiscussion implements DiscussionInterface {
    * Private: fetch the data about this discussion from the service
    */
   private getDiscussionInfo(): Bluebird<palantiri.Discussion> {
-    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
+    return Bluebird
+      .try(() => {
+        return this.localUserAccount.getOrCreateApi();
+      })
       .then((api: palantiri.Api) => {
         // TODO: fetch the real informations
         // return api.getDiscussionInfo(this.discussionReference);

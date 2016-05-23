@@ -84,7 +84,7 @@ export class UserAccount implements UserAccountInterface {
         return api.getDiscussions()
       })
       .map((discussion: palantiri.Discussion) => {
-        return new SimpleDiscussion(discussion);
+        return new SimpleDiscussion(this, discussion);
       });
   }
 
@@ -128,16 +128,16 @@ export class UserAccount implements UserAccountInterface {
           if(!discussions || discussions.length === 0) {
             return theapi.createDiscussion(participantsID)
               .then((discussion: palantiri.Discussion) => {
-                return new SimpleDiscussion(discussion);
+                return new SimpleDiscussion(this, discussion);
               });
             // NOTE : maybe wanting to just add missing participants from a discussion which
             //        already have some of the participants we are looking for is a bad idea,
             //        since we don't know the meanings of the previous discussion and the new one.
           } else if(discussions.length > 1) {
             // TODO: we need to find the good one...
-            discuss = new SimpleDiscussion(discussions[0]);
+            discuss = new SimpleDiscussion(this, discussions[0]);
           } else {
-            discuss = new SimpleDiscussion(discussions[0]);
+            discuss = new SimpleDiscussion(this, discussions[0]);
           }
           return discuss;
         });
