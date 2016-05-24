@@ -181,12 +181,13 @@ export class SimpleDiscussion implements DiscussionInterface {
    */
   sendMessage(newMessage: NewMessage): Bluebird<SimpleMessage> {
     return Bluebird
-      .try(() => {
-        return this.localUserAccount.getOrCreateApi();
-      })
-      .then((api: palantiri.Api) => {
-        return api.sendMessage(newMessage, this.discussionData.id);
-      })
+        .join(
+        Bluebird.try(() => {return this.localUserAccount.getOrCreateApi();}),
+        this.getGlobalId(),
+        (api: palantiri.Api, globalId: palantiri.DiscussionGlobalId) => {
+          return api.sendMessage(newMessage, globalId);
+        }
+      )
       .then((message: palantiri.Message) => {
         return new SimpleMessage(message);
       });
