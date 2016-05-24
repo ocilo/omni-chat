@@ -2,6 +2,7 @@ import * as palantiri from "palantiri-interfaces";
 import {Thenable} from "bluebird";
 import {ContactAccountInterface} from "./contact-account";
 import {MessageInterface} from "./message";
+import Bluebird = require("~palantiri-interfaces~bluebird/bluebird");
 
 /***************************************************************
  * Discussion is the only thing you can use to chat with
@@ -12,7 +13,13 @@ import {MessageInterface} from "./message";
  * mono-account and mono-protocol.
  * multi-accounts and multi-protocols.
  ***************************************************************/
-export interface DiscussionInterface {
+export interface DiscussionInterface extends NodeJS.EventEmitter {
+	/**
+	 * Ensures that the current discussion is listening
+	 * to messages.
+	 */
+	listen(): Thenable<this>;
+
   /**
    * Returns a global id for this discussion
    */

@@ -3,6 +3,7 @@ import * as palantiri from "palantiri-interfaces";
 import * as _ from "lodash";
 import {Incident} from "incident";
 import {v4 as uuid} from "node-uuid";
+import {EventEmitter} from "events";
 
 import {ContactAccountInterface} from "./interfaces/contact-account";
 import {DiscussionInterface, GetParticipantsOptions} from "./interfaces/discussion";
@@ -12,14 +13,13 @@ import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
 import {MetaMessage} from "./meta-message";
 import {SimpleDiscussion} from "./simple-discussion";
 import {SimpleMessage} from "./simple-message";
-import {UserAccount} from "./user-account";
-import {ContactAccount} from "./contact-account";
 import {UserAccountInterface} from "../build/node/interfaces/user-account";
+import {MessageEventObject} from "./interfaces/events";
 
 /**
  * This class represents a multi-accounts and multi-protocols discussion.
  */
-export class MetaDiscussion implements DiscussionInterface {
+export class MetaDiscussion extends EventEmitter implements DiscussionInterface {
 	/**
    * The user that is currently using this discussion.
    */
@@ -31,9 +31,19 @@ export class MetaDiscussion implements DiscussionInterface {
    */
   protected subDiscussions: Subdiscussion[];
 
+	/**
+	 * The internal id for the current meta-discussion.
+	 */
   protected id: string;
 
+	/**
+	 * True only if the current discussion listen to
+	 * the incomming messages.
+	 */
+	protected listening: boolean;
+
   constructor (user: UserInterface, subdiscusions?: Subdiscussion[]) {
+	  super();
     this.id = uuid();
     this.user = user;
     if(subdiscusions) {
@@ -42,6 +52,24 @@ export class MetaDiscussion implements DiscussionInterface {
       this.subDiscussions = [];
     }
   }
+
+	/**
+	 * Ensures that the current discussion is listening
+	 * to messages.
+	 */
+	listen(): Bluebird<this> {
+		if(this.listening) {
+			return Bluebird.resolve(this);
+		}
+		this.listening = true;
+		return Bluebird
+			.resolve(this.getSubDiscussions())
+			.map((subdiscuss: SimpleDiscussion) => {
+				return this.attachEventsTo(subdiscuss);
+			})
+			.thenReturn(this);
+	}
+
 
   getGlobalId(): Bluebird<palantiri.DiscussionGlobalId> {
     return Bluebird.try(() => {return this.getGlobalIdSync()});
@@ -236,7 +264,9 @@ export class MetaDiscussion implements DiscussionInterface {
 					      return api.createDiscussion([contactGlobalId]);
 				      })
 				      .then((discuss: palantiri.Discussion) => {
-					      this.subDiscussions.push({subdiscussion: new SimpleDiscussion(compatibleUserAccounts[0], discuss), added: new Date(), removed: null});
+					      let newSubdiscuss = new SimpleDiscussion(compatibleUserAccounts[0], discuss);
+					      return this.attachEventsTo(newSubdiscuss)
+						      .thenReturn(this.subDiscussions.push({subdiscussion: newSubdiscuss, added: new Date(), removed: null}));
 				      });
 		      });
       })
@@ -476,6 +506,44 @@ export class MetaDiscussion implements DiscussionInterface {
         return discu.getLocalUserAccount().then(acc => acc.hasContact(contactAccount));
       });
   }
+
+	protected disptachFrom(discussionSource: SimpleDiscussion, messageSource: SimpleMessage): Bluebird<MetaMessage> {
+		return Bluebird
+			.join(
+				discussionSource.getGlobalId(),
+				messageSource.getBody(),
+				(sourceID, sourceBody) => {
+					return this.getSubDiscussions()
+						.filter((subdiscuss: SimpleDiscussion): Bluebird<boolean> => {
+							return subdiscuss
+								.getGlobalId()
+								.then((id: palantiri.AccountGlobalId) => {
+									return id !== sourceID;
+								});
+						})
+						.map((okSubdiscussion: SimpleDiscussion) => {
+							return okSubdiscussion.sendMessage({body: ">>" + sourceBody})
+						})
+				}
+			)
+			.then((subMessages: SimpleMessage[]) => {
+				return new MetaMessage(subMessages.concat(messageSource));
+			});
+	}
+
+	protected attachEventsTo(discussion: SimpleDiscussion): Bluebird<this> {
+		return Bluebird.try(() => {
+			discussion.on("message", (msgEvent: MessageEventObject) => {
+				Bluebird
+					.resolve(this.disptachFrom(discussion, <SimpleMessage> msgEvent.message))
+					.then((metaMessage: MetaMessage) => {
+						this.emit("message", {type: "message", message: metaMessage});
+					});
+			});
+			return discussion.listen();
+		})
+		.thenReturn(this);
+	}
 
 }
 

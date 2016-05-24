@@ -1,31 +1,72 @@
 import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import * as _ from "lodash";
+import {ContactAccount} from "./contact-account";
 import {ContactAccountInterface} from "./interfaces/contact-account";
 import {DiscussionInterface, GetParticipantsOptions} from "./interfaces/discussion";
+import {EventEmitter} from "events";
 import {GetMessagesOptions, NewMessage} from "./interfaces/discussion";
+import {MessageEventObject} from "./interfaces/events";
 import {MessageInterface} from "./interfaces/message";
 import {UserAccountInterface} from "./interfaces/user-account";
 import {SimpleMessage} from "./simple-message";
-import {UserAccount} from "./user-account";
-import {ContactAccount} from "./contact-account";
+
 
 /**
  * This class is a high-level wrapper for a palantiri discussion
  * (mono-account, mono-driver) bound to a single account of a single user.
  */
-export class SimpleDiscussion implements DiscussionInterface {
+export class SimpleDiscussion extends EventEmitter implements DiscussionInterface {
 	/**
    * The low-level passive object representing the current Discussion.
    */
-  private discussionData: palantiri.Discussion;
+  protected discussionData: palantiri.Discussion;
 
-  private localUserAccount: UserAccountInterface;
+	/**
+	 * The user account which uses the current discussion.
+	 */
+	protected localUserAccount: UserAccountInterface;
+
+	/**
+	 * True only if the current discussion listen to
+	 * the incomming messages.
+	 */
+	protected listening: boolean;
 
   constructor (localUserAccount: UserAccountInterface, discussionData: palantiri.Discussion) {
+	  super();
     this.localUserAccount = localUserAccount;
     this.discussionData = discussionData;
+	  this.listening = false;
   }
+
+	/**
+	 * Ensures that the current discussion is listening
+	 * to messages.
+	 */
+	listen(): Bluebird<this> {
+		if(this.listening) {
+			return Bluebird.resolve(this);
+		}
+		this.listening = true;
+		return Bluebird
+			.resolve(this.getLocalUserAccount())
+			.then((userAccount: UserAccountInterface) => {
+				return userAccount.getOrCreateApi();
+			})
+			.then((api: palantiri.Api) => {
+				api.on("message", (msgEvent: palantiri.Api.events.MessageEvent) => {
+					if(msgEvent.discussionGlobalId === this.getGlobalIdSync()) {
+						let messageEventObject: MessageEventObject = {
+							type: "message",
+							message: new SimpleMessage(msgEvent.message)
+						};
+						this.emit("message", messageEventObject);
+					}
+				});
+			})
+			.thenReturn(this);
+	}
 
   /**
    * Return the global ID of the low-level discussion that is used
