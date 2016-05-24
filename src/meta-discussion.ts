@@ -352,14 +352,14 @@ export class MetaDiscussion implements DiscussionInterface {
     return Bluebird
       .resolve(this.getSubDiscussions())
       .map((subdiscussion: SimpleDiscussion) => {
-        return subdiscussion.getProtocol()
+        return subdiscussion.getDriverName()
       })
       .then((p: string[]) => {
         protocols = p;
         return this.getSubDiscussions();
       })
       .map((subdiscussion: SimpleDiscussion) => {
-        return subdiscussion.getUserAccountGlobalID();
+        return subdiscussion.getLocalUserAccount().then(acc => acc.getGlobalId());
       })
       .then((ids: palantiri.AccountGlobalId[]) => {
         userAccountIDs = ids;
@@ -418,14 +418,14 @@ export class MetaDiscussion implements DiscussionInterface {
     let subdiscussID: palantiri.DiscussionGlobalId = null;
     return Bluebird
       .try(() => {
-        return subDiscussion.getProtocol()
+        return subDiscussion.getDriverName()
           .then((p: string) => {
             protocol = p;
-            return subDiscussion.getUserAccountGlobalID();
+            return subDiscussion.getLocalUserAccount().then(acc => acc.getGlobalId());
           })
           .then((localId: palantiri.AccountGlobalId) => {
             accountID = localId;
-            return subDiscussion.getGlobalID();
+            return subDiscussion.getGlobalId();
           })
           .then((globalId: palantiri.DiscussionGlobalId) => {
             subdiscussID = globalId;
@@ -438,21 +438,21 @@ export class MetaDiscussion implements DiscussionInterface {
       })
       .map((subdiscuss: SimpleDiscussion) => {
         subdiscussions.push(subdiscuss);
-        return subdiscuss.getProtocol();
+        return subdiscuss.getDriverName();
       })
       .then((p: string[]) => {
         protocols = p;
         return subdiscussions;
       })
       .map((subdiscuss: SimpleDiscussion) => {
-        return subdiscuss.getGlobalID();
+        return subdiscuss.getGlobalId();
       })
       .then((ids: palantiri.DiscussionGlobalId[]) => {
         subdiscussionsIDs = ids;
         return subdiscussions;
       })
       .map((subdiscuss: SimpleDiscussion) => {
-        return subdiscuss.getUserAccountGlobalID();
+        return subdiscuss.getLocalUserAccount().then(acc => acc.getGlobalId());
       })
       .then((ids: palantiri.AccountGlobalId[]) => {
         userAccountIDs = ids;

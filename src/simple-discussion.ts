@@ -27,6 +27,10 @@ export class SimpleDiscussion implements DiscussionInterface {
     this.discussionData = discussionData;
   }
 
+  /**
+   * Return the global ID of the low-level discussion that is used
+   * in the current Discussion.
+   */
   getGlobalId(): Bluebird<palantiri.DiscussionGlobalId> {
     return Bluebird.try(() => {return this.getGlobalIdSync()});
   }
@@ -81,7 +85,10 @@ export class SimpleDiscussion implements DiscussionInterface {
    * @param options
    */
   getMessages (options?: GetMessagesOptions): Bluebird<MessageInterface[]> {
-    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
+    return Bluebird
+      .try(() => {
+        return this.localUserAccount.getOrCreateApi();
+      })
       .then((api: palantiri.Api) => {
         let palOptions: palantiri.Api.GetMessagesFromDiscussionOptions = null;
         if(options) {
@@ -137,7 +144,7 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(contactAccount.getGlobalId())
       .then((id: palantiri.AccountGlobalId) => {
         contactID.push(id);
-        return (new UserAccount(this.discussionData.owner)).getOrCreateApi();
+        return this.localUserAccount.getOrCreateApi();
       })
       .then((api: palantiri.Api) => {
         api.addMembersToDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
@@ -158,7 +165,7 @@ export class SimpleDiscussion implements DiscussionInterface {
     return Bluebird.resolve(contactAccount.getGlobalId())
       .then((id: palantiri.AccountGlobalId) => {
         contactID.push(id);
-        return (new UserAccount(this.discussionData.owner)).getOrCreateApi();
+        return this.localUserAccount.getOrCreateApi();
       })
       .then((api: palantiri.Api) => {
         api.removeMembersFromDiscussion(contactID, palantiri.Id.asGlobalId(this.discussionData));
@@ -173,7 +180,10 @@ export class SimpleDiscussion implements DiscussionInterface {
    * acquired after the send.
    */
   sendMessage(newMessage: NewMessage): Bluebird<SimpleMessage> {
-    return Bluebird.resolve((new UserAccount(this.discussionData.owner)).getOrCreateApi())
+    return Bluebird
+      .try(() => {
+        return this.localUserAccount.getOrCreateApi();
+      })
       .then((api: palantiri.Api) => {
         return api.sendMessage(newMessage, this.discussionData.id);
       })
@@ -187,32 +197,16 @@ export class SimpleDiscussion implements DiscussionInterface {
    * Return the user-account that is used to communicate in the current Discussion.
    */
   getLocalUserAccount(): Bluebird.Thenable<UserAccountInterface> {
-    return Bluebird.resolve(new UserAccount(this.discussionData.owner));
-  }
-
-	/**
-   * Return the global ID of the low-level user-account that is used
-   * in the current Discussion.
-   */
-  getUserAccountGlobalID(): Bluebird.Thenable<palantiri.AccountGlobalId> {
-    return Bluebird.resolve(palantiri.Id.asGlobalId(this.discussionData.owner));
-  }
-
-  /**
-   * Return the global ID of the low-level discussion that is used
-   * in the current Discussion.
-   */
-  getGlobalID(): Bluebird.Thenable<palantiri.DiscussionGlobalId> {
-    return Bluebird.resolve(palantiri.Id.asGlobalId(this.discussionData));
+    return Bluebird.resolve(this.localUserAccount);
   }
 
 	/**
    * Return the protocol used by this discussion.
    */
-  getProtocol(): Bluebird.Thenable<string> {
+  getDriverName(): Bluebird.Thenable<string> {
     return Bluebird.try( () => {
-      let globalid = palantiri.Id.asGlobalId(this.discussionData);
-      return globalid.split(":",2)[0];  // The syntax is "protocol:localID"
+      let ref = palantiri.Id.asReference(this.discussionData);
+      return ref.driverName;
     })
   }
 
@@ -221,8 +215,12 @@ export class SimpleDiscussion implements DiscussionInterface {
    * have the same globalID.
    */
   isTheSameAs(simpleDiscussion: SimpleDiscussion): Bluebird.Thenable<boolean> {
-    return Bluebird.resolve(
-      palantiri.Id.asGlobalId(this.discussionData) === palantiri.Id.asGlobalId(simpleDiscussion.discussionData)
+    return Bluebird.join(
+      this.getGlobalId(),
+      simpleDiscussion.getGlobalId(),
+      (id1: string, id2: string) => {
+        return id1 === id2;
+      }
     );
   }
 
