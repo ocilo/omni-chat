@@ -12,9 +12,15 @@ import * as appInterface from "./interfaces/app";
 import * as contactAccountInterface from "./interfaces/contact-account";
 import * as discussionInterface from "./interfaces/discussion";
 import * as driverStoreInterface from "./interfaces/drivers-store";
+import * as eventInterface from "./interfaces/events";
 import * as messageInterface from "./interfaces/message";
 import * as userInterface from "./interfaces/user";
 import * as userAccountInterface from "./interfaces/user-account";
+
+export namespace events {
+	export type Object = eventInterface.EventObject;
+	export type Message = eventInterface.MessageEventObject;
+}
 
 export namespace interfaces {
   export type App = appInterface.AppInterface;
