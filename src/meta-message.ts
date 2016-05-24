@@ -20,6 +20,9 @@ export class MetaMessage implements MessageInterface {
    */
   protected subMessages: MessageInterface[];
 
+	/**
+	 * The internal id for the current meta-message.
+	 */
   protected id: string;
 
   constructor(messages: MessageInterface[] = []) {
