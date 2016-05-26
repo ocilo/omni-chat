@@ -264,10 +264,22 @@ export class MetaDiscussion extends EventEmitter implements DiscussionInterface 
 					      return api.createDiscussion([contactGlobalId]);
 				      })
 				      .then((discuss: palantiri.Discussion) => {
-					      let newSubdiscuss = new SimpleDiscussion(compatibleUserAccounts[0], discuss);
-					      return this.attachEventsTo(newSubdiscuss)
-						      .thenReturn(this.subDiscussions.push({subdiscussion: newSubdiscuss, added: new Date(), removed: null}));
-				      });
+                let newSubdiscuss = new SimpleDiscussion(compatibleUserAccounts[0], discuss);
+
+                if (this.listening) {
+                  return this.attachEventsTo(newSubdiscuss).thenReturn(newSubdiscuss);
+                } else {
+                  return Bluebird.resolve(newSubdiscuss);
+                }
+              })
+              .then((newSubdiscuss: SimpleDiscussion) =>{
+                this.subDiscussions.push({
+                  subdiscussion: newSubdiscuss,
+                  added: new Date(),
+                  removed: null
+                });
+                return this;
+              });
 		      });
       })
 	    .thenReturn(this);
