@@ -507,7 +507,7 @@ export class MetaDiscussion extends EventEmitter implements DiscussionInterface 
       });
   }
 
-	protected disptachFrom(discussionSource: SimpleDiscussion, messageSource: SimpleMessage): Bluebird<MetaMessage> {
+	protected dispatchFrom(discussionSource: SimpleDiscussion, messageSource: SimpleMessage): Bluebird<MetaMessage> {
 		return Bluebird
 			.join(
 				discussionSource.getGlobalId(),
@@ -535,7 +535,7 @@ export class MetaDiscussion extends EventEmitter implements DiscussionInterface 
 		return Bluebird.try(() => {
 			discussion.on("message", (msgEvent: MessageEventObject) => {
 				Bluebird
-					.resolve(this.disptachFrom(discussion, <SimpleMessage> msgEvent.message))
+					.resolve(this.dispatchFrom(discussion, <SimpleMessage> msgEvent.message))
 					.then((metaMessage: MetaMessage) => {
 						this.emit("message", {type: "message", message: metaMessage});
 					});
