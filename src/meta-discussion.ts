@@ -2,7 +2,7 @@ import * as Bluebird from "bluebird";
 import * as palantiri from "palantiri-interfaces";
 import * as _ from "lodash";
 import {Incident} from "incident";
-import {v4 as uuid} from "node-uuid";
+import {v4 as uuid} from "uuid";
 import {EventEmitter} from "events";
 
 import {ContactAccountInterface} from "./interfaces/contact-account";

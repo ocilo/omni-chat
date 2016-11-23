@@ -2,7 +2,7 @@ import MessageInterface from "./interfaces/message";
 import * as Bluebird from "bluebird";
 import {Incident} from "incident";
 import * as palantiri from "palantiri-interfaces";
-import {v4 as uuid} from "node-uuid";
+import {v4 as uuid} from "uuid";
 
 /**
  * TODO: doc.
