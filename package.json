@@ -18,16 +18,16 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.0",
-    "incident": "^1.0.6",
+    "incident": "^3.0.0",
     "lodash": "^4.12.0",
     "node-uuid": "^1.4.7",
     "palantiri-interfaces": "^0.3.4"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
+    "chai": "^4.1.2",
     "gulp": "^3.9.0",
     "palantiri-driver-facebook": "^0.1.5",
-    "typescript": "^1.9.0-dev.20160521-1.0",
-    "via-build-tools": "^0.9.0"
+    "typescript": "^2.6.2",
+    "via-build-tools": "^0.11.0"
   }
 }
