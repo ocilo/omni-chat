@@ -2,6 +2,8 @@
 
 # OmniChat
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ocilo/omni-chat.svg)](https://greenkeeper.io/)
+
 ## Description
 
 OmniChat is a framework to easily manage real-time communication across
